@@ -18,7 +18,7 @@ var clutch := Clutch.new()
 var throttle_input: float = 0.0
 var steering_input: float = 0.0
 var brake_input: float = 0.0
-var handbrake_input: float = 0.0
+var handbrake_input := false
 var clutch_input: float = 0.0
 
 ######### Misc #########
@@ -97,13 +97,16 @@ func _physics_process(delta):
 		throttle_input = 0.0
 		brake_input = joy.y
 	
-	handbrake_input = Input.get_action_strength("Handbrake")
+	handbrake_input = Input.is_action_pressed("Handbrake")
 	clutch_input = Input.get_action_strength("Clutch")
 	
 	var brakes_torques = get_brake_torques(brake_input, delta)
 	front_brake_torque = brakes_torques.x
-	rear_brake_torque = brakes_torques.y + handbrake_input * car_params.max_handbrake_torque
-	
+	rear_brake_torque = brakes_torques.y
+
+	if handbrake_input:
+		rear_brake_torque += car_params.max_handbrake_torque
+			
 	local_vel = (global_transform.origin - prev_pos) / delta * global_transform.basis
 	prev_pos = global_transform.origin
 	z_vel = -local_vel.z

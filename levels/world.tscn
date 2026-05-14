@@ -3,6 +3,13 @@
 [ext_resource type="PackedScene" uid="uid://dqqcf60u11tfq" path="res://scenes/vehicle/sport_car.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/track.tscn" id="2"]
 [ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="3_pmfem"]
+[ext_resource type="Texture2D" uid="uid://ci00y7m4kyp0t" path="res://assets/handbrake_released.png" id="4_i8ckm"]
+[ext_resource type="Script" uid="uid://ux8e8chujrtu" path="res://levels/handbrake.gd" id="4_w32yo"]
+[ext_resource type="Texture2D" uid="uid://cvtrwygi5sdib" path="res://assets/handbrake_pressed.png" id="5_vons5"]
+[ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/gear_up.png" id="7_lmpr0"]
+[ext_resource type="Script" uid="uid://377xjj66y52m" path="res://levels/gear_up.gd" id="7_vons5"]
+[ext_resource type="Script" uid="uid://dn205eygyaky3" path="res://levels/gear_down.gd" id="8_legw5"]
+[ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/gear_down.png" id="9_re8x6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_otdr6"]
 frequency = 0.841
@@ -88,6 +95,27 @@ offset_right = 1155.0
 offset_bottom = 512.0
 script = ExtResource("3_pmfem")
 metadata/_custom_type_script = "uid://sxtvje6r7qsq"
+
+[node name="handbrake" type="TouchScreenButton" parent="Sportcar/RigidBodyCar/Gui" index="5" unique_id=939091553]
+position = Vector2(198, 30)
+scale = Vector2(0.073365234, 0.07336523)
+texture_normal = ExtResource("4_i8ckm")
+texture_pressed = ExtResource("5_vons5")
+script = ExtResource("4_w32yo")
+
+[node name="gearUp" type="TouchScreenButton" parent="Sportcar/RigidBodyCar/Gui" index="6" unique_id=2047156702 node_paths=PackedStringArray("car")]
+position = Vector2(2.9999998, 244.00006)
+scale = Vector2(0.13378906, 0.13281244)
+texture_normal = ExtResource("7_lmpr0")
+script = ExtResource("7_vons5")
+car = NodePath("../..")
+
+[node name="gearDown" type="TouchScreenButton" parent="Sportcar/RigidBodyCar/Gui" index="7" unique_id=1447212485 node_paths=PackedStringArray("car")]
+position = Vector2(9, 350)
+scale = Vector2(0.12695313, 0.13476567)
+texture_normal = ExtResource("9_re8x6")
+script = ExtResource("8_legw5")
+car = NodePath("../..")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")
