@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3 uid="uid://x5af4u1lm676"]
+[gd_scene format=3 uid="uid://x5af4u1lm676"]
 
 [ext_resource type="PackedScene" uid="uid://dqqcf60u11tfq" path="res://scenes/vehicle/sport_car.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/track.tscn" id="2"]
@@ -10,8 +10,8 @@ fractal_lacunarity = 0.493
 fractal_gain = 0.626
 
 [sub_resource type="NoiseTexture2D" id="NoiseTexture2D_fk6r2"]
-seamless = true
 noise = SubResource("FastNoiseLite_otdr6")
+seamless = true
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_bqny7"]
 albedo_color = Color(0.298039, 0.988235, 0, 1)
@@ -36,23 +36,23 @@ background_mode = 2
 sky = SubResource("Sky_2up1w")
 tonemap_mode = 2
 
-[node name="world" type="Node3D"]
+[node name="world" type="Node3D" unique_id=1519250936]
 
-[node name="Ground" type="MeshInstance3D" parent="."]
+[node name="Ground" type="MeshInstance3D" parent="." unique_id=625255136]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.70018, 0)
 mesh = SubResource("2")
 skeleton = NodePath("")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Ground" groups=["Grass"]]
+[node name="StaticBody3D" type="StaticBody3D" parent="Ground" unique_id=2010140480 groups=["Grass"]]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground/StaticBody3D" unique_id=1476415040]
 shape = SubResource("ConcavePolygonShape3D_ik6d6")
 
-[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=642823489]
 transform = Transform3D(1, 0, 0, 0, 0.178407, 0.983957, 0, -0.983957, 0.178407, 0.0565219, 4.6636, 0.498293)
 shadow_enabled = true
 
-[node name="Track" parent="." instance=ExtResource("2")]
+[node name="Track" parent="." unique_id=1863288159 instance=ExtResource("2")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.2, 0)
 
 [node name="Path3D" parent="Track" index="0"]
@@ -61,14 +61,19 @@ lower_ground_width = 16.931
 
 [node name="Road" parent="Track/Path3D" index="0"]
 polygon = PackedVector2Array(-7.0655, 0, -7.0655, -0.1, 7.0655, -0.1, 7.0655, 0)
+path_rotation_accurate = false
 
 [node name="Ground" parent="Track/Path3D" index="1"]
 polygon = PackedVector2Array(-9.0655, -0.1, 9.0655, -0.1, 16.931, -4.01, 17.031, -4.1, -17.031, -4.1, -16.931, -4)
+path_rotation_accurate = false
 
-[node name="Sportcar" parent="." instance=ExtResource("1")]
+[node name="Sportcar" parent="." unique_id=1426730906 instance=ExtResource("1")]
 transform = Transform3D(0.833779, 0, 0.552097, 0, 1, 0, -0.552097, 0, 0.833779, 39.2642, 3.55066, 76.6809)
 
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="TireInfoApp" parent="Sportcar/RigidBodyCar/Gui" index="1"]
+layout_mode = 0
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")
 
 [editable path="Track"]
