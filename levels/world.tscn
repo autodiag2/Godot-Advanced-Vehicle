@@ -2,6 +2,7 @@
 
 [ext_resource type="PackedScene" uid="uid://dqqcf60u11tfq" path="res://scenes/vehicle/sport_car.tscn" id="1"]
 [ext_resource type="PackedScene" path="res://scenes/track.tscn" id="2"]
+[ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="3_pmfem"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_otdr6"]
 frequency = 0.841
@@ -70,8 +71,23 @@ path_rotation_accurate = false
 [node name="Sportcar" parent="." unique_id=1426730906 instance=ExtResource("1")]
 transform = Transform3D(0.833779, 0, 0.552097, 0, 1, 0, -0.552097, 0, 0.833779, 39.2642, 3.55066, 76.6809)
 
+[node name="RigidBodyCar" parent="Sportcar" index="0" node_paths=PackedStringArray("joystick")]
+joystick = NodePath("Gui/joystick")
+
 [node name="TireInfoApp" parent="Sportcar/RigidBodyCar/Gui" index="1"]
 layout_mode = 0
+
+[node name="InputApp" parent="Sportcar/RigidBodyCar/Gui" index="2" node_paths=PackedStringArray("joystick")]
+joystick = NodePath("../joystick")
+
+[node name="joystick" type="Control" parent="Sportcar/RigidBodyCar/Gui" index="4" unique_id=1363765934]
+anchors_preset = 0
+offset_left = 883.0
+offset_top = 240.0
+offset_right = 1155.0
+offset_bottom = 512.0
+script = ExtResource("3_pmfem")
+metadata/_custom_type_script = "uid://sxtvje6r7qsq"
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")

@@ -25,7 +25,7 @@ project/assembly_name="Advanced Vehicle Demo"
 
 [editor_plugins]
 
-enabled=PackedStringArray()
+enabled=PackedStringArray("res://addons/virtual_joystick/plugin.cfg")
 
 [input]
 
@@ -77,6 +77,11 @@ Clutch={
 , Object(InputEventJoypadButton,"resource_local_to_scene":false,"resource_name":"","device":0,"button_index":4,"pressure":0.0,"pressed":false,"script":null)
 ]
 }
+
+[input_devices]
+
+pointing/android/enable_long_press_as_right_click=true
+pointing/emulate_touch_from_mouse=true
 
 [physics]
 

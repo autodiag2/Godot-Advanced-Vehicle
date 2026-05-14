@@ -2,6 +2,7 @@ class_name BaseCar
 extends RigidBody3D
 
 @export var car_params := CarParameters.new()
+@export var joystick: Control
 
 ######## CONSTANTS ########
 const PETROL_KG_L: float = 0.7489
@@ -82,9 +83,20 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta):
-	brake_input = Input.get_action_strength("Brake")
-	steering_input = Input.get_action_strength("SteerLeft") - Input.get_action_strength("SteerRight")
-	throttle_input = Input.get_action_strength("Throttle")
+	var joy := Vector2.ZERO
+
+	if joystick:
+		joy = joystick.scene.output
+
+	steering_input = -joy.x
+
+	if joy.y < 0.0:
+		throttle_input = -joy.y
+		brake_input = 0.0
+	else:
+		throttle_input = 0.0
+		brake_input = joy.y
+	
 	handbrake_input = Input.get_action_strength("Handbrake")
 	clutch_input = Input.get_action_strength("Clutch")
 	
@@ -275,4 +287,3 @@ func play_engine_sound():
 
 func stop_engine_sound():
 	audioplayer.stop()
-
