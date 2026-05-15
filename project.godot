@@ -96,5 +96,6 @@ common/physics_fps=240
 [rendering]
 
 renderer/rendering_method="mobile"
+textures/vram_compression/import_etc2_astc=true
 environment/defaults/default_environment="res://default_env.tres"
 threads/thread_model=2

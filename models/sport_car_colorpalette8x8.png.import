@@ -4,8 +4,9 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://xcvloq7plggh"
 path.s3tc="res://.godot/imported/sport_car_colorpalette8x8.png-558b89eee826b210db7948516179bc55.s3tc.ctex"
+path.etc2="res://.godot/imported/sport_car_colorpalette8x8.png-558b89eee826b210db7948516179bc55.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 generator_parameters={}
@@ -13,7 +14,7 @@ generator_parameters={}
 [deps]
 
 source_file="res://models/sport_car_colorpalette8x8.png"
-dest_files=["res://.godot/imported/sport_car_colorpalette8x8.png-558b89eee826b210db7948516179bc55.s3tc.ctex"]
+dest_files=["res://.godot/imported/sport_car_colorpalette8x8.png-558b89eee826b210db7948516179bc55.s3tc.ctex", "res://.godot/imported/sport_car_colorpalette8x8.png-558b89eee826b210db7948516179bc55.etc2.ctex"]
 
 [params]
 
