@@ -10,6 +10,7 @@
 [ext_resource type="Script" uid="uid://377xjj66y52m" path="res://levels/gear_up.gd" id="7_vons5"]
 [ext_resource type="Script" uid="uid://dn205eygyaky3" path="res://levels/gear_down.gd" id="8_legw5"]
 [ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/gear_down.png" id="9_re8x6"]
+[ext_resource type="Script" uid="uid://bf7tq3qn7evti" path="res://levels/CarBridge.gd" id="11_re8x6"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_otdr6"]
 frequency = 0.841
@@ -119,6 +120,9 @@ car = NodePath("../..")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")
+
+[node name="CarBridge" type="Node" parent="." unique_id=1644839760]
+script = ExtResource("11_re8x6")
 
 [editable path="Track"]
 [editable path="Sportcar"]
