@@ -3,7 +3,6 @@ extends Node
 var bridge = null
 
 func _ready():
-	print("CarBridge _ready")
 
 	var wrapper = Engine.get_singleton(
         "JavaClassWrapper"
@@ -13,8 +12,6 @@ func _ready():
 		print("JavaClassWrapper not found")
 		return
 
-	print("JavaClassWrapper found")
-
 	bridge = wrapper.wrap(
         "com.github.autodiag2.elm327emu.sim.CarBridge"
 	)
@@ -23,7 +20,6 @@ func _ready():
 		print("Failed to wrap Kotlin CarBridge")
 		return
 
-	print("Kotlin CarBridge wrapped successfully")
 
 func _process(_delta):
 	print("CarBridge _process")
@@ -40,8 +36,8 @@ func _process(_delta):
 		print("player_car not found")
 		return
 
-	print("Current RPM: ", car.rpm)
-
 	bridge.setRpm(car.rpm)
-
-	print("RPM sent to Kotlin")
+	bridge.setFuel(car.fuel / car.car_params.fuel_tank_size)
+	bridge.setSpeed(car.speedo)
+	bridge.setAcceratorRelativePosition(car.throttle_input)
+	bridge.setActualEnginePercentTorque(car.torque_out / car.max_torque * 100)
