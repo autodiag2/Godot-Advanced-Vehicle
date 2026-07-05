@@ -5,7 +5,7 @@ var bridge = null
 func _ready():
 
 	var wrapper = Engine.get_singleton(
-        "JavaClassWrapper"
+		"JavaClassWrapper"
 	)
 
 	if wrapper == null:
@@ -13,7 +13,7 @@ func _ready():
 		return
 
 	bridge = wrapper.wrap(
-        "com.github.autodiag2.elm327emu.sim.CarBridge"
+		"com.github.autodiag2.elm327emu.sim.CarBridge"
 	)
 
 	if bridge == null:
@@ -22,22 +22,38 @@ func _ready():
 
 
 func _process(_delta):
-	print("CarBridge _process")
 
 	if bridge == null:
-		print("bridge is null")
 		return
 
 	var car = get_tree().get_first_node_in_group(
-        "player_car"
+		"player_car"
 	)
 
 	if car == null:
-		print("player_car not found")
 		return
 
-	bridge.setRpm(car.rpm)
-	bridge.setFuel(car.fuel / car.car_params.fuel_tank_size)
-	bridge.setSpeed(car.speedo)
-	bridge.setAcceratorRelativePosition(car.throttle_input)
-	bridge.setActualEnginePercentTorque(car.torque_out / car.max_torque * 100)
+	bridge.setSignal(
+		"SAEJ1979.engine_speed",
+		car.rpm
+	)
+
+	bridge.setSignal(
+		"SAEJ1979.vehicle_speed",
+		car.speedo
+	)
+
+	bridge.setSignal(
+		"SAEJ1979.fuel_tank_level_input",
+		car.fuel / car.car_params.fuel_tank_size
+	)
+
+	bridge.setSignal(
+		"SAEJ1979.relative_accelerator_pedal_position",
+		car.throttle_input
+	)
+
+	bridge.setSignal(
+		"SAEJ1979.actual_engine_percent_torque",
+		car.torque_out / car.max_torque * 100
+	)
