@@ -75,7 +75,6 @@ func _ready() -> void:
 	fuel = car_params.fuel_tank_size * car_params.fuel_percentage * 0.01
 	self.mass += fuel * PETROL_KG_L
 
-
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ShiftUp"):
 		shift_up()

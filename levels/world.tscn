@@ -12,6 +12,8 @@
 [ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/gear_down.png" id="9_re8x6"]
 [ext_resource type="Script" uid="uid://bf7tq3qn7evti" path="res://levels/CarBridge.gd" id="11_re8x6"]
 [ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://levels/restart_scene.gd" id="11_wqmfy"]
+[ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://levels/restart_sim.gd" id="12_mla2a"]
+[ext_resource type="Script" uid="uid://db413do0lraea" path="res://levels/close.gd" id="13_oxfhy"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_otdr6"]
 frequency = 0.841
@@ -140,7 +142,7 @@ texture_pressed = ExtResource("5_vons5")
 visibility_mode = 1
 script = ExtResource("4_w32yo")
 
-[node name="RestartScene" type="Button" parent="Sportcar/RigidBodyCar/Gui" index="6" unique_id=360794777]
+[node name="MenuLaunchBtn" type="Button" parent="Sportcar/RigidBodyCar/Gui" index="6" unique_id=360794777]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -149,8 +151,45 @@ offset_left = -89.0
 offset_right = 131.0
 offset_bottom = 124.0
 grow_horizontal = 2
-text = "Restart sim"
+text = "Menu"
 script = ExtResource("11_wqmfy")
+
+[node name="Menu" type="Panel" parent="Sportcar/RigidBodyCar/Gui" index="7" unique_id=1427174821]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="restart_sim" type="Button" parent="Sportcar/RigidBodyCar/Gui/Menu" unique_id=1715240838]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -49.875
+offset_right = 153.0
+offset_bottom = 49.875
+grow_vertical = 2
+text = "Restart sim"
+script = ExtResource("12_mla2a")
+
+[node name="close" type="Button" parent="Sportcar/RigidBodyCar/Gui/Menu" unique_id=992936270]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.5
+offset_top = -50.25
+offset_right = 58.5
+offset_bottom = 50.25
+grow_horizontal = 2
+grow_vertical = 2
+text = "Close"
+script = ExtResource("13_oxfhy")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")
