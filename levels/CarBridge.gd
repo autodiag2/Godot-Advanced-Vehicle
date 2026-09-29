@@ -2,6 +2,7 @@ extends Node
 
 var bridge = null
 
+
 func _ready():
 
 	var wrapper = Engine.get_singleton(
@@ -35,25 +36,30 @@ func _process(_delta):
 
 	bridge.setSignal(
 		"SAEJ1979.engine_speed",
-		car.rpm
+		car.engine_controller.rpm
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.vehicle_speed",
-		car.speedo
+		car.powertrain_controller.average_front_wheel_speed *
+		car.wheel_fl.tire_radius *
+		3.6
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.fuel_tank_level_input",
-		car.fuel / car.car_params.fuel_tank_size
+		car.engine_controller.fuel_litres /
+		car.car_params.fuel_tank_size
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.relative_accelerator_pedal_position",
-		car.throttle_input
+		car.input_controller.throttle
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.actual_engine_percent_torque",
-		car.torque_out / car.max_torque * 100
+		car.engine_controller.output_torque /
+		car.car_params.max_torque *
+		100
 	)
