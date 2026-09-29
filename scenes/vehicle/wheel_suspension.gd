@@ -32,7 +32,6 @@ var spin: float = 0.0
 var z_vel: float = 0.0
 var local_vel := Vector3.ZERO
 
-var rolling_resistance: float = 0.0 #Vector2 = Vector2.ZERO
 var rol_res_surface_mul: float = 0.02
 
 var force_vec = Vector3.ZERO
@@ -40,6 +39,8 @@ var slip_vec: Vector2 = Vector2.ZERO
 var prev_pos: Vector3 = Vector3.ZERO
 
 var spring_curr_length: float = spring_length
+
+var wheel_speed_threshold: float = 0.1
 
 @onready var car = $'..' #Get the parent node as car
 @onready var wheelmesh = $MeshInstance3D
@@ -139,15 +140,25 @@ func apply_forces(opposite_comp, delta):
 	slip_vec.y = 0.0 # Y slip is the longitudinal Z slip
 	
 	if is_colliding():
-		if not is_zero_approx(z_vel):
-			slip_vec.y = (z_vel - spin * tire_radius) / abs(z_vel)
-		else:
-			slip_vec.y = (z_vel - spin * tire_radius) / abs(z_vel + 0.0000001)
-	
+		var slip_speed: float = max(
+			abs(z_vel),
+			wheel_speed_threshold
+		)
+
+		slip_vec.y = (
+			z_vel -
+			spin * tire_radius
+		) / slip_speed
+
 		if spring_load_mm !=0:
 			y_force += anti_roll * (spring_load_mm - opposite_comp)
 		
 		force_vec = tire_model.update_tire_forces(slip_vec, y_force, surface_mu)
+
+		force_vec.y += tire_model.get_rolling_resistance(
+			y_force,
+			z_vel
+		)
 		
 		var contact = get_collision_point() - car.global_transform.origin
 		var normal = get_collision_normal()
@@ -166,10 +177,16 @@ func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 	var prev_spin = spin
 	var net_torque = force_vec.y * tire_radius
 	net_torque += drive_torque
+
 	if abs(spin) < 5 and brake_torque > abs(net_torque):
 		spin = 0
 	else:
-		net_torque -= (brake_torque + rolling_resistance) * sign(spin)
+		if drive_torque == 0.0:
+			var target_spin :float = z_vel / tire_radius
+			var spin_error := target_spin - spin
+			net_torque += spin_error * wheel_inertia / delta
+
+		net_torque -= brake_torque * sign(spin)
 		spin += delta * net_torque / (wheel_inertia + drive_inertia)
 
 	if drive_torque * delta == 0:

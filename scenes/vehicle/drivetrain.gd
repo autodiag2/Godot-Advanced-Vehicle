@@ -45,7 +45,7 @@ func automatic_shifting(cur_torque, lower_gear_torque, higher_gear_torque, rpm, 
 	if selected_gear == -1:
 		reversing = true
 
-	if higher_gear_torque > cur_torque and selected_gear >= 0:
+	if higher_gear_torque > cur_torque and selected_gear > 0:
 		if rpm > 0.85 * max_rpm:
 			if Time.get_ticks_msec() - last_shift_time > shift_time:
 				shift_up()
@@ -152,12 +152,11 @@ func differential(torque: float, brake_torque, wheels, diff: DiffParameters, del
 			
 			var spin := 0.0
 			var avg_spin = (wheels[0].get_spin() + wheels[1].get_spin()) * 0.5
-			var rolling_resistance = wheels[0].rolling_resistance + wheels[1].rolling_resistance
 			
 			if abs(avg_spin) < 5.0 and brake_torque > abs(net_torque):
 				spin = 0.0
 			else:
-				net_torque -= (brake_torque + rolling_resistance) * sign(avg_spin)
+				net_torque -= brake_torque * sign(avg_spin)
 			
 			spin = avg_spin + delta * net_torque / (wheels[0].wheel_inertia + drive_inertia + wheels[1].wheel_inertia)
 			wheels[0].set_spin(spin)
@@ -199,12 +198,10 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 				
 				var net_torque := 0.0
 				var combined_wheel_inertias := 0.0
-				var rolling_resistance := 0.0
 				
 				for w in wheels:
 					net_torque += w.get_reaction_torque()
 					combined_wheel_inertias += w.wheel_inertia
-					rolling_resistance += w.rolling_resistance
 					
 				net_torque += drive_torque
 				var brake_torque := rear_brake_torque + front_brake_torque
@@ -213,7 +210,7 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 				if abs(avg_spin) < 5.0 and brake_torque > abs(net_torque):
 					spin = 0.0
 				else:
-					net_torque -= (brake_torque + abs(rolling_resistance)) * sign(avg_spin)
+					net_torque -= brake_torque * sign(avg_spin)
 					spin = avg_spin + delta * net_torque / (drive_inertia + combined_wheel_inertias)
 				
 				wheels[0].set_spin(spin)

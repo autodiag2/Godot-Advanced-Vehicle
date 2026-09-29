@@ -13,6 +13,7 @@ const TIRE_TEMP_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 @export var opt_tire_temp := 90.0
 @export var heating_multiplier := 0.0015
 @export var cooling_multiplier := -0.25
+@export var rolling_resistance_coefficient := 0.01
 
 var tire_wear := 0.0
 var load_sensitivity := 1.0
@@ -28,6 +29,20 @@ func _init() -> void:
 # Override this
 func update_tire_forces(_slip: Vector2, _normal_load: float, _surface_mu: float) -> Vector3:
 	return Vector3.ZERO
+
+
+func get_rolling_resistance(
+	normal_load: float,
+	longitudinal_velocity: float
+) -> float:
+	if abs(longitudinal_velocity) < 0.01:
+		return 0.0
+
+	return (
+		-rolling_resistance_coefficient *
+		normal_load *
+		sign(longitudinal_velocity)
+	)
 
 
 func update_tire_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
