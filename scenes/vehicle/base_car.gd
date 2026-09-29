@@ -220,7 +220,7 @@ class EngineController:
 			parameters.max_torque
 		)
 
-		var throttle_factor: float = (
+		var throttle_factor := (
 			parameters.throttle_model.sample_baked(
 				throttle_input
 			)
@@ -329,29 +329,54 @@ class PowertrainController:
 		longitudinal_speed: float,
 		parameters: CarParameters
 	) -> void:
+		var driven_wheel_speed := average_front_wheel_speed
+
+		if (
+			parameters.drivetrain_params.drivetype ==
+			parameters.drivetrain_params.DRIVE_TYPE.RWD
+		):
+			driven_wheel_speed = average_rear_wheel_speed
+
+		elif (
+			parameters.drivetrain_params.drivetype ==
+			parameters.drivetrain_params.DRIVE_TYPE.AWD
+		):
+			driven_wheel_speed = (
+				average_front_wheel_speed +
+				average_rear_wheel_speed
+			) * 0.5
+
 		var next_gear_rpm := 0.0
 		var previous_gear_rpm := 0.0
 
+		var next_gear := drivetrain.selected_gear + 1
+		var previous_gear := drivetrain.selected_gear - 1
+
 		if (
-			drivetrain.selected_gear <
+			next_gear > 0 &&
+			next_gear <=
 			parameters.drivetrain_params.gear_ratios.size()
 		):
 			next_gear_rpm = (
 				parameters.drivetrain_params.gear_ratios[
-					drivetrain.selected_gear
+					next_gear - 1
 				] *
 				parameters.drivetrain_params.final_drive *
-				average_front_wheel_speed *
+				driven_wheel_speed *
 				EngineController.RPM_PER_RADIAN_PER_SECOND
 			)
 
-		if drivetrain.selected_gear - 1 > 0:
+		if (
+			previous_gear > 0 &&
+			previous_gear <=
+			parameters.drivetrain_params.gear_ratios.size()
+		):
 			previous_gear_rpm = (
 				parameters.drivetrain_params.gear_ratios[
-					drivetrain.selected_gear - 1
+					previous_gear - 1
 				] *
 				parameters.drivetrain_params.final_drive *
-				average_front_wheel_speed *
+				driven_wheel_speed *
 				EngineController.RPM_PER_RADIAN_PER_SECOND
 			)
 
