@@ -82,11 +82,8 @@ path_rotation_accurate = false
 [node name="Sportcar" parent="." unique_id=1426730906 instance=ExtResource("1")]
 transform = Transform3D(0.833779, 0, 0.552097, 0, 1, 0, -0.552097, 0, 0.833779, 39.2642, 3.55066, 76.6809)
 
-[node name="RigidBodyCar" parent="Sportcar" index="0" node_paths=PackedStringArray("joystick")]
+[node name="RigidBodyCar" parent="Sportcar" index="0" unique_id=778852457 node_paths=PackedStringArray("joystick")]
 joystick = NodePath("Gui/joystick")
-
-[node name="TireInfoApp" parent="Sportcar/RigidBodyCar/Gui" index="1"]
-layout_mode = 0
 
 [node name="InputApp" parent="Sportcar/RigidBodyCar/Gui" index="2" node_paths=PackedStringArray("joystick")]
 joystick = NodePath("../joystick")

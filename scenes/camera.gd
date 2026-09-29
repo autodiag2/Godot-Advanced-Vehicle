@@ -30,15 +30,30 @@ extends Camera3D
 @export var target_distance := 3.0
 @export var target_height := 1.0
 @export var lerp_speed := 20.0
+@export var touch_sensitivity := 0.01
 
 var follow_this = null
 var last_lookat =  null
+
+var camera_yaw := 0.0
+var camera_pitch := -15.0
 
 
 func _ready():
 	follow_this = get_node(follow_this_path)
 	last_lookat = follow_this.global_transform.origin
 	set_as_top_level(true)
+
+
+func _input(event):
+	if event is InputEventScreenDrag:
+		camera_yaw -= event.relative.x * touch_sensitivity
+		camera_pitch -= event.relative.y * touch_sensitivity
+		camera_pitch = clamp(
+			camera_pitch,
+			-60.0,
+			20.0
+		)
 
 
 func _physics_process(delta):
@@ -56,7 +71,48 @@ func _physics_process(delta):
 	else:
 		target_pos.y = follow_this.global_transform.origin.y + target_height
 
-	global_transform.origin = global_transform.origin.lerp(target_pos, delta * lerp_speed)
-	last_lookat = last_lookat.lerp(follow_this.global_transform.origin, delta * lerp_speed)
+	# Apply camera rotation from touch dragging
+	var horizontal_distance := Vector2(
+		delta_v.x,
+		delta_v.z
+	).length()
 
-	look_at(last_lookat, Vector3(0.0, 1.0, 0.0))
+	var rotated_offset := Vector3(
+		0.0,
+		0.0,
+		horizontal_distance
+	)
+
+	rotated_offset = rotated_offset.rotated(
+		Vector3.UP,
+		camera_yaw
+	)
+
+	var right_axis := Vector3(
+		cos(camera_yaw),
+		0.0,
+		-sin(camera_yaw)
+	)
+
+	rotated_offset = rotated_offset.rotated(
+		right_axis,
+		deg_to_rad(camera_pitch)
+	)
+
+	target_pos = follow_this.global_transform.origin + rotated_offset
+	target_pos.y += target_height
+
+	global_transform.origin = global_transform.origin.lerp(
+		target_pos,
+		delta * lerp_speed
+	)
+
+	last_lookat = last_lookat.lerp(
+		follow_this.global_transform.origin,
+		delta * lerp_speed
+	)
+
+	look_at(
+		last_lookat,
+		Vector3(0.0, 1.0, 0.0)
+	)
