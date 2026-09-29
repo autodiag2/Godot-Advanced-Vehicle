@@ -93,7 +93,7 @@ func get_gearing() -> float:
 
 
 func set_input_inertia(value):
-	_engine_inertia =  value
+	_engine_inertia = value
 
 
 func differential(torque: float, brake_torque, wheels, diff: DiffParameters, delta: float):
@@ -102,12 +102,14 @@ func differential(torque: float, brake_torque, wheels, diff: DiffParameters, del
 	var tr2 = abs(wheels[1].get_reaction_torque())
 	
 	var delta_torque := 0.0
-	var bias := 0.0
+	var bias := 1.0
 	
-	if tr1 >= tr2:
-		bias = tr1 / tr2
+	if tr1 < 0.001 and tr2 < 0.001:
+		bias = 1.0
+	elif tr1 >= tr2:
+		bias = tr1 / max(tr2, 0.001)
 	else:
-		bias = tr2 / tr1
+		bias = tr2 / max(tr1, 0.001)
 	
 	delta_torque = tr1 - tr2
 	var t1 := torque * 0.5
@@ -150,15 +152,21 @@ func differential(torque: float, brake_torque, wheels, diff: DiffParameters, del
 			var net_torque = wheels[0].get_reaction_torque() + wheels[1].get_reaction_torque()
 			net_torque += t1 + t2
 			
-			var spin := 0.0
 			var avg_spin = (wheels[0].get_spin() + wheels[1].get_spin()) * 0.5
+			var total_inertia = wheels[0].wheel_inertia + drive_inertia + wheels[1].wheel_inertia
+			var brake_direction :float = sign(avg_spin)
+
+			if brake_direction == 0:
+				brake_direction = sign(net_torque)
+
+			var spin := 0.0
 			
 			if abs(avg_spin) < 5.0 and brake_torque > abs(net_torque):
 				spin = 0.0
 			else:
-				net_torque -= brake_torque * sign(avg_spin)
+				net_torque -= brake_torque * brake_direction
+				spin = avg_spin + delta * net_torque / total_inertia
 			
-			spin = avg_spin + delta * net_torque / (wheels[0].wheel_inertia + drive_inertia + wheels[1].wheel_inertia)
 			wheels[0].set_spin(spin)
 			wheels[1].set_spin(spin)
 
@@ -193,7 +201,7 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 		reaction_torque *= (1.0 / get_gearing())
 		
 		match drivetrain_params.center_diff.diff_type:
-			DIFF_TYPE.LOCKED: # Locked center diff currently means raw 4x4 
+			DIFF_TYPE.LOCKED:
 				var avg_spin = (avg_front_spin + avg_rear_spin) * 0.5
 				
 				var net_torque := 0.0
@@ -205,12 +213,17 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 					
 				net_torque += drive_torque
 				var brake_torque := rear_brake_torque + front_brake_torque
+				var brake_direction : float = sign(avg_spin)
+
+				if brake_direction == 0:
+					brake_direction = sign(net_torque)
+
 				var spin := 0.0
 				
 				if abs(avg_spin) < 5.0 and brake_torque > abs(net_torque):
 					spin = 0.0
 				else:
-					net_torque -= brake_torque * sign(avg_spin)
+					net_torque -= brake_torque * brake_direction
 					spin = avg_spin + delta * net_torque / (drive_inertia + combined_wheel_inertias)
 				
 				wheels[0].set_spin(spin)

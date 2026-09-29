@@ -437,8 +437,7 @@ class PowertrainController:
 	) -> void:
 		clutch_reaction_torque = 0.0
 		wheel_drive_torque = 0.0
-		average_front_wheel_speed = 0.0
-		average_rear_wheel_speed = 0.0
+		drivetrain.reaction_torque = 0.0
 
 		front_left_wheel.apply_torque(
 			0.0,
@@ -468,11 +467,11 @@ class PowertrainController:
 			delta
 		)
 
-		average_front_wheel_speed = (
-			(
-				front_left_wheel.spin +
-				front_right_wheel.spin
-			) * 0.5
+		update_wheel_speeds(
+			front_left_wheel,
+			front_right_wheel,
+			rear_left_wheel,
+			rear_right_wheel
 		)
 
 	func engage(
@@ -608,7 +607,7 @@ class SuspensionController:
 		rear_right_wheel: RaycastSuspension,
 		delta: float
 	) -> void:
-		var previous_compression := compression
+		var previous_compression := compression.duplicate()
 
 		compression[2] = (
 			rear_left_wheel.apply_forces(
@@ -849,6 +848,14 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 
+	suspension_controller.apply_forces(
+		wheel_fl,
+		wheel_fr,
+		wheel_bl,
+		wheel_br,
+		delta
+	)
+
 	if powertrain_controller.drivetrain.selected_gear == 0:
 		powertrain_controller.freewheel(
 			wheel_fl,
@@ -895,14 +902,6 @@ func _physics_process(delta: float) -> void:
 			car_params,
 			engine_audio_player
 		)
-
-	suspension_controller.apply_forces(
-		wheel_fl,
-		wheel_fr,
-		wheel_bl,
-		wheel_br,
-		delta
-	)
 
 	motion_controller.apply_aerodynamic_drag(
 		self,
