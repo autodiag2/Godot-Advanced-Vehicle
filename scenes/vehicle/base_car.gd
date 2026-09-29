@@ -85,8 +85,7 @@ class BrakeController:
 	) -> void:
 		var brake_torques := calculate_brake_torques(
 			brake_input,
-			parameters,
-			delta
+			parameters
 		)
 
 		front_brake_torque = brake_torques.x
@@ -97,13 +96,20 @@ class BrakeController:
 
 	func calculate_brake_torques(
 		brake_input: float,
-		parameters: CarParameters,
-		delta: float
+		parameters: CarParameters
 	) -> Vector2:
-		var clamping_force := brake_input * parameters.max_brake_force * 0.5
+		var clamping_force := (
+			brake_input *
+			parameters.max_brake_force *
+			0.5
+		)
 
 		var brake_pad_friction := 0.4
-		var braking_force = 2.0 * brake_pad_friction * clamping_force
+		var braking_force: float = (
+			2.0 *
+			brake_pad_friction *
+			clamping_force
+		)
 
 		var brake_torques := Vector2.ZERO
 
@@ -198,8 +204,10 @@ class EngineController:
 			1.0
 		)
 
-		var torque_curve_factor := parameters.torque_curve.sample_baked(
-			rpm_factor
+		var torque_curve_factor: float = (
+			parameters.torque_curve.sample_baked(
+				rpm_factor
+			)
 		)
 
 		var engine_braking_torque: float = (
@@ -207,12 +215,12 @@ class EngineController:
 			rpm_factor
 		)
 
-		var maximum_torque := (
+		var maximum_torque: float = (
 			torque_curve_factor *
 			parameters.max_torque
 		)
 
-		var throttle_factor := (
+		var throttle_factor: float = (
 			parameters.throttle_model.sample_baked(
 				throttle_input
 			)
@@ -235,9 +243,9 @@ class EngineController:
 		car: RigidBody3D,
 		delta: float
 	) -> void:
-		var fuel_consumed := (
+		var fuel_consumed: float = (
 			parameters.engine_bsfc *
-			output_torque *
+			max(output_torque, 0.0) *
 			rpm *
 			delta /
 			(
@@ -245,6 +253,16 @@ class EngineController:
 				PETROL_KG_PER_LITRE *
 				NEWTON_METRE_RPM_TO_KW
 			)
+		)
+
+		fuel_consumed = min(
+			fuel_consumed,
+			fuel_litres
+		)
+
+		fuel_consumed = max(
+			fuel_consumed,
+			0.0
 		)
 
 		fuel_litres -= fuel_consumed
@@ -258,7 +276,7 @@ class EngineController:
 		parameters: CarParameters,
 		audio_player: AudioStreamPlayer
 	) -> void:
-		var pitch_scale := rpm / 1000.0
+		var pitch_scale: float = rpm / 1000.0
 
 		if (
 			rpm >= parameters.rpm_idle &&
@@ -302,50 +320,6 @@ class PowertrainController:
 
 		drivetrain.set_input_inertia(
 			parameters.engine_moment
-		)
-
-	func calculate_shift_torques(
-		engine: EngineController,
-		parameters: CarParameters
-	) -> Vector2:
-		var next_gear_rpm := 0.0
-
-		if (
-			drivetrain.selected_gear <
-			parameters.drivetrain_params.gear_ratios.size()
-		):
-			next_gear_rpm = (
-				parameters.drivetrain_params.gear_ratios[
-					drivetrain.selected_gear
-				] *
-				parameters.drivetrain_params.final_drive *
-				average_front_wheel_speed *
-				EngineController.RPM_PER_RADIAN_PER_SECOND
-			)
-
-		var previous_gear_rpm := 0.0
-
-		if drivetrain.selected_gear - 1 > 0:
-			previous_gear_rpm = (
-				parameters.drivetrain_params.gear_ratios[
-					drivetrain.selected_gear - 1
-				] *
-				parameters.drivetrain_params.final_drive *
-				average_front_wheel_speed *
-				EngineController.RPM_PER_RADIAN_PER_SECOND
-			)
-
-		return Vector2(
-			engine.calculate_torque(
-				previous_gear_rpm,
-				0.0,
-				parameters
-			),
-			engine.calculate_torque(
-				next_gear_rpm,
-				0.0,
-				parameters
-			)
 		)
 
 	func update_automatic_shifting(
@@ -398,7 +372,7 @@ class PowertrainController:
 		)
 
 		drivetrain.automatic_shifting(
-			engine.output_torque - 0.0,
+			engine.output_torque,
 			previous_gear_torque,
 			next_gear_torque,
 			engine.rpm,
@@ -437,7 +411,9 @@ class PowertrainController:
 		delta: float
 	) -> void:
 		clutch_reaction_torque = 0.0
+		wheel_drive_torque = 0.0
 		average_front_wheel_speed = 0.0
+		average_rear_wheel_speed = 0.0
 
 		front_left_wheel.apply_torque(
 			0.0,
@@ -535,11 +511,11 @@ class PowertrainController:
 			abs(speed_error) * 0.2
 		)
 
-		var reaction_torque := (
+		var reaction_torque: float = (
 			drivetrain.reaction_torque
 		)
 
-		var clutch_slip_torque := (
+		var clutch_slip_torque: float = (
 			0.8 * clutch.friction
 		)
 
@@ -679,7 +655,7 @@ class VehicleMotionController:
 		car: RigidBody3D,
 		parameters: CarParameters
 	) -> void:
-		var speed := (
+		var speed: float = (
 			sqrt(
 				lateral_velocity *
 				lateral_velocity +
@@ -823,6 +799,17 @@ func _physics_process(delta: float) -> void:
 		car_params.max_steer
 	)
 
+	powertrain_controller.update_wheel_speeds(
+		wheel_fl,
+		wheel_fr,
+		wheel_bl,
+		wheel_br
+	)
+
+	engine_controller.reaction_torque = (
+		powertrain_controller.clutch_reaction_torque
+	)
+
 	engine_controller.update(
 		car_params,
 		input_controller.throttle,
@@ -865,23 +852,24 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 
-	if engine_controller.fuel_litres <= 0.0:
-		engine_controller.output_torque = 0.0
-		engine_controller.rpm = 0.0
-		engine_controller.stop_sound(
-			engine_audio_player
-		)
-
-	engine_controller.update_sound(
-		car_params,
-		engine_audio_player
-	)
-
 	engine_controller.consume_fuel(
 		car_params,
 		self,
 		delta
 	)
+
+	if engine_controller.fuel_litres <= 0.0:
+		engine_controller.fuel_litres = 0.0
+		engine_controller.output_torque = 0.0
+		engine_controller.rpm = 0.0
+		engine_controller.stop_sound(
+			engine_audio_player
+		)
+	else:
+		engine_controller.update_sound(
+			car_params,
+			engine_audio_player
+		)
 
 	suspension_controller.apply_forces(
 		wheel_fl,
