@@ -41,9 +41,7 @@ func _process(_delta):
 
 	bridge.setSignal(
 		"SAEJ1979.vehicle_speed",
-		car.powertrain_controller.average_front_wheel_speed *
-		car.wheel_fl.tire_radius *
-		3.6
+		car.getSpeedKmH()
 	)
 
 	bridge.setSignal(

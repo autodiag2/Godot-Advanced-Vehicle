@@ -3,7 +3,7 @@ extends RigidBody3D
 
 @export var car_params := CarParameters.new()
 @export var joystick: Control
-
+const MPS_TO_KPH: float = 3.6
 
 class CarInputController:
 	extends RefCounted
@@ -909,6 +909,10 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 
+func getSpeedKmH() -> int:
+	return int(motion_controller.longitudinal_velocity *
+		MPS_TO_KPH
+	)
 
 func shift_up() -> void:
 	powertrain_controller.drivetrain.shift_up()
