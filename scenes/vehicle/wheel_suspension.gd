@@ -49,7 +49,7 @@ var wheel_speed_threshold: float = 0.1
 func _ready() -> void:
 	wheel_inertia = 0.5 * wheel_mass * pow(tire_radius, 2)
 	set_target_position(Vector3.DOWN * (spring_length + tire_radius))
-
+	prev_pos = global_transform.origin
 
 func set_params(params: WheelSuspensionParameters):
 	tire_model =  params.tire_model
@@ -182,7 +182,11 @@ func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 		spin = 0
 	else:
 		if drive_torque == 0.0:
-			var target_spin :float = z_vel / tire_radius
+			var target_spin: float = 0.0
+
+			if abs(z_vel) >= wheel_speed_threshold:
+				target_spin = z_vel / tire_radius
+
 			var spin_error := target_spin - spin
 			net_torque += spin_error * wheel_inertia / delta
 
@@ -193,7 +197,6 @@ func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 		return 0.5
 	else:
 		return (spin - prev_spin) * (wheel_inertia + drive_inertia) / (drive_torque * delta)
-
 
 func set_spin(value):
 	spin = value 
