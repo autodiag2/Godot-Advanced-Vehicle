@@ -22,8 +22,7 @@ extends Camera3D
 #
 #IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
 #DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
-#OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
-#USE OR OTHER DEALINGS IN THE SOFTWARE.
+#OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE.
 
 
 @export var follow_this_path: NodePath
@@ -38,11 +37,13 @@ var last_lookat = null
 
 var camera_yaw := 0.0
 var camera_pitch := 5.0
+var follow_yaw := 0.0
 
 
 func _ready():
 	follow_this = get_node(follow_this_path)
 	last_lookat = follow_this.global_transform.origin
+	follow_yaw = follow_this.global_rotation.y
 	set_as_top_level(true)
 
 
@@ -72,7 +73,15 @@ func _physics_process(delta):
 		follow_this.global_transform.origin
 	)
 
-	var yaw := deg_to_rad(camera_yaw)
+	var vehicle_yaw : float = follow_this.global_rotation.y
+
+	follow_yaw = lerp_angle(
+		follow_yaw,
+		vehicle_yaw,
+		clamp(delta * lerp_speed, 0.0, 1.0)
+	)
+
+	var yaw := follow_yaw + deg_to_rad(camera_yaw)
 	var pitch := deg_to_rad(camera_pitch)
 
 	var horizontal_distance := (
@@ -106,7 +115,7 @@ func _physics_process(delta):
 	global_transform.origin = (
 		global_transform.origin.lerp(
 			target_pos,
-			delta * lerp_speed
+			clamp(delta * lerp_speed, 0.0, 1.0)
 		)
 	)
 
@@ -118,7 +127,7 @@ func _physics_process(delta):
 
 	last_lookat = last_lookat.lerp(
 		lookat_position,
-		delta * lerp_speed
+		clamp(delta * lerp_speed, 0.0, 1.0)
 	)
 
 	look_at(
