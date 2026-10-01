@@ -1,10 +1,10 @@
 extends GutTest
 
-var tire: BaseTireModel
+var tire: TireModel
 
 
 func before_each():
-	tire = BaseTireModel.new()
+	tire = TireModel.new()
 
 
 func test_initial_wear():

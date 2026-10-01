@@ -1,5 +1,5 @@
 class_name CurveTireModel
-extends BaseTireModel
+extends TireModel
 
 const buildup = preload("res://scenes/vehicle/tire_models/buildup_curve.tres")
 const falloff = preload("res://scenes/vehicle/tire_models/falloff_curve.tres")

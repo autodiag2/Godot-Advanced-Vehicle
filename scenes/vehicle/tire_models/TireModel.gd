@@ -1,4 +1,4 @@
-class_name BaseTireModel
+class_name TireModel
 extends Resource
 
 const TIRE_WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")

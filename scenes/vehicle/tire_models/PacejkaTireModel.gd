@@ -1,5 +1,5 @@
 class_name PacejkaTireModel
-extends BaseTireModel
+extends TireModel
 
 @export var pacejka_b := 10.0
 @export var pacejka_c_lat := 1.35

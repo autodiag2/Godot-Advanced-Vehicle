@@ -2,7 +2,7 @@ class_name RaycastSuspension
 extends RayCast3D
 
 ############# Choose what tire formula to use #############
-var tire_model: BaseTireModel
+var tire_model: TireModel
 
 ############# Suspension stuff #############
 var spring_length = 0.2
