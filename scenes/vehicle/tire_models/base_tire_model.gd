@@ -47,10 +47,13 @@ func get_rolling_resistance(
 
 
 func update_tire_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
-	tire_wear += slip.length() * mu * delta * normal_load / 7000000.0
-	tire_wear = clampf(tire_wear, 0 ,1)
-	return tire_wear
+	assert(normal_load >= 0.0)
+	assert(mu >= 0.0)
+	assert(delta >= 0.0)
 
+	tire_wear += slip.length() * mu * delta * normal_load / 7000000.0
+	tire_wear = clampf(tire_wear, 0, 1)
+	return tire_wear
 
 func update_load_sensitivity(normal_load: float) -> float:
 	var load_factor := normal_load / tire_rated_load
@@ -60,12 +63,16 @@ func update_load_sensitivity(normal_load: float) -> float:
 
 
 func update_tire_temp(slip, normal_load, speed, mu, ambient_temp, delta):
+	assert(normal_load >= 0.0)
+	assert(mu >= 0.0)
+	assert(delta >= 0.0)
+
 	var delta_temp := 0.0
 	# Heating
 	if abs(speed) > 1.0:
 		delta_temp += slip.length() * normal_load * mu * heating_multiplier * delta
 	# Cooling
-	var cooling: float = cooling_multiplier * (tire_temp / ambient_temp)
+	var cooling: float = cooling_multiplier * (tire_temp - ambient_temp)
 	delta_temp += cooling * delta
 	# Clamp the temps
 	var max_delta_temp_per_frame := 0.1

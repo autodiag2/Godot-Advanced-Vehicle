@@ -24,7 +24,7 @@ func test_rolling_resistance_backward():
 
 
 func test_wear_increases():
-	var wear : float = tire.update_tire_wear(
+	var wear: float = tire.update_tire_wear(
 		1.0,
 		Vector2(1.0, 0.0),
 		1000.0,
@@ -32,3 +32,65 @@ func test_wear_increases():
 	)
 
 	assert_gt(wear, 0.0)
+
+
+func test_temperature_heats_with_slip():
+	tire.tire_temp = 20.0
+
+	var temperature : float = tire.update_tire_temp(
+		Vector2(1.0, 0.0),
+		1000.0,
+		10.0,
+		1.0,
+		20.0,
+		0.1
+	)
+
+	assert_gt(temperature, 20.0)
+
+
+func test_temperature_does_not_cool_at_ambient():
+	tire.tire_temp = 20.0
+
+	var temperature : float = tire.update_tire_temp(
+		Vector2.ZERO,
+		1000.0,
+		0.0,
+		1.0,
+		20.0,
+		0.1
+	)
+
+	assert_eq(temperature, 20.0)
+
+
+func test_temperature_cools_toward_ambient():
+	tire.tire_temp = 50.0
+
+	var temperature : float = tire.update_tire_temp(
+		Vector2.ZERO,
+		1000.0,
+		0.0,
+		1.0,
+		20.0,
+		0.1
+	)
+
+	assert_lt(temperature, 50.0)
+	assert_gt(temperature, 20.0)
+
+
+func test_temperature_allows_zero_ambient_temperature():
+	tire.tire_temp = 50.0
+
+	var temperature : float = tire.update_tire_temp(
+		Vector2.ZERO,
+		1000.0,
+		0.0,
+		1.0,
+		0.0,
+		0.1
+	)
+
+	assert_true(is_finite(temperature))
+	assert_lt(temperature, 50.0)
