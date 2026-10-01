@@ -62,7 +62,6 @@ func update_load_sensitivity(normal_load: float) -> float:
 	
 	return load_sensitivity
 
-
 func update_temperature(slip, normal_load, speed, mu, ambient_temp, delta):
 	assert(normal_load >= 0.0)
 	assert(mu >= 0.0)
@@ -76,7 +75,8 @@ func update_temperature(slip, normal_load, speed, mu, ambient_temp, delta):
 	var cooling: float = cooling_multiplier * (temperature - ambient_temp)
 	delta_temp += cooling * delta
 	# Clamp the temps
-	var max_delta_temp_per_frame := 0.1
-	delta_temp = clamp(delta_temp, -max_delta_temp_per_frame, max_delta_temp_per_frame)
+	var max_temperature_rate := 6.0
+	var max_delta_temp : float = max_temperature_rate * delta
+	delta_temp = clamp(delta_temp, -max_delta_temp, max_delta_temp)
 	temperature = clampf(temperature + delta_temp, ambient_temp, max_temperature)
 	return temperature

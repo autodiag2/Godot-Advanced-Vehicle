@@ -432,3 +432,35 @@ func test_load_sensitivity_is_updated():
 	)
 
 	assert_almost_eq(tire.load_sensitivity, tire.load_sens1, 0.000001)
+
+func test_temperature_rate_is_independent_of_timestep():
+	var tire_60hz := TireModel.new()
+	var tire_30hz := TireModel.new()
+
+	var total_time := 1.0
+
+	for i in range(60):
+		tire_60hz.update_temperature(
+			Vector2(10.0, 0.0),
+			5500.0,
+			10.0,
+			1.0,
+			20.0,
+			1.0 / 60.0
+		)
+
+	for i in range(30):
+		tire_30hz.update_temperature(
+			Vector2(10.0, 0.0),
+			5500.0,
+			10.0,
+			1.0,
+			20.0,
+			1.0 / 30.0
+		)
+
+	assert_almost_eq(
+		tire_60hz.temperature,
+		tire_30hz.temperature,
+		0.001
+	)
