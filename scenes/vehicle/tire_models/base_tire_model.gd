@@ -18,13 +18,14 @@ const TIRE_TEMP_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 var tire_wear := 0.0
 var load_sensitivity := 1.0
 var tire_temp := 20.0
-
+var tire_temp_mu: Curve
 
 func _init() -> void:
-	var point_pos := TIRE_TEMP_MU.get_point_position(1)
-	var new_point_offset := opt_tire_temp / max_tire_temp
-	TIRE_TEMP_MU.set_point_offset(1, new_point_offset)
-
+	tire_temp_mu = TIRE_TEMP_MU.duplicate()
+	tire_temp_mu.set_point_offset(
+		1,
+		opt_tire_temp / max_tire_temp
+	)
 
 # Override this
 func update_tire_forces(_slip: Vector2, _normal_load: float, _surface_mu: float) -> Vector3:
