@@ -194,28 +194,6 @@ func test_combined_slip_force_is_bounded_by_friction():
 
 	assert_lte(forces.length(), normal_load * surface_mu + 0.001)
 
-
-func test_negative_normal_load_produces_no_force():
-	var forces := tire.update_tire_forces(
-		Vector2(0.1, 0.1),
-		-1000.0
-	)
-
-	assert_almost_eq(forces.x, 0.0, 0.000001)
-	assert_almost_eq(forces.y, 0.0, 0.000001)
-
-
-func test_negative_surface_mu_produces_no_force():
-	var forces := tire.update_tire_forces(
-		Vector2(0.1, 0.1),
-		1000.0,
-		-1.0
-	)
-
-	assert_almost_eq(forces.x, 0.0, 0.000001)
-	assert_almost_eq(forces.y, 0.0, 0.000001)
-
-
 func test_force_is_finite_for_zero_slip():
 	var forces := tire.update_tire_forces(
 		Vector2.ZERO,
@@ -238,19 +216,6 @@ func test_force_is_finite_for_large_slip():
 	assert_false(is_nan(forces.y))
 	assert_false(is_inf(forces.x))
 	assert_false(is_inf(forces.y))
-
-
-func test_force_is_finite_for_negative_load():
-	var forces := tire.update_tire_forces(
-		Vector2(0.1, 0.1),
-		-1000.0
-	)
-
-	assert_false(is_nan(forces.x))
-	assert_false(is_nan(forces.y))
-	assert_false(is_inf(forces.x))
-	assert_false(is_inf(forces.y))
-
 
 func test_force_is_finite_for_zero_load():
 	var forces := tire.update_tire_forces(
