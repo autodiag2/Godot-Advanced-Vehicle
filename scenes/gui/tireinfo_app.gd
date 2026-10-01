@@ -37,16 +37,20 @@ func _ready() -> void:
 		wheels_init += 1
 		wheels.append(wheel_br)
 
-		
+func get_tire_wear(wheel: RaycastSuspension) -> float:
+	if wheel.tire_model == null:
+		return 0.0
+	return wheel.tire_model.tire_wear
+
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
 	if wheels_init != 4:
 		return
 
-	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireWearLabel.text = "%3.1f %% " % float(wheel_fl.tire_wear * 100)
-	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireWearLabel.text = "%3.1f %% " % float(wheel_fr.tire_wear * 100)
-	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireWearLabel.text ="%3.1f %% " % float(wheel_bl.tire_wear * 100)
-	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireWearLabel.text ="%3.1f %% " % float(wheel_br.tire_wear * 100)
+	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireWearLabel.text = "%3.1f %% " % (get_tire_wear(wheel_fl) * 100)
+	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireWearLabel.text = "%3.1f %% " % (get_tire_wear(wheel_fr) * 100)
+	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireWearLabel.text ="%3.1f %% " % (get_tire_wear(wheel_bl) * 100)
+	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireWearLabel.text ="%3.1f %% " % (get_tire_wear(wheel_br) * 100)
 	
 	var colors := []
 	for wheel in wheels:
