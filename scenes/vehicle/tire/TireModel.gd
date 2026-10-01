@@ -2,7 +2,7 @@ class_name TireModel
 extends Resource
 
 const WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")
-const TEMPERATURE_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
+const TEMPERATURE_MU = preload("res://scenes/vehicle/tire/temp_mu.tres")
 
 @export var radius := 0.3
 @export var width := 0.205
