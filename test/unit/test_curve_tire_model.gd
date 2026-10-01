@@ -168,7 +168,6 @@ func test_force_is_odd_function_of_slip():
 	assert_almost_eq(positive.x, -negative.x, 0.000001)
 	assert_almost_eq(positive.y, -negative.y, 0.000001)
 
-
 func test_force_magnitude_does_not_exceed_available_friction():
 	var normal_load := 1000.0
 	var surface_mu := 1.0
@@ -179,7 +178,13 @@ func test_force_magnitude_does_not_exceed_available_friction():
 		surface_mu
 	)
 
-	assert_lte(forces.length(), normal_load * surface_mu + 0.001)
+	var maximum_force := (
+		normal_load *
+		surface_mu *
+		tire.load_sensitivity
+	)
+
+	assert_lte(forces.length(), maximum_force + 0.001)
 
 func test_combined_slip_force_is_bounded_by_model_friction():
 	var normal_load := 1000.0
