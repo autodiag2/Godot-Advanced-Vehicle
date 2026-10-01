@@ -56,9 +56,9 @@ func set_params(params: WheelSuspensionParameters):
 	ackermann = params.ackermann
 	anti_roll = params.anti_roll
 
-	wheel_inertia = 0.5 * wheel_mass * pow(tire_model.tire_radius, 2)
+	wheel_inertia = 0.5 * wheel_mass * pow(tire_model.radius, 2)
 	set_target_position(
-		Vector3.DOWN * (spring_length + tire_model.tire_radius)
+		Vector3.DOWN * (spring_length + tire_model.radius)
 	)
 
 # Move back to physics process when physics interpolation comes to godot4
@@ -74,7 +74,7 @@ func _physics_process(delta: float) -> void:
 		var tire_load := maxf(y_force, 0.0)
 
 		if abs(spin) > spin_treshold or abs(z_vel) > 1.0:
-			tire_model.update_tire_wear(
+			tire_model.update_wear(
 				delta,
 				slip_vec,
 				tire_load,
@@ -128,7 +128,7 @@ func apply_forces(opposite_comp, delta):
 
 		spring_curr_length = (
 			get_collision_point().distance_to(global_transform.origin) -
-			tire_model.tire_radius
+			tire_model.radius
 		)
 	else:
 		spring_curr_length = spring_length
@@ -165,7 +165,7 @@ func apply_forces(opposite_comp, delta):
 
 		slip_vec.y = (
 			z_vel -
-			spin * tire_model.tire_radius
+			spin * tire_model.radius
 		) / slip_speed
 
 		if spring_load_mm != 0:
@@ -199,7 +199,7 @@ func apply_forces(opposite_comp, delta):
 
 func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 	var prev_spin = spin
-	var net_torque = force_vec.y * tire_model.tire_radius
+	var net_torque = force_vec.y * tire_model.radius
 	net_torque += drive_torque
 
 	if abs(spin) < 5 and brake_torque > abs(net_torque):
@@ -209,7 +209,7 @@ func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 			var target_spin: float = 0.0
 
 			if abs(z_vel) >= wheel_speed_threshold:
-				target_spin = z_vel / tire_model.tire_radius
+				target_spin = z_vel / tire_model.radius
 
 			var spin_error := target_spin - spin
 			net_torque += spin_error * wheel_inertia / delta
@@ -236,7 +236,7 @@ func get_spin():
 
 
 func get_reaction_torque():
-	return force_vec.y * tire_model.tire_radius
+	return force_vec.y * tire_model.radius
 
 
 func steer(input, max_steer):

@@ -16,12 +16,12 @@ func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1
 	assert(surface_mu >= 0.0)
 	assert(normal_load >= 0.0)
 
-	var wear_mu := TIRE_WEAR_CURVE.sample_baked(tire_wear)
-	var temp_mu := tire_temp_mu.sample_baked(tire_temp / max_tire_temp)
+	var wear_mu := TIRE_WEAR_CURVE.sample_baked(wear)
+	var temp_mu := temperature_mu.sample_baked(tire_temp / max_tire_temp)
 	load_sensitivity = update_load_sensitivity(normal_load)
 	var mu := surface_mu * wear_mu * temp_mu * load_sensitivity
 
-	var load_factor := normal_load / tire_rated_load
+	var load_factor := normal_load / rated_load
 	var peak_sa_deg: float = lerp(MAX_PEAK_SA_START_DEG, MIN_PEAK_SA_START_DEG, tire_stiffness)
 	var delta_sa_deg: float = lerp(MAX_DELTA_SA_DEG, MIN_DELTA_SA_DEG, tire_stiffness)
 

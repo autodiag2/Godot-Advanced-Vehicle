@@ -40,7 +40,7 @@ func _ready() -> void:
 func get_tire_wear(wheel: RaycastSuspension) -> float:
 	if wheel.tire_model == null:
 		return 0.0
-	return wheel.tire_model.tire_wear
+	return wheel.tire_model.wear
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:

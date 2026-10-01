@@ -4,9 +4,9 @@ extends Resource
 const TIRE_WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")
 const TIRE_TEMP_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 
-@export var tire_radius := 0.3
-@export var tire_width := 0.205
-@export var tire_rated_load := 5500.0
+@export var radius := 0.3
+@export var width := 0.205
+@export var rated_load := 5500.0
 @export var load_sens0 := 1.7
 @export var load_sens1 := 0.9
 @export var max_tire_temp := 150.0
@@ -15,14 +15,14 @@ const TIRE_TEMP_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 @export var cooling_multiplier := -0.25
 @export var rolling_resistance_coefficient := 0.01
 
-var tire_wear := 0.0
+var wear := 0.0
 var load_sensitivity := 1.0
 var tire_temp := 20.0
-var tire_temp_mu: Curve
+var temperature_mu: Curve
 
 func _init() -> void:
-	tire_temp_mu = TIRE_TEMP_MU.duplicate()
-	tire_temp_mu.set_point_offset(
+	temperature_mu = TIRE_TEMP_MU.duplicate()
+	temperature_mu.set_point_offset(
 		1,
 		opt_tire_temp / max_tire_temp
 	)
@@ -46,17 +46,17 @@ func get_rolling_resistance(
 	)
 
 
-func update_tire_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
+func update_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
 	assert(normal_load >= 0.0)
 	assert(mu >= 0.0)
 	assert(delta >= 0.0)
 
-	tire_wear += slip.length() * mu * delta * normal_load / 7000000.0
-	tire_wear = clampf(tire_wear, 0, 1)
-	return tire_wear
+	wear += slip.length() * mu * delta * normal_load / 7000000.0
+	wear = clampf(wear, 0, 1)
+	return wear
 
 func update_load_sensitivity(normal_load: float) -> float:
-	var load_factor := normal_load / tire_rated_load
+	var load_factor := normal_load / rated_load
 	load_sensitivity = clampf(lerpf(load_sens0, load_sens1, load_factor), 0.2, load_sens0)
 	
 	return load_sensitivity

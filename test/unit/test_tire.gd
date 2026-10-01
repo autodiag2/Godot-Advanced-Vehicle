@@ -8,7 +8,7 @@ func before_each():
 
 
 func test_initial_wear():
-	assert_eq(tire.tire_wear, 0.0)
+	assert_eq(tire.wear, 0.0)
 
 
 func test_rolling_resistance_at_rest():
@@ -24,7 +24,7 @@ func test_rolling_resistance_backward():
 
 
 func test_wear_increases():
-	var wear: float = tire.update_tire_wear(
+	var wear: float = tire.update_wear(
 		1.0,
 		Vector2(1.0, 0.0),
 		1000.0,

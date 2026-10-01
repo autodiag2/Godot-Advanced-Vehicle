@@ -242,7 +242,7 @@ func test_force_is_finite_for_zero_load():
 func test_above_rated_load_has_finite_force():
 	var forces := tire.update_tire_forces(
 		Vector2(0.1, 0.1),
-		tire.tire_rated_load * 10.0
+		tire.rated_load * 10.0
 	)
 
 	assert_false(is_nan(forces.x))
@@ -302,7 +302,7 @@ func test_extreme_stiffness_remains_finite():
 
 func test_longitudinal_force_is_continuous_at_actual_peak():
 	var normal_load := 1000.0
-	var load_factor := normal_load / tire.tire_rated_load
+	var load_factor := normal_load / tire.rated_load
 
 	var peak_sa_deg : float = lerp(
 		MAX_PEAK_SA_START_DEG,
@@ -339,7 +339,7 @@ func test_longitudinal_force_is_continuous_at_actual_peak():
 
 func test_lateral_force_is_continuous_at_actual_peak():
 	var normal_load := 1000.0
-	var load_factor := normal_load / tire.tire_rated_load
+	var load_factor := normal_load / tire.rated_load
 
 	var peak_sa_deg : float = lerp(
 		MAX_PEAK_SA_START_DEG,
@@ -404,10 +404,10 @@ func test_force_remains_non_negative_after_peak():
 func test_wear_reduces_force():
 	var slip := Vector2(0.01, 0.0)
 
-	tire.tire_wear = 0.0
+	tire.wear = 0.0
 	var new_tire_force := tire.update_tire_forces(slip, 1000.0)
 
-	tire.tire_wear = 1.0
+	tire.wear = 1.0
 	var worn_tire_force := tire.update_tire_forces(slip, 1000.0)
 
 	assert_lte(abs(worn_tire_force.x), abs(new_tire_force.x))
@@ -428,7 +428,7 @@ func test_temperature_affects_force():
 func test_load_sensitivity_is_updated():
 	tire.update_tire_forces(
 		Vector2.ZERO,
-		tire.tire_rated_load
+		tire.rated_load
 	)
 
 	assert_almost_eq(tire.load_sensitivity, tire.load_sens1, 0.000001)
