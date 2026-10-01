@@ -416,10 +416,10 @@ func test_wear_reduces_force():
 func test_temperature_affects_force():
 	var slip := Vector2(0.01, 0.0)
 
-	tire.tire_temp = tire.opt_tire_temp
+	tire.temperature = tire.opt_temperature
 	var optimal_temp_force := tire.update_tire_forces(slip, 1000.0)
 
-	tire.tire_temp = tire.max_tire_temp
+	tire.temperature = tire.max_temperature
 	var hot_tire_force := tire.update_tire_forces(slip, 1000.0)
 
 	assert_ne(optimal_temp_force.x, hot_tire_force.x)

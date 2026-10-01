@@ -54,10 +54,10 @@ func _process(delta: float) -> void:
 	
 	var colors := []
 	for wheel in wheels:
-		if wheel.tire_model.tire_temp < wheel.tire_model.opt_tire_temp:
-			colors.append(lerp(Color.AQUA, Color.GREEN, wheel.tire_model.tire_temp / wheel.tire_model.opt_tire_temp))
+		if wheel.tire_model.temperature < wheel.tire_model.opt_temperature:
+			colors.append(lerp(Color.AQUA, Color.GREEN, wheel.tire_model.temperature / wheel.tire_model.opt_temperature))
 		else:
-			var amount: float = (wheel.tire_model.tire_temp - wheel.tire_model.opt_tire_temp) / (wheel.tire_model.max_tire_temp - wheel.tire_model.opt_tire_temp)
+			var amount: float = (wheel.tire_model.temperature - wheel.tire_model.opt_temperature) / (wheel.tire_model.max_temperature - wheel.tire_model.opt_temperature)
 			colors.append(lerp(Color.GREEN, Color.FIREBRICK, amount))
 			
 		
@@ -66,8 +66,8 @@ func _process(delta: float) -> void:
 	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp.color = colors[2]
 	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp.color = colors[3]
 	
-	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp/Label.text = "%2.1f c" % wheel_fl.tire_model.tire_temp
-	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp/Label.text = "%2.1f c" % wheel_fr.tire_model.tire_temp
-	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp/Label.text = "%2.1f c" % wheel_bl.tire_model.tire_temp
-	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp/Label.text = "%2.1f c" % wheel_br.tire_model.tire_temp
+	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp/Label.text = "%2.1f c" % wheel_fl.tire_model.temperature
+	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp/Label.text = "%2.1f c" % wheel_fr.tire_model.temperature
+	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp/Label.text = "%2.1f c" % wheel_bl.tire_model.temperature
+	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp/Label.text = "%2.1f c" % wheel_br.tire_model.temperature
 	

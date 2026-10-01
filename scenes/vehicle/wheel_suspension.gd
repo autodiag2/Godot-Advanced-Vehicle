@@ -84,7 +84,7 @@ func _physics_process(delta: float) -> void:
 	var ambient_temp := 20.0
 	var tire_load := maxf(y_force, 0.0)
 
-	tire_model.update_tire_temp(
+	tire_model.update_temperature(
 		slip_vec,
 		tire_load,
 		local_vel.length(),

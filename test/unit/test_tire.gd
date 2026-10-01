@@ -35,9 +35,9 @@ func test_wear_increases():
 
 
 func test_temperature_heats_with_slip():
-	tire.tire_temp = 20.0
+	tire.temperature = 20.0
 
-	var temperature : float = tire.update_tire_temp(
+	var temperature : float = tire.update_temperature(
 		Vector2(1.0, 0.0),
 		1000.0,
 		10.0,
@@ -50,9 +50,9 @@ func test_temperature_heats_with_slip():
 
 
 func test_temperature_does_not_cool_at_ambient():
-	tire.tire_temp = 20.0
+	tire.temperature = 20.0
 
-	var temperature : float = tire.update_tire_temp(
+	var temperature : float = tire.update_temperature(
 		Vector2.ZERO,
 		1000.0,
 		0.0,
@@ -65,9 +65,9 @@ func test_temperature_does_not_cool_at_ambient():
 
 
 func test_temperature_cools_toward_ambient():
-	tire.tire_temp = 50.0
+	tire.temperature = 50.0
 
-	var temperature : float = tire.update_tire_temp(
+	var temperature : float = tire.update_temperature(
 		Vector2.ZERO,
 		1000.0,
 		0.0,
@@ -81,9 +81,9 @@ func test_temperature_cools_toward_ambient():
 
 
 func test_temperature_allows_zero_ambient_temperature():
-	tire.tire_temp = 50.0
+	tire.temperature = 50.0
 
-	var temperature : float = tire.update_tire_temp(
+	var temperature : float = tire.update_temperature(
 		Vector2.ZERO,
 		1000.0,
 		0.0,

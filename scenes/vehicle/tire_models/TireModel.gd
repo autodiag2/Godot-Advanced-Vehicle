@@ -1,30 +1,30 @@
 class_name TireModel
 extends Resource
 
-const TIRE_WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")
-const TIRE_TEMP_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
+const WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")
+const TEMPERATURE_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 
 @export var radius := 0.3
 @export var width := 0.205
 @export var rated_load := 5500.0
 @export var load_sens0 := 1.7
 @export var load_sens1 := 0.9
-@export var max_tire_temp := 150.0
-@export var opt_tire_temp := 90.0
+@export var max_temperature := 150.0
+@export var opt_temperature := 90.0
 @export var heating_multiplier := 0.0015
 @export var cooling_multiplier := -0.25
 @export var rolling_resistance_coefficient := 0.01
 
 var wear := 0.0
 var load_sensitivity := 1.0
-var tire_temp := 20.0
+var temperature := 20.0
 var temperature_mu: Curve
 
 func _init() -> void:
-	temperature_mu = TIRE_TEMP_MU.duplicate()
+	temperature_mu = TEMPERATURE_MU.duplicate()
 	temperature_mu.set_point_offset(
 		1,
-		opt_tire_temp / max_tire_temp
+		opt_temperature / max_temperature
 	)
 
 # Override this
@@ -36,6 +36,7 @@ func get_rolling_resistance(
 	normal_load: float,
 	longitudinal_velocity: float
 ) -> float:
+	assert(normal_load >= 0.0)
 	if abs(longitudinal_velocity) < 0.01:
 		return 0.0
 
@@ -62,7 +63,7 @@ func update_load_sensitivity(normal_load: float) -> float:
 	return load_sensitivity
 
 
-func update_tire_temp(slip, normal_load, speed, mu, ambient_temp, delta):
+func update_temperature(slip, normal_load, speed, mu, ambient_temp, delta):
 	assert(normal_load >= 0.0)
 	assert(mu >= 0.0)
 	assert(delta >= 0.0)
@@ -72,10 +73,10 @@ func update_tire_temp(slip, normal_load, speed, mu, ambient_temp, delta):
 	if abs(speed) > 1.0:
 		delta_temp += slip.length() * normal_load * mu * heating_multiplier * delta
 	# Cooling
-	var cooling: float = cooling_multiplier * (tire_temp - ambient_temp)
+	var cooling: float = cooling_multiplier * (temperature - ambient_temp)
 	delta_temp += cooling * delta
 	# Clamp the temps
 	var max_delta_temp_per_frame := 0.1
 	delta_temp = clamp(delta_temp, -max_delta_temp_per_frame, max_delta_temp_per_frame)
-	tire_temp = clampf(tire_temp + delta_temp, ambient_temp, max_tire_temp)
-	return tire_temp
+	temperature = clampf(temperature + delta_temp, ambient_temp, max_temperature)
+	return temperature
