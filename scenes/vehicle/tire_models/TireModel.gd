@@ -7,8 +7,8 @@ const TEMPERATURE_MU = preload("res://scenes/vehicle/tire_models/temp_mu.tres")
 @export var radius := 0.3
 @export var width := 0.205
 @export var rated_load := 5500.0
-@export var load_sens0 := 1.7
-@export var load_sens1 := 0.9
+@export var load_sensitivity_at_zero_load := 1.7
+@export var load_sensitivity_at_rated_load := 0.9
 @export var max_temperature := 150.0
 @export var opt_temperature := 90.0
 @export var heating_multiplier := 0.0015
@@ -58,8 +58,8 @@ func update_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
 
 func update_load_sensitivity(normal_load: float) -> float:
 	var load_factor := normal_load / rated_load
-	load_sensitivity = clampf(lerpf(load_sens0, load_sens1, load_factor), 0.2, load_sens0)
-	
+	load_sensitivity = clampf(lerpf(load_sensitivity_at_zero_load, load_sensitivity_at_rated_load, load_factor), 0.2, load_sensitivity_at_zero_load)
+
 	return load_sensitivity
 
 func update_temperature(slip, normal_load, speed, mu, ambient_temp, delta):

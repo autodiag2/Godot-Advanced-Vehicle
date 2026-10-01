@@ -45,6 +45,7 @@ func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1
 			force_magnitude = buildup.sample_baked(resultant_slip)
 		else:
 			force_magnitude = falloff.sample_baked(resultant_slip - 1.0)
+		assert(0.0 <= force_magnitude)
 
 		tire_forces.x = (
 			force_magnitude *

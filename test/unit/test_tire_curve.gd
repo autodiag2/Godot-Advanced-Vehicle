@@ -431,7 +431,7 @@ func test_load_sensitivity_is_updated():
 		tire.rated_load
 	)
 
-	assert_almost_eq(tire.load_sensitivity, tire.load_sens1, 0.000001)
+	assert_almost_eq(tire.load_sensitivity, tire.load_sensitivity_at_rated_load, 0.000001)
 
 func test_temperature_rate_is_independent_of_timestep():
 	var tire_60hz := TireModel.new()
