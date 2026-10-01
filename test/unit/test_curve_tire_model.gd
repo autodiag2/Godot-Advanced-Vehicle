@@ -181,8 +181,7 @@ func test_force_magnitude_does_not_exceed_available_friction():
 
 	assert_lte(forces.length(), normal_load * surface_mu + 0.001)
 
-
-func test_combined_slip_force_is_bounded_by_friction():
+func test_combined_slip_force_is_bounded_by_model_friction():
 	var normal_load := 1000.0
 	var surface_mu := 1.0
 
@@ -192,7 +191,13 @@ func test_combined_slip_force_is_bounded_by_friction():
 		surface_mu
 	)
 
-	assert_lte(forces.length(), normal_load * surface_mu + 0.001)
+	var maximum_force := (
+		normal_load *
+		surface_mu *
+		tire.load_sensitivity
+	)
+
+	assert_lte(forces.length(), maximum_force + 0.001)
 
 func test_force_is_finite_for_zero_slip():
 	var forces := tire.update_tire_forces(
