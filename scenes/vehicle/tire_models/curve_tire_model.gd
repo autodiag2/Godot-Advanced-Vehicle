@@ -14,6 +14,8 @@ const MAX_DELTA_SA_DEG = 4.0
 
 
 func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
+	assert(surface_mu >= 0.0)
+	assert(normal_load >= 0.0)
 	var wear_mu := TIRE_WEAR_CURVE.sample_baked(tire_wear)
 	var temp_mu := TIRE_TEMP_MU.sample_baked(tire_temp / max_tire_temp)
 	load_sensitivity = update_load_sensitivity(normal_load)

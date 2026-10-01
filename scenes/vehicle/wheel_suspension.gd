@@ -133,11 +133,10 @@ func apply_forces(opposite_comp, delta):
 		spring_load_newton += spring_speed_mm_per_seconds * rebound # rebound
 	
 	y_force = spring_load_newton
-	y_force = max(0, y_force)
 	
 	############### Slip #######################
 	slip_vec.x = asin(clamp(-planar_vect.x, -1, 1)) # X slip is lateral slip
-	slip_vec.y = 0.0 # Y slip is the longitudinal Z slip
+	slip_vec.y = 0.0 # Y slip is longitudinal Z slip
 	
 	if is_colliding():
 		var slip_speed: float = max(
@@ -150,8 +149,10 @@ func apply_forces(opposite_comp, delta):
 			spin * tire_radius
 		) / slip_speed
 
-		if spring_load_mm !=0:
+		if spring_load_mm != 0:
 			y_force += anti_roll * (spring_load_mm - opposite_comp)
+
+		y_force = maxf(y_force, 0.0)
 		
 		force_vec = tire_model.update_tire_forces(slip_vec, y_force, surface_mu)
 
@@ -171,7 +172,6 @@ func apply_forces(opposite_comp, delta):
 	else:
 		spin -= sign(spin) * delta * 2 / wheel_inertia # stop undriven wheels from spinning endlessly
 		return 0.0
-
 
 func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 	var prev_spin = spin
