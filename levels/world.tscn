@@ -85,10 +85,10 @@ transform = Transform3D(0.833779, 0, 0.552097, 0, 1, 0, -0.552097, 0, 0.833779, 
 [node name="RigidBodyCar" parent="Sportcar" index="0" unique_id=778852457 node_paths=PackedStringArray("joystick")]
 joystick = NodePath("Gui/joystick")
 
-[node name="InputApp" parent="Sportcar/RigidBodyCar/Gui" index="2" node_paths=PackedStringArray("joystick")]
+[node name="InputApp" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="2" node_paths=PackedStringArray("joystick")]
 joystick = NodePath("../joystick")
 
-[node name="joystick" type="Control" parent="Sportcar/RigidBodyCar/Gui" index="4" unique_id=1363765934]
+[node name="joystick" type="Control" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="4" unique_id=1363765934]
 clip_contents = true
 layout_mode = 1
 anchors_preset = 6
@@ -104,7 +104,7 @@ grow_vertical = 2
 script = ExtResource("3_pmfem")
 metadata/_custom_type_script = "uid://sxtvje6r7qsq"
 
-[node name="Control" type="Control" parent="Sportcar/RigidBodyCar/Gui" index="5" unique_id=179608039]
+[node name="Control" type="Control" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="5" unique_id=179608039]
 clip_contents = true
 layout_mode = 1
 anchors_preset = 4
@@ -139,7 +139,7 @@ texture_pressed = ExtResource("5_vons5")
 visibility_mode = 1
 script = ExtResource("4_w32yo")
 
-[node name="MenuLaunchBtn" type="Button" parent="Sportcar/RigidBodyCar/Gui" index="6" unique_id=360794777]
+[node name="MenuLaunchBtn" type="Button" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="6" unique_id=360794777]
 layout_mode = 1
 anchors_preset = 5
 anchor_left = 0.5
@@ -151,7 +151,7 @@ grow_horizontal = 2
 text = "Menu"
 script = ExtResource("11_wqmfy")
 
-[node name="Menu" type="Panel" parent="Sportcar/RigidBodyCar/Gui" index="7" unique_id=1427174821]
+[node name="Menu" type="Panel" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="7" unique_id=1427174821]
 visible = false
 layout_mode = 1
 anchors_preset = 15

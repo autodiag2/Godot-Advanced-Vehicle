@@ -2,6 +2,7 @@ class_name WheelPad
 extends RefCounted
 
 var friction: float = 0.4
+var min_friction: float = 0.2
 var usage: float = 0.0
 var max_usage_energy: float = 1000000.0
 
@@ -9,7 +10,15 @@ var max_usage_energy: float = 1000000.0
 func calculate_braking_force(
 	clamping_force: float
 ) -> float:
-	return friction * clamping_force
+	return get_friction() * clamping_force
+
+
+func get_friction() -> float:
+	return lerpf(
+		friction,
+		min_friction,
+		usage
+	)
 
 
 func update_usage(
