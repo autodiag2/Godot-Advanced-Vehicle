@@ -19,10 +19,18 @@ func setup(
 	mass_arg: float,
 	ackermann_arg: float
 ) -> void:
+	assert(tire_arg != null)
+	assert(mass_arg > 0.0)
+	assert(tire_arg.radius > 0.0)
+
 	tire = tire_arg
 	mass = mass_arg
 	ackermann = ackermann_arg
 	inertia = 0.5 * mass * pow(tire.radius, 2)
+
+	spin = 0.0
+	slip = Vector2.ZERO
+	force = Vector3.ZERO
 
 
 func update_slip(
@@ -31,19 +39,23 @@ func update_slip(
 ) -> void:
 	slip.x = lateral_slip
 
-	if abs(z_vel) >= speed_threshold:
-		slip.y = (
-			z_vel -
-			spin * tire.radius
-		) / abs(z_vel)
-	else:
-		slip.y = 0.0
+	var slip_speed := maxf(
+		abs(z_vel),
+		speed_threshold
+	)
+
+	slip.y = (
+		z_vel -
+		spin * tire.radius
+	) / slip_speed
 
 
 func update_force(
 	normal_load: float,
 	surface_mu: float
 ) -> Vector3:
+	assert(tire != null)
+
 	force = tire.update_forces(
 		slip,
 		normal_load,
@@ -60,14 +72,24 @@ func apply_torque(
 	z_vel: float,
 	delta: float
 ) -> float:
+	assert(tire != null)
+	assert(drive_inertia >= 0.0)
+
+	if delta <= 0.0:
+		return 0.0
+
+	var total_inertia := inertia + drive_inertia
+
+	assert(total_inertia > 0.0)
+
 	var previous_spin := spin
 	var net_torque := force.y * tire.radius
 	net_torque += drive_torque
 
-	if abs(spin) < 5 and brake_torque > abs(net_torque):
+	if abs(spin) < 5.0 and brake_torque >= abs(net_torque):
 		spin = 0.0
 	else:
-		if drive_torque == 0.0:
+		if is_zero_approx(drive_torque):
 			var target_spin := 0.0
 
 			if abs(z_vel) >= speed_threshold:
@@ -76,20 +98,25 @@ func apply_torque(
 			var spin_error := target_spin - spin
 			net_torque += spin_error * inertia / delta
 
-		net_torque -= brake_torque * sign(spin)
+		var brake_direction : float = sign(spin)
+
+		if brake_direction == 0.0:
+			brake_direction = sign(net_torque)
+
+		net_torque -= brake_torque * brake_direction
 
 		spin += (
 			delta *
 			net_torque /
-			(inertia + drive_inertia)
+			total_inertia
 		)
 
-	if drive_torque * delta == 0:
-		return 0.5
+	if is_zero_approx(drive_torque):
+		return 0.0
 
 	return (
 		(spin - previous_spin) *
-		(inertia + drive_inertia) /
+		total_inertia /
 		(drive_torque * delta)
 	)
 
