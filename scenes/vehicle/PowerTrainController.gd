@@ -130,10 +130,21 @@ func freewheel(
 	front_right_wheel: RaycastSuspension,
 	rear_left_wheel: RaycastSuspension,
 	rear_right_wheel: RaycastSuspension,
-	front_brake_torque: float,
-	rear_brake_torque: float,
+	front_left_brake_torque: float,
+	front_right_brake_torque: float,
+	rear_left_brake_torque: float,
+	rear_right_brake_torque: float,
 	delta: float
 ) -> void:
+	var front_brake_torque := (
+		front_left_brake_torque +
+		front_right_brake_torque
+	)
+
+	var rear_brake_torque := (
+		rear_left_brake_torque +
+		rear_right_brake_torque
+	)
 	clutch_reaction_torque = 0.0
 	wheel_drive_torque = 0.0
 	drivetrain.reaction_torque = 0.0
@@ -181,10 +192,20 @@ func engage(
 	front_right_wheel: RaycastSuspension,
 	rear_left_wheel: RaycastSuspension,
 	rear_right_wheel: RaycastSuspension,
-	front_brake_torque: float,
-	rear_brake_torque: float,
+	front_left_brake_torque: float,
+	front_right_brake_torque: float,
+	rear_left_brake_torque: float,
+	rear_right_brake_torque: float,
 	delta: float
 ) -> void:
+	var front_brake_torque := (
+		front_left_brake_torque +
+		front_right_brake_torque
+	)
+	var rear_brake_torque := (
+		rear_left_brake_torque +
+		rear_right_brake_torque
+	)
 	update_wheel_speeds(
 		front_left_wheel,
 		front_right_wheel,

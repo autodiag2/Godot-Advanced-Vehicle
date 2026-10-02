@@ -49,6 +49,13 @@ func _ready() -> void:
 		car_params.wheel_params_br.duplicate(true)
 	)
 
+	brake_controller.setup(
+		wheel_fl,
+		wheel_fr,
+		wheel_bl,
+		wheel_br
+	)
+
 	engine_controller.initialize(
 		car_params,
 		self
@@ -139,8 +146,10 @@ func _physics_process(delta: float) -> void:
 			wheel_fr,
 			wheel_bl,
 			wheel_br,
-			brake_controller.front_brake_torque,
-			brake_controller.rear_brake_torque,
+			brake_controller.front_left_brake_torque,
+			brake_controller.front_right_brake_torque,
+			brake_controller.rear_left_brake_torque,
+			brake_controller.rear_right_brake_torque,
 			delta
 		)
 	else:
@@ -152,8 +161,10 @@ func _physics_process(delta: float) -> void:
 			wheel_fr,
 			wheel_bl,
 			wheel_br,
-			brake_controller.front_brake_torque,
-			brake_controller.rear_brake_torque,
+			brake_controller.front_left_brake_torque,
+			brake_controller.front_right_brake_torque,
+			brake_controller.rear_left_brake_torque,
+			brake_controller.rear_right_brake_torque,
 			delta
 		)
 
@@ -185,10 +196,12 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 
+
 func getSpeedKmH() -> int:
 	return int(motion_controller.longitudinal_velocity *
 		MPS_TO_KPH
 	)
+
 
 func shift_up() -> void:
 	powertrain_controller.drivetrain.shift_up()

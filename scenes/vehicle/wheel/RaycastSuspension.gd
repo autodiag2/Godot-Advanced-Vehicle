@@ -5,6 +5,7 @@ class_name RaycastSuspension
 extends RayCast3D
 
 var wheel := WheelController.new()
+var brake_disc := WheelDisc.new()
 var suspension := SuspensionController.new()
 var dynamics := WheelDynamicsController.new()
 
@@ -40,7 +41,7 @@ func set_params(params: WheelSuspensionParameters) -> void:
 		params.wheel_mass,
 		params.ackermann
 	)
-
+	brake_disc.effective_radius = params.brake_effective_radius
 	suspension.setup(
 		params.spring_length,
 		params.spring_stiffness,
@@ -177,6 +178,10 @@ func apply_forces(opposite_comp, delta):
 
 	return 0.0
 
+func calculate_brake_torque(
+	clamping_force: float
+) -> float:
+	return brake_disc.calculate_brake_torque(clamping_force)
 
 func apply_torque(
 	drive_torque,
@@ -184,13 +189,21 @@ func apply_torque(
 	drive_inertia,
 	delta
 ):
-	return wheel.apply_torque(
+	var result := wheel.apply_torque(
 		drive_torque,
 		brake_torque,
 		drive_inertia,
 		z_vel,
 		delta
 	)
+
+	brake_disc.update_usage(
+		brake_torque,
+		wheel.spin,
+		delta
+	)
+
+	return result
 
 
 func set_spin(value) -> void:
