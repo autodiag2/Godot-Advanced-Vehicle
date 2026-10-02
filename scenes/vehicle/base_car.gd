@@ -414,15 +414,15 @@ class PowertrainController:
 	) -> void:
 		average_rear_wheel_speed = (
 			(
-				rear_left_wheel.spin +
-				rear_right_wheel.spin
+				rear_left_wheel.wheel.spin +
+				rear_right_wheel.wheel.spin
 			) * 0.5
 		)
 
 		average_front_wheel_speed = (
 			(
-				front_left_wheel.spin +
-				front_right_wheel.spin
+				front_left_wheel.wheel.spin +
+				front_right_wheel.wheel.spin
 			) * 0.5
 		)
 
@@ -590,7 +590,7 @@ class PowertrainController:
 		)
 
 
-class SuspensionController:
+class SuspensionSystemController:
 	extends RefCounted
 
 	var compression: Array = [
@@ -735,7 +735,7 @@ var steering_controller := SteeringController.new()
 var brake_controller := BrakeController.new()
 var engine_controller := EngineController.new()
 var powertrain_controller := PowertrainController.new()
-var suspension_controller := SuspensionController.new()
+var suspension := SuspensionSystemController.new()
 var motion_controller := VehicleMotionController.new()
 
 @onready var wheel_fl = $Wheel_fl as RaycastSuspension
@@ -848,7 +848,7 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 
-	suspension_controller.apply_forces(
+	suspension.apply_forces(
 		wheel_fl,
 		wheel_fr,
 		wheel_bl,
