@@ -3,6 +3,7 @@ extends RefCounted
 
 var front_brake_torque: float = 0.0
 var rear_brake_torque: float = 0.0
+var brake_pad_friction: float = 0.4
 
 func update(
 	brake_input: float,
@@ -10,6 +11,8 @@ func update(
 	parameters: CarParameters,
 	delta: float
 ) -> void:
+	assert(brake_input >= 0.0)
+	assert(brake_input <= 1.0)
 	var brake_torques := calculate_brake_torques(
 		brake_input,
 		parameters
@@ -31,7 +34,6 @@ func calculate_brake_torques(
 		0.5
 	)
 
-	var brake_pad_friction := 0.4
 	var braking_force: float = (
 		2.0 *
 		brake_pad_friction *
