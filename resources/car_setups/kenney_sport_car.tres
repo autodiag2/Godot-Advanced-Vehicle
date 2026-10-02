@@ -2,7 +2,7 @@
 
 [ext_resource type="AudioStream" path="res://sounds/tres/engine_sample.tres" id="1_wqlgx"]
 [ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://scenes/vehicle/car_params.gd" id="2_8ru0w"]
-[ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://scenes/vehicle/wheel_params.gd" id="3_scbug"]
+[ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://scenes/vehicle/wheel/wheel_params.gd" id="3_scbug"]
 [ext_resource type="Script" uid="uid://bxdmhsny5ddvd" path="res://scenes/vehicle/wheel/tire/PacejkaTireModel.gd" id="4_ilwyn"]
 
 [sub_resource type="Curve" id="Curve_g3qlw"]
