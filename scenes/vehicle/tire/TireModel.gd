@@ -28,7 +28,7 @@ func _init() -> void:
 	)
 
 # Override this
-func update_tire_forces(_slip: Vector2, _normal_load: float, _surface_mu: float) -> Vector3:
+func update_forces(_slip: Vector2, _normal_load: float, _surface_mu: float) -> Vector3:
 	return Vector3.ZERO
 
 

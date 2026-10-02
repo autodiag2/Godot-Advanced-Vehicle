@@ -173,7 +173,7 @@ func apply_forces(opposite_comp, delta):
 
 		y_force = maxf(y_force, 0.0)
 
-		force_vec = tire_model.update_tire_forces(
+		force_vec = tire_model.update_forces(
 			slip_vec,
 			y_force,
 			surface_mu

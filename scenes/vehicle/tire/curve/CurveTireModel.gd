@@ -10,9 +10,9 @@ const MAX_PEAK_SA_START_DEG = 12.0
 const MIN_DELTA_SA_DEG = 1.0
 const MAX_DELTA_SA_DEG = 4.0
 
-@export_range(0.0, 1.0) var tire_stiffness := 0.5
+@export_range(0.0, 1.0) var stiffness := 0.5
 
-func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
+func update_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
 	assert(surface_mu >= 0.0)
 	assert(normal_load >= 0.0)
 
@@ -22,8 +22,8 @@ func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1
 	var mu := surface_mu * wear_mu * temp_mu * load_sensitivity
 
 	var load_factor := normal_load / rated_load
-	var peak_sa_deg: float = lerp(MAX_PEAK_SA_START_DEG, MIN_PEAK_SA_START_DEG, tire_stiffness)
-	var delta_sa_deg: float = lerp(MAX_DELTA_SA_DEG, MIN_DELTA_SA_DEG, tire_stiffness)
+	var peak_sa_deg: float = lerp(MAX_PEAK_SA_START_DEG, MIN_PEAK_SA_START_DEG, stiffness)
+	var delta_sa_deg: float = lerp(MAX_DELTA_SA_DEG, MIN_DELTA_SA_DEG, stiffness)
 
 	var sa0 := peak_sa_deg + 0.5 * delta_sa_deg
 	var sa1 := peak_sa_deg - 0.5 * delta_sa_deg
@@ -36,7 +36,7 @@ func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1
 	var normalised_sa := slip.x / peak_sa
 	var resultant_slip := sqrt(pow(normalised_sr, 2) + pow(normalised_sa, 2))
 
-	var tire_forces := Vector3.ZERO
+	var forces := Vector3.ZERO
 
 	if resultant_slip != 0:
 		var force_magnitude: float
@@ -47,18 +47,18 @@ func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1
 			force_magnitude = falloff.sample_baked(resultant_slip - 1.0)
 		assert(0.0 <= force_magnitude)
 
-		tire_forces.x = (
+		forces.x = (
 			force_magnitude *
 			abs(normalised_sa / resultant_slip) *
 			sign(slip.x)
 		)
 
-		tire_forces.y = (
+		forces.y = (
 			force_magnitude *
 			abs(normalised_sr / resultant_slip) *
 			sign(slip.y)
 		)
 
-	tire_forces *= mu * normal_load
+	forces *= mu * normal_load
 
-	return tire_forces
+	return forces

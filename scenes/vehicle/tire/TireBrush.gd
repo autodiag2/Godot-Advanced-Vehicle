@@ -1,12 +1,12 @@
 class_name BrushTireModel
 extends TireModel
 
-@export_range(0.0, 1.0) var tire_stiffness := 0.5
+@export_range(0.0, 1.0) var stiffness := 0.5
 @export var contact_patch := 0.2
 
 
-func update_tire_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
-	var stiffness = 1000000 + 8000000 * tire_stiffness
+func update_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
+	var stiffness = 1000000 + 8000000 * stiffness
 	var cornering_stiffness = 0.5 * stiffness * pow(contact_patch, 2)
 	
 	var wear_mu = WEAR_CURVE.sample_baked(wear)
