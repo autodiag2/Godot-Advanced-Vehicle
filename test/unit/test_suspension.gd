@@ -38,6 +38,28 @@ func test_setup_changes_parameters():
 	assert_eq(suspension.current_length, 0.3)
 
 
+func test_setup_resets_dynamic_state():
+	suspension.update(
+		0.1,
+		0.0,
+		0.1
+	)
+
+	suspension.setup(
+		0.3,
+		50.0,
+		4.0,
+		5.0,
+		10.0
+	)
+
+	assert_eq(suspension.current_length, 0.3)
+	assert_eq(suspension.load_mm, 0.0)
+	assert_eq(suspension.previous_load_mm, 0.0)
+	assert_eq(suspension.speed_mm_per_second, 0.0)
+	assert_eq(suspension.load_newton, 0.0)
+
+
 func test_no_compression_produces_zero_load():
 	var load := suspension.update(
 		0.2,
@@ -60,9 +82,11 @@ func test_compression_produces_spring_and_bump_load():
 	assert_eq(suspension.load_mm, 100.0)
 	assert_eq(suspension.speed_mm_per_second, 1000.0)
 
-	# Spring: 100 * 45 = 4500 N
-	# Bump: 1000 * 3.5 = 3500 N
-	# Total: 8000 N
+	var expected_spring := 100.0 * 45.0
+	var expected_bump := 1000.0 * 3.5
+	var expected := expected_spring + expected_bump
+
+	assert_eq(load, expected)
 	assert_eq(load, 8000.0)
 
 
@@ -76,9 +100,11 @@ func test_full_compression():
 	assert_eq(suspension.load_mm, 200.0)
 	assert_eq(suspension.speed_mm_per_second, 2000.0)
 
-	# Spring: 200 * 45 = 9000 N
-	# Bump: 2000 * 3.5 = 7000 N
-	# Total: 16000 N
+	var expected_spring := 200.0 * 45.0
+	var expected_bump := 2000.0 * 3.5
+	var expected := expected_spring + expected_bump
+
+	assert_eq(load, expected)
 	assert_eq(load, 16000.0)
 
 
@@ -94,6 +120,7 @@ func test_extension_does_not_produce_negative_load():
 		-100.0,
 		0.000001
 	)
+
 	assert_eq(load, 0.0)
 	assert_eq(suspension.load_newton, 0.0)
 
@@ -161,13 +188,13 @@ func test_rebound_damping_during_extension():
 
 	assert_almost_eq(
 		load,
-		250.0,
+		expected,
 		0.000001
 	)
 
 	assert_almost_eq(
 		load,
-		expected,
+		250.0,
 		0.000001
 	)
 
@@ -229,7 +256,6 @@ func test_anti_roll_can_reduce_force():
 	assert_eq(load, expected)
 	assert_eq(load, 7000.0)
 
-
 func test_anti_roll_negative_force_is_clamped_to_zero():
 	suspension.setup(
 		0.2,
@@ -250,13 +276,13 @@ func test_anti_roll_negative_force_is_clamped_to_zero():
 	assert_eq(suspension.load_newton, 0.0)
 
 
-func test_zero_delta_produces_non_finite_speed():
-	suspension.update(
+func test_zero_delta_does_not_produce_non_finite_speed():
+	var load := suspension.update(
 		0.1,
 		0.0,
 		0.0
 	)
 
-	assert_true(
-		not is_finite(suspension.speed_mm_per_second)
-	)
+	assert_true(is_finite(suspension.speed_mm_per_second))
+	assert_eq(suspension.speed_mm_per_second, 0.0)
+	assert_true(is_finite(load))

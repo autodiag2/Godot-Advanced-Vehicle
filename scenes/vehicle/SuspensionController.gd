@@ -27,6 +27,10 @@ func setup(
 	rebound = rebound_value
 	anti_roll = anti_roll_value
 	current_length = spring_length
+	load_mm = 0.0
+	previous_load_mm = 0.0
+	speed_mm_per_second = 0.0
+	load_newton = 0.0
 
 
 func update(
@@ -41,10 +45,13 @@ func update(
 		current_length
 	) * 1000.0
 
-	speed_mm_per_second = (
-		load_mm -
-		previous_load_mm
-	) / delta
+	if delta > 0.0:
+		speed_mm_per_second = (
+			load_mm -
+			previous_load_mm
+		) / delta
+	else:
+		speed_mm_per_second = 0.0
 
 	previous_load_mm = load_mm
 
@@ -55,11 +62,10 @@ func update(
 	else:
 		load_newton += speed_mm_per_second * rebound
 
-	if load_mm != 0.0:
-		load_newton += anti_roll * (
-			load_mm -
-			opposite_compression
-		)
+	load_newton += anti_roll * (
+		load_mm -
+		opposite_compression
+	)
 
 	load_newton = maxf(load_newton, 0.0)
 
