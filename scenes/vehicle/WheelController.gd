@@ -13,6 +13,7 @@ var force := Vector3.ZERO
 
 var speed_threshold := 0.1
 
+
 func setup(
 	tire_arg: TireModel,
 	mass_arg: float,
@@ -22,6 +23,7 @@ func setup(
 	mass = mass_arg
 	ackermann = ackermann_arg
 	inertia = 0.5 * mass * pow(tire.radius, 2)
+
 
 func update_slip(
 	z_vel: float,
@@ -105,7 +107,12 @@ func get_spin() -> float:
 
 
 func steer(input: float, max_steer: float) -> float:
+	var correction := (
+		1.0 -
+		cos(abs(input) * 0.5 * PI)
+	) * ackermann
+
 	return max_steer * (
 		input +
-		(1.0 - cos(input * 0.5 * PI)) * ackermann
+		sign(input) * correction
 	)
