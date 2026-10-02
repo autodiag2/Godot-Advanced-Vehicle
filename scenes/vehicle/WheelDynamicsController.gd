@@ -58,7 +58,7 @@ func update(
 		surface_mu
 	)
 
-	rolling_resistance = wheel.tire_model.get_rolling_resistance(
+	rolling_resistance = wheel.tire.get_rolling_resistance(
 		suspension_load,
 		longitudinal_velocity
 	)

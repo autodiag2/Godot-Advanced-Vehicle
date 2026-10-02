@@ -79,7 +79,7 @@ func _physics_process(delta: float) -> void:
 			abs(wheel.spin) > 10.0 or
 			abs(z_vel) > 1.0
 		):
-			wheel.tire_model.update_wear(
+			wheel.tire.update_wear(
 				delta,
 				wheel.slip,
 				tire_load,
@@ -92,7 +92,7 @@ func _physics_process(delta: float) -> void:
 		0.0
 	)
 
-	wheel.tire_model.update_temperature(
+	wheel.tire.update_temperature(
 		wheel.slip,
 		tire_load,
 		local_vel.length(),
@@ -121,7 +121,7 @@ func apply_forces(opposite_comp, delta):
 			get_collision_point().distance_to(
 				global_transform.origin
 			) -
-			wheel.tire_model.radius
+			wheel.tire.radius
 		)
 
 		var suspension_load := suspension.update(
@@ -169,7 +169,7 @@ func apply_forces(opposite_comp, delta):
 		sign(wheel.spin) *
 		delta *
 		2.0 /
-		wheel.wheel_inertia
+		wheel.inertia
 	)
 
 	return 0.0

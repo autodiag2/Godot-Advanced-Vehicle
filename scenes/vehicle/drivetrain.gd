@@ -153,7 +153,7 @@ func differential(torque: float, brake_torque, wheels, diff: DiffParameters, del
 			net_torque += t1 + t2
 			
 			var avg_spin = (wheels[0].get_spin() + wheels[1].get_spin()) * 0.5
-			var total_inertia = wheels[0].wheel.wheel_inertia + drive_inertia + wheels[1].wheel.wheel_inertia
+			var total_inertia = wheels[0].wheel.inertia + drive_inertia + wheels[1].wheel.inertia
 			var brake_direction :float = sign(avg_spin)
 
 			if brake_direction == 0:
@@ -205,11 +205,11 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 				var avg_spin = (avg_front_spin + avg_rear_spin) * 0.5
 				
 				var net_torque := 0.0
-				var combined_wheel_inertias := 0.0
+				var combined_inertias := 0.0
 				
 				for w in wheels:
 					net_torque += w.get_reaction_torque()
-					combined_wheel_inertias += w.wheel.wheel_inertia
+					combined_inertias += w.wheel.inertia
 					
 				net_torque += drive_torque
 				var brake_torque := rear_brake_torque + front_brake_torque
@@ -224,7 +224,7 @@ func drivetrain(torque: float, rear_brake_torque: float, front_brake_torque: flo
 					spin = 0.0
 				else:
 					net_torque -= brake_torque * brake_direction
-					spin = avg_spin + delta * net_torque / (drive_inertia + combined_wheel_inertias)
+					spin = avg_spin + delta * net_torque / (drive_inertia + combined_inertias)
 				
 				wheels[0].set_spin(spin)
 				wheels[1].set_spin(spin)
