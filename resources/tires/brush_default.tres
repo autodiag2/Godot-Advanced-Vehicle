@@ -1,6 +1,6 @@
 [gd_resource type="Resource" format=3]
 
-[ext_resource type="Script" uid="uid://cyyij20ybkg22" path="res://scenes/vehicle/tire/TireBrush.gd" id="1"]
+[ext_resource type="Script" uid="uid://cyyij20ybkg22" path="res://scenes/vehicle/wheel/tire/TireBrush.gd" id="1"]
 
 [resource]
 resource_local_to_scene = true
