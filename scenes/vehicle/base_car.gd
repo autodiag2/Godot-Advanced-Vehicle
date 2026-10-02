@@ -19,8 +19,6 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_fr = $Wheel_fr as RaycastSuspension
 @onready var wheel_bl = $Wheel_bl as RaycastSuspension
 @onready var wheel_br = $Wheel_br as RaycastSuspension
-@onready var engine_audio_player = $EngineSound
-
 
 func _ready() -> void:
 	add_to_group("player_car")
@@ -58,7 +56,8 @@ func _ready() -> void:
 
 	engine_controller.initialize(
 		car_params,
-		self
+		self,
+		$EngineSound
 	)
 
 	powertrain_controller.initialize(
@@ -182,14 +181,9 @@ func _physics_process(delta: float) -> void:
 		engine_controller.fuel_litres = 0.0
 		engine_controller.output_torque = 0.0
 		engine_controller.rpm = 0.0
-		engine_controller.stop_sound(
-			engine_audio_player
-		)
+		engine_controller.stop_sound()
 	else:
-		engine_controller.update_sound(
-			car_params,
-			engine_audio_player
-		)
+		engine_controller.update_sound(car_params)
 
 	motion_controller.apply_aerodynamic_drag(
 		self,

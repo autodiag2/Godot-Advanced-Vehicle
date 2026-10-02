@@ -11,17 +11,20 @@ var output_torque: float = 0.0
 var net_torque: float = 0.0
 var reaction_torque: float = 0.0
 var fuel_litres: float = 0.0
+# View
+var engine_audio_player: AudioStreamPlayer
 
 func initialize(
 	parameters: CarParameters,
-	car: RigidBody3D
+	car: RigidBody3D,
+	audio_player: AudioStreamPlayer
 ) -> void:
 	fuel_litres = (
 		parameters.fuel_tank_size *
 		parameters.fuel_percentage *
 		0.01
 	)
-
+	engine_audio_player = audio_player
 	car.mass += (
 		fuel_litres *
 		PETROL_KG_PER_LITRE
@@ -140,8 +143,7 @@ func consume_fuel(
 	)
 
 func update_sound(
-	parameters: CarParameters,
-	audio_player: AudioStreamPlayer
+	parameters: CarParameters
 ) -> void:
 	var pitch_scale: float = rpm / 1000.0
 
@@ -149,18 +151,16 @@ func update_sound(
 		rpm >= parameters.rpm_idle &&
 		rpm < parameters.max_engine_rpm
 	):
-		if audio_player.stream != parameters.engine_sound:
-			audio_player.set_stream(
+		if engine_audio_player.stream != parameters.engine_sound:
+			engine_audio_player.set_stream(
 				parameters.engine_sound
 			)
 
-		if !audio_player.playing:
-			audio_player.play()
+		if !engine_audio_player.playing:
+			engine_audio_player.play()
 
 	if pitch_scale > 0.1:
-		audio_player.pitch_scale = pitch_scale
+		engine_audio_player.pitch_scale = pitch_scale
 
-func stop_sound(
-	audio_player: AudioStreamPlayer
-) -> void:
-	audio_player.stop()
+func stop_sound() -> void:
+	engine_audio_player.stop()
