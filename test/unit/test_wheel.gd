@@ -265,6 +265,7 @@ func test_brake_locks_stationary_wheel_when_brake_exceeds_drive_torque():
 
 	assert_eq(wheel.spin, 0.0)
 
+
 func test_brake_opposes_positive_spin():
 	wheel.spin = 10.0
 
@@ -302,6 +303,7 @@ func test_brake_opposes_negative_spin():
 		-10.0
 	)
 
+
 func test_brake_uses_net_torque_when_wheel_is_stationary():
 	wheel.spin = 0.0
 
@@ -317,6 +319,38 @@ func test_brake_uses_net_torque_when_wheel_is_stationary():
 		wheel.spin,
 		0.0
 	)
+
+
+func test_strong_brake_does_not_reverse_positive_spin():
+	wheel.spin = 10.0
+
+	var z_vel := wheel.spin * tire.radius
+
+	wheel.apply_torque(
+		0.0,
+		10000.0,
+		0.0,
+		z_vel,
+		0.1
+	)
+
+	assert_eq(wheel.spin, 0.0)
+
+
+func test_strong_brake_does_not_reverse_negative_spin():
+	wheel.spin = -10.0
+
+	var z_vel := wheel.spin * tire.radius
+
+	wheel.apply_torque(
+		0.0,
+		10000.0,
+		0.0,
+		z_vel,
+		0.1
+	)
+
+	assert_eq(wheel.spin, 0.0)
 
 
 func test_zero_delta_does_not_modify_spin():
@@ -415,6 +449,19 @@ func test_low_speed_slip_is_continuous():
 	)
 
 
+func test_stationary_spinning_wheel_has_finite_slip():
+	wheel.spin = 10.0
+
+	wheel.update_slip(
+		0.0,
+		0.0
+	)
+
+	assert_true(
+		is_finite(wheel.slip.y)
+	)
+
+
 func test_stationary_undriven_wheel_has_no_longitudinal_slip():
 	wheel.spin = 0.0
 
@@ -444,6 +491,31 @@ func test_low_speed_slip_uses_speed_threshold():
 
 	assert_almost_eq(
 		wheel.slip.y,
+		expected,
+		0.000001
+	)
+
+func test_drive_inertia_affects_undriven_wheel_synchronization():
+	wheel.spin = 0.0
+
+	var drive_inertia := wheel.inertia
+
+	wheel.apply_torque(
+		0.0,
+		0.0,
+		drive_inertia,
+		1.0 * tire.radius,
+		0.1
+	)
+
+	var expected_target := 1.0
+	var expected := (
+		expected_target -
+		0.0
+	)
+
+	assert_almost_eq(
+		wheel.spin,
 		expected,
 		0.000001
 	)

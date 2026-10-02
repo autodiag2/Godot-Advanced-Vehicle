@@ -37,6 +37,8 @@ func update_slip(
 	z_vel: float,
 	lateral_slip: float
 ) -> void:
+	assert(speed_threshold > 0.0)
+
 	slip.x = lateral_slip
 
 	var slip_speed := maxf(
@@ -73,6 +75,7 @@ func apply_torque(
 	delta: float
 ) -> float:
 	assert(tire != null)
+	assert(brake_torque >= 0.0)
 	assert(drive_inertia >= 0.0)
 
 	if delta <= 0.0:
@@ -86,7 +89,11 @@ func apply_torque(
 	var net_torque := force.y * tire.radius
 	net_torque += drive_torque
 
-	if abs(spin) < 5.0 and brake_torque >= abs(net_torque):
+	if (
+		abs(spin) < 5.0 and
+		brake_torque > 0.0 and
+		brake_torque >= abs(net_torque)
+	):
 		spin = 0.0
 	else:
 		if is_zero_approx(drive_torque):
@@ -96,20 +103,30 @@ func apply_torque(
 				target_spin = z_vel / tire.radius
 
 			var spin_error := target_spin - spin
-			net_torque += spin_error * inertia / delta
+			net_torque += spin_error * total_inertia / delta
 
-		var brake_direction : float = sign(spin)
+		var brake_direction: float = sign(spin)
 
 		if brake_direction == 0.0:
 			brake_direction = sign(net_torque)
 
 		net_torque -= brake_torque * brake_direction
 
-		spin += (
+		var spin_delta := (
 			delta *
 			net_torque /
 			total_inertia
 		)
+
+		var next_spin := spin + spin_delta
+
+		if (
+			spin != 0.0 and
+			sign(next_spin) != sign(spin)
+		):
+			spin = 0.0
+		else:
+			spin = next_spin
 
 	if is_zero_approx(drive_torque):
 		return 0.0
