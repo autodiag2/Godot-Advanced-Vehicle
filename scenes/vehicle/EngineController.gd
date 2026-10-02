@@ -1,0 +1,166 @@
+class_name EngineController
+extends RefCounted
+
+const PETROL_KG_PER_LITRE: float = 0.7489
+const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
+const NEWTON_METRE_RPM_TO_KW: int = 9549
+
+var rpm: float = 0.0
+var angular_velocity: float = 0.0
+var output_torque: float = 0.0
+var net_torque: float = 0.0
+var reaction_torque: float = 0.0
+var fuel_litres: float = 0.0
+
+func initialize(
+	parameters: CarParameters,
+	car: RigidBody3D
+) -> void:
+	fuel_litres = (
+		parameters.fuel_tank_size *
+		parameters.fuel_percentage *
+		0.01
+	)
+
+	car.mass += (
+		fuel_litres *
+		PETROL_KG_PER_LITRE
+	)
+
+func update(
+	parameters: CarParameters,
+	throttle_input: float,
+	delta: float
+) -> void:
+	output_torque = calculate_torque(
+		rpm,
+		throttle_input,
+		parameters
+	)
+
+	net_torque = (
+		output_torque +
+		reaction_torque
+	)
+
+	rpm += (
+		RPM_PER_RADIAN_PER_SECOND *
+		delta *
+		net_torque /
+		parameters.engine_moment
+	)
+
+	angular_velocity = (
+		rpm /
+		RPM_PER_RADIAN_PER_SECOND
+	)
+
+	if rpm >= parameters.max_engine_rpm:
+		output_torque = 0.0
+		rpm -= 500.0
+
+func calculate_torque(
+	engine_rpm: float,
+	throttle_input: float,
+	parameters: CarParameters
+) -> float:
+	var rpm_factor: float = clamp(
+		engine_rpm /
+		parameters.max_engine_rpm,
+		0.0,
+		1.0
+	)
+
+	var torque_curve_factor: float = (
+		parameters.torque_curve.sample_baked(
+			rpm_factor
+		)
+	)
+
+	var engine_braking_torque: float = (
+		-parameters.engine_brake *
+		rpm_factor
+	)
+
+	var maximum_torque: float = (
+		torque_curve_factor *
+		parameters.max_torque
+	)
+
+	var throttle_factor := (
+		parameters.throttle_model.sample_baked(
+			throttle_input
+		)
+	)
+
+	return lerpf(
+		engine_braking_torque,
+		maximum_torque,
+		throttle_factor
+	)
+
+func clamp_to_idle(parameters: CarParameters) -> void:
+	rpm = max(
+		rpm,
+		parameters.rpm_idle
+	)
+
+func consume_fuel(
+	parameters: CarParameters,
+	car: RigidBody3D,
+	delta: float
+) -> void:
+	var fuel_consumed: float = (
+		parameters.engine_bsfc *
+		max(output_torque, 0.0) *
+		rpm *
+		delta /
+		(
+			3600.0 *
+			PETROL_KG_PER_LITRE *
+			NEWTON_METRE_RPM_TO_KW
+		)
+	)
+
+	fuel_consumed = min(
+		fuel_consumed,
+		fuel_litres
+	)
+
+	fuel_consumed = max(
+		fuel_consumed,
+		0.0
+	)
+
+	fuel_litres -= fuel_consumed
+
+	car.mass -= (
+		fuel_consumed *
+		PETROL_KG_PER_LITRE
+	)
+
+func update_sound(
+	parameters: CarParameters,
+	audio_player: AudioStreamPlayer
+) -> void:
+	var pitch_scale: float = rpm / 1000.0
+
+	if (
+		rpm >= parameters.rpm_idle &&
+		rpm < parameters.max_engine_rpm
+	):
+		if audio_player.stream != parameters.engine_sound:
+			audio_player.set_stream(
+				parameters.engine_sound
+			)
+
+		if !audio_player.playing:
+			audio_player.play()
+
+	if pitch_scale > 0.1:
+		audio_player.pitch_scale = pitch_scale
+
+func stop_sound(
+	audio_player: AudioStreamPlayer
+) -> void:
+	audio_player.stop()
