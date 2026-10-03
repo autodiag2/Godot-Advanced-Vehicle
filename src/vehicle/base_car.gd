@@ -2,7 +2,7 @@ class_name BaseCar
 extends RigidBody3D
 
 @export var car_params := CarParameters.new()
-@export var joystick: Control
+var joystick: Control
 const MPS_TO_KPH: float = 3.6
 
 ######## CONSTANTS ########
@@ -20,6 +20,9 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_fr = $Wheel_fr as RaycastSuspension
 @onready var wheel_bl = $Wheel_bl as RaycastSuspension
 @onready var wheel_br = $Wheel_br as RaycastSuspension
+
+func set_joystick(value: Control) -> void:
+	joystick = value
 
 func getBrakePadsUsagePercent() -> Array:
 	return [

@@ -1,7 +1,5 @@
 extends TouchScreenButton
 
-@export var car: BaseCar
-
 enum State {
 	OFF,
 	CONTACT,
@@ -19,23 +17,29 @@ func _ready() -> void:
 	texture_normal = key_turn_on
 	pressed.connect(_on_pressed)
 
-
 func _on_pressed() -> void:
+	var car := get_tree().current_scene.find_child(
+		"RigidBodyCar",
+		true,
+		false
+	) as BaseCar
+
+	if not car:
+		return
+
 	match state:
 		State.OFF:
 			state = State.CONTACT
 			texture_normal = key_contact_on
 
 		State.CONTACT:
-			if car:
-				car.start()
+			car.start()
 
 			state = State.ENGINE_ON
 			texture_normal = key_engine_on
 
 		State.ENGINE_ON:
-			if car:
-				car.stop()
+			car.stop()
 
 			state = State.OFF
 			texture_normal = key_turn_on

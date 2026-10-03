@@ -54,8 +54,12 @@ func load_vehicle(scene: PackedScene) -> void:
 	var car := current_vehicle.find_child("RigidBodyCar", true, false) as BaseCar
 	assert(car != null)
 
-	if hud != null && hud.has_method("set_vehicle"):
-		hud.set_vehicle(car)
+	if hud != null:
+		var joystick := hud.find_child("Joystick", true, false) as Control
+		assert(joystick != null)
+		car.set_joystick(joystick)
+		if hud.has_method("set_vehicle"):
+			hud.set_vehicle(car)
 
 func show_setup_screen() -> void:
 	if setup_screen != null:

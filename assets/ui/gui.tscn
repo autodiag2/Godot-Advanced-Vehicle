@@ -85,7 +85,7 @@ offset_left = -283.0
 offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
-joystick = NodePath("../Virtual Joystick")
+joystick = NodePath("../Joystick")
 
 [node name="RenderStats" parent="." unique_id=401350761 instance=ExtResource("4_4dmvl")]
 layout_mode = 1
@@ -131,7 +131,7 @@ scale = Vector2(0.07416269, 0.07177036)
 texture_normal = ExtResource("12_a5p4c")
 script = ExtResource("13_q8b65")
 
-[node name="Virtual Joystick" type="Control" parent="." unique_id=842936399]
+[node name="Joystick" type="Control" parent="." unique_id=842936399]
 anchors_preset = 0
 offset_left = 843.0
 offset_top = 161.0
