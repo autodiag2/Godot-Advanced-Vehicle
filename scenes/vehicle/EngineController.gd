@@ -278,7 +278,7 @@ func update_sound(
 	var pitch_scale: float = rpm / 1000.0
 
 	if (
-		rpm >= parameters.rpm_idle &&
+		rpm > 0.0 &&
 		rpm < parameters.max_engine_rpm
 	):
 		if engine_audio_player.stream != parameters.engine_sound:
@@ -289,8 +289,7 @@ func update_sound(
 		if !engine_audio_player.playing:
 			engine_audio_player.play()
 
-		if pitch_scale > 0.1:
-			engine_audio_player.pitch_scale = pitch_scale
+		engine_audio_player.pitch_scale = pitch_scale
 	else:
 		if engine_audio_player.playing:
 			engine_audio_player.stop()
