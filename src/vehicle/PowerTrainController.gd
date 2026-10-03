@@ -3,15 +3,39 @@ extends RefCounted
 
 var drivetrain := DriveTrain.new()
 var clutch := Clutch.new()
+var wheel_fl: RaycastSuspension
+var wheel_fr: RaycastSuspension
+var wheel_bl: RaycastSuspension
+var wheel_br: RaycastSuspension
 
 var clutch_reaction_torque: float = 0.0
 var wheel_drive_torque: float = 0.0
 
-var average_front_wheel_speed: float = 0.0
-var average_rear_wheel_speed: float = 0.0
+var average_front_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_fl.wheel.spin +
+				wheel_fr.wheel.spin
+			) * 0.5
+		)
 
+var average_rear_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_bl.wheel.spin +
+				wheel_br.wheel.spin
+			) * 0.5
+		)
 
-func initialize(parameters: CarParameters) -> void:
+func initialize(
+	parameters: CarParameters,
+	wheel_fl_arg: RaycastSuspension,
+	wheel_fr_arg: RaycastSuspension,
+	wheel_bl_arg: RaycastSuspension,
+	wheel_br_arg: RaycastSuspension
+) -> void:
 	clutch.friction = parameters.clutch_friction
 
 	drivetrain.drivetrain_params = (
@@ -21,6 +45,10 @@ func initialize(parameters: CarParameters) -> void:
 	drivetrain.set_input_inertia(
 		parameters.engine_moment
 	)
+	wheel_fl = wheel_fl_arg
+	wheel_fr = wheel_fr_arg
+	wheel_bl = wheel_bl_arg
+	wheel_br = wheel_br_arg
 
 
 func update_automatic_shifting(
@@ -107,36 +135,10 @@ func update_automatic_shifting(
 		longitudinal_speed
 	)
 
-
-func update_wheel_speeds(
-	front_left_wheel: RaycastSuspension,
-	front_right_wheel: RaycastSuspension,
-	rear_left_wheel: RaycastSuspension,
-	rear_right_wheel: RaycastSuspension
-) -> void:
-	average_rear_wheel_speed = (
-		(
-			rear_left_wheel.wheel.spin +
-			rear_right_wheel.wheel.spin
-		) * 0.5
-	)
-
-	average_front_wheel_speed = (
-		(
-			front_left_wheel.wheel.spin +
-			front_right_wheel.wheel.spin
-		) * 0.5
-	)
-
-
 func update(
 	engine: EngineController,
 	parameters: CarParameters,
 	clutch_input: float,
-	front_left_wheel: RaycastSuspension,
-	front_right_wheel: RaycastSuspension,
-	rear_left_wheel: RaycastSuspension,
-	rear_right_wheel: RaycastSuspension,
 	front_left_brake_torque: float,
 	front_right_brake_torque: float,
 	rear_left_brake_torque: float,
@@ -153,13 +155,6 @@ func update(
 		rear_right_brake_torque
 	)
 
-	update_wheel_speeds(
-		front_left_wheel,
-		front_right_wheel,
-		rear_left_wheel,
-		rear_right_wheel
-	)
-
 	var gearing := drivetrain.get_gearing()
 
 	if gearing == 0.0:
@@ -173,10 +168,10 @@ func update(
 			rear_brake_torque,
 			front_brake_torque,
 			[
-				rear_left_wheel,
-				rear_right_wheel,
-				front_left_wheel,
-				front_right_wheel
+				wheel_bl,
+				wheel_br,
+				wheel_fl,
+				wheel_fr
 			],
 			clutch_input,
 			delta
@@ -253,10 +248,10 @@ func update(
 		rear_brake_torque,
 		front_brake_torque,
 		[
-			rear_left_wheel,
-			rear_right_wheel,
-			front_left_wheel,
-			front_right_wheel
+			wheel_bl,
+			wheel_br,
+			wheel_fl,
+			wheel_fr
 		],
 		clutch_input,
 		delta

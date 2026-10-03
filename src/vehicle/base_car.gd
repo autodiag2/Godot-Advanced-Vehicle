@@ -75,7 +75,11 @@ func _ready() -> void:
 	engine_controller.add_listener(engine_starter_controller)
 
 	powertrain_controller.initialize(
-		car_params
+		car_params,
+		wheel_fl,
+		wheel_fr,
+		wheel_bl,
+		wheel_br
 	)
 
 	motion_controller.initialize(
@@ -125,13 +129,6 @@ func _physics_process(delta: float) -> void:
 		car_params.max_steer
 	)
 
-	powertrain_controller.update_wheel_speeds(
-		wheel_fl,
-		wheel_fr,
-		wheel_bl,
-		wheel_br
-	)
-
 	engine_controller.update(
 		car_params,
 		input_controller.throttle,
@@ -158,10 +155,6 @@ func _physics_process(delta: float) -> void:
 		engine_controller,
 		car_params,
 		input_controller.clutch,
-		wheel_fl,
-		wheel_fr,
-		wheel_bl,
-		wheel_br,
 		brake_controller.front_left_brake_torque,
 		brake_controller.front_right_brake_torque,
 		brake_controller.rear_left_brake_torque,

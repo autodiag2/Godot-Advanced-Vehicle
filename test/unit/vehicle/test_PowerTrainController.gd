@@ -28,7 +28,15 @@ func test_powertrain_initializes_clutch_friction() -> void:
 	var parameters := _create_parameters()
 	parameters.clutch_friction = 300.0
 
-	powertrain.initialize(parameters)
+	var wheels := _create_wheels()
+
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	assert_float_eq(
 		powertrain.clutch.friction,
@@ -39,8 +47,15 @@ func test_powertrain_initializes_clutch_friction() -> void:
 func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
 	var parameters := _create_parameters()
 	parameters.engine_moment = 2.5
+	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	assert_float_eq(
 		powertrain.drivetrain._engine_inertia,
@@ -48,18 +63,14 @@ func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
 	)
 
 
-func test_update_wheel_speeds_calculates_rear_average() -> void:
+func test_average_rear_wheel_speed_is_calculated_from_wheels() -> void:
 	var wheels := _create_wheels()
+
+	powertrain.wheel_bl = wheels[2]
+	powertrain.wheel_br = wheels[3]
 
 	wheels[2].wheel.spin = 10.0
 	wheels[3].wheel.spin = 20.0
-
-	powertrain.update_wheel_speeds(
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3]
-	)
 
 	assert_float_eq(
 		powertrain.average_rear_wheel_speed,
@@ -69,18 +80,14 @@ func test_update_wheel_speeds_calculates_rear_average() -> void:
 	_free_wheels(wheels)
 
 
-func test_update_wheel_speeds_calculates_front_average() -> void:
+func test_average_front_wheel_speed_is_calculated_from_wheels() -> void:
 	var wheels := _create_wheels()
+
+	powertrain.wheel_fl = wheels[0]
+	powertrain.wheel_fr = wheels[1]
 
 	wheels[0].wheel.spin = 10.0
 	wheels[1].wheel.spin = 30.0
-
-	powertrain.update_wheel_speeds(
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3]
-	)
 
 	assert_float_eq(
 		powertrain.average_front_wheel_speed,
@@ -95,7 +102,13 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
@@ -104,10 +117,6 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -140,7 +149,14 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.drivetrain.set_selected_gear(1)
 
 	engine.angular_velocity = 100.0
@@ -150,10 +166,6 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -176,7 +188,13 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.drivetrain.set_selected_gear(1)
 
@@ -187,10 +205,6 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -213,7 +227,14 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.drivetrain.set_selected_gear(1)
 
 	engine.angular_velocity = 100.0
@@ -223,10 +244,6 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -247,7 +264,14 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.clutch.locked = true
 
 	engine.angular_velocity = 100.0
@@ -257,10 +281,6 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -282,7 +302,14 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.drivetrain.set_selected_gear(1)
 
 	engine.angular_velocity = 100.0
@@ -292,10 +319,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -311,10 +334,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -337,7 +356,13 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.drivetrain.set_selected_gear(0)
 
@@ -348,10 +373,6 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -382,6 +403,7 @@ func _create_parameters() -> CarParameters:
 	parameters.drivetrain_params.drivetype = (
 		DriveTrainParameters.DRIVE_TYPE.RWD
 	)
+
 	parameters.drivetrain_params.rear_diff = DiffParameters.new()
 	parameters.drivetrain_params.front_diff = DiffParameters.new()
 	parameters.drivetrain_params.center_diff = DiffParameters.new()
@@ -399,6 +421,7 @@ func _create_engine(
 
 	return engine
 
+
 func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 	var parameters := _create_parameters()
 	var engine := _create_engine(parameters)
@@ -406,16 +429,18 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 
 	powertrain.clutch_reaction_torque = 100.0
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.update(
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -438,16 +463,18 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 
 	powertrain.wheel_drive_torque = 100.0
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.update(
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -470,16 +497,18 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 
 	powertrain.clutch.locked = true
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.update(
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -501,7 +530,13 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 
 	powertrain.drivetrain.reaction_torque = 100.0
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
 
 	powertrain.drivetrain.set_selected_gear(0)
 
@@ -509,10 +544,6 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 		engine,
 		parameters,
 		1.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -528,20 +559,21 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	_free_wheels(wheels)
 
 
-func test_update_wheel_speeds_updates_wheel_speeds() -> void:
+func test_average_wheel_speeds_are_live_getters() -> void:
 	var wheels := _create_wheels()
 
-	wheels[0].wheel.spin = 10.0
-	wheels[1].wheel.spin = 30.0
-	wheels[2].wheel.spin = 20.0
-	wheels[3].wheel.spin = 40.0
-
-	powertrain.update_wheel_speeds(
+	powertrain.initialize(
+		_create_parameters(),
 		wheels[0],
 		wheels[1],
 		wheels[2],
 		wheels[3]
 	)
+
+	wheels[0].wheel.spin = 10.0
+	wheels[1].wheel.spin = 30.0
+	wheels[2].wheel.spin = 20.0
+	wheels[3].wheel.spin = 40.0
 
 	assert_float_eq(
 		powertrain.average_front_wheel_speed,
@@ -553,7 +585,23 @@ func test_update_wheel_speeds_updates_wheel_speeds() -> void:
 		30.0
 	)
 
+	wheels[0].wheel.spin = 50.0
+	wheels[1].wheel.spin = 70.0
+	wheels[2].wheel.spin = 60.0
+	wheels[3].wheel.spin = 80.0
+
+	assert_float_eq(
+		powertrain.average_front_wheel_speed,
+		60.0
+	)
+
+	assert_float_eq(
+		powertrain.average_rear_wheel_speed,
+		70.0
+	)
+
 	_free_wheels(wheels)
+
 
 func _create_wheels() -> Array:
 	var wheels := [
@@ -564,9 +612,10 @@ func _create_wheels() -> Array:
 	]
 
 	for suspension in wheels:
-		suspension.wheel.setup(TireModel.new(), )
+		suspension.wheel.setup(TireModel.new())
 
 	return wheels
+
 
 func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	var parameters := _create_parameters()
@@ -575,20 +624,22 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 	parameters.rpm_idle = 800.0
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.drivetrain.set_selected_gear(1)
 
 	engine.rpm = parameters.rpm_idle
 
-	# First run with a gear engaged.
 	powertrain.update(
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -602,10 +653,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -620,12 +667,20 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 	_free_wheels(wheels)
 
+
 func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	var parameters := _create_parameters()
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.initialize(parameters)
+	powertrain.initialize(
+		parameters,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
 	powertrain.drivetrain.set_selected_gear(1)
 
 	engine.angular_velocity = 100.0
@@ -635,10 +690,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -652,10 +703,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		wheels[0],
-		wheels[1],
-		wheels[2],
-		wheels[3],
 		0.0,
 		0.0,
 		0.0,
@@ -674,6 +721,7 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	)
 
 	_free_wheels(wheels)
+
 
 func _free_wheels(wheels: Array) -> void:
 	for wheel in wheels:
