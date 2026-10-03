@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://dcxp356dtbg48" path="res://src/camera.gd" id="2_wdp2j"]
 [ext_resource type="Script" uid="uid://d1awu17tnr7mo" path="res://src/vehicle/wheel/RaycastSuspension.gd" id="3_vgb55"]
 [ext_resource type="Material" path="res://assets/vehicle/tire.tres" id="4_jbdug"]
-[ext_resource type="PackedScene" uid="uid://djbt3ltge1aat" path="res://assets/ui/gui.tscn" id="5_2lt1x"]
 
 [sub_resource type="CylinderMesh" id="10"]
 material = ExtResource("4_jbdug")
@@ -64,7 +63,3 @@ skeleton = NodePath("")
 
 [node name="CamTarget" type="Marker3D" parent="." unique_id=683028303]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.17515, 0)
-
-[node name="Gui" parent="." unique_id=1625177410 instance=ExtResource("5_2lt1x")]
-
-[editable path="Gui"]

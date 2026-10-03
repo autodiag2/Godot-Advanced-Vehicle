@@ -221,5 +221,4 @@ visible = false
 mesh = SubResource("ArrayMesh_ut2q0")
 
 [editable path="RigidBodyCar"]
-[editable path="RigidBodyCar/Gui"]
 [editable path="RigidBodyCar/sport_car"]

@@ -4,6 +4,17 @@
 [ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://assets/ui/tireinfo_app.tscn" id="2_6tyms"]
 [ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
 [ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://assets/ui/render_stats.tscn" id="4_4dmvl"]
+[ext_resource type="Texture2D" uid="uid://ci00y7m4kyp0t" path="res://assets/ui/handbrake_released.png" id="5_xouy0"]
+[ext_resource type="Texture2D" uid="uid://cvtrwygi5sdib" path="res://assets/ui/handbrake_pressed.png" id="6_cqa07"]
+[ext_resource type="Script" uid="uid://ux8e8chujrtu" path="res://src/ui/handbrake.gd" id="7_kks0w"]
+[ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/ui/gear_up.png" id="8_lkurn"]
+[ext_resource type="Script" uid="uid://377xjj66y52m" path="res://src/ui/gear_up.gd" id="9_l50n0"]
+[ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/ui/gear_down.png" id="10_6t5qj"]
+[ext_resource type="Script" uid="uid://dn205eygyaky3" path="res://src/ui/gear_down.gd" id="11_46dll"]
+[ext_resource type="Texture2D" uid="uid://ou1q0a42l0n" path="res://assets/ui/key_turn_on.png" id="12_a5p4c"]
+[ext_resource type="Script" uid="uid://bqxykt3vicpy5" path="res://src/ui/start_button.gd" id="13_q8b65"]
+[ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="14_cqa07"]
+[ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://src/ui/restart_sim.gd" id="15_kks0w"]
 
 [node name="Gui" type="Control" unique_id=907116754]
 layout_mode = 3
@@ -67,13 +78,14 @@ wheel_fr_path = NodePath("../../Wheel_fr")
 wheel_bl_path = NodePath("../../Wheel_bl")
 wheel_br_path = NodePath("../../Wheel_br")
 
-[node name="InputApp" parent="." unique_id=893328040 instance=ExtResource("3_m5e8j")]
+[node name="InputApp" parent="." unique_id=893328040 node_paths=PackedStringArray("joystick") instance=ExtResource("3_m5e8j")]
 layout_mode = 1
 anchors_preset = 3
 offset_left = -283.0
 offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
+joystick = NodePath("../Virtual Joystick")
 
 [node name="RenderStats" parent="." unique_id=401350761 instance=ExtResource("4_4dmvl")]
 layout_mode = 1
@@ -86,3 +98,53 @@ offset_left = -200.0
 offset_bottom = 100.0
 grow_horizontal = 0
 grow_vertical = 1
+
+[node name="Container" type="Container" parent="." unique_id=129840985]
+layout_mode = 0
+offset_left = -2.0
+offset_top = 277.0
+offset_right = 324.0
+offset_bottom = 493.0
+
+[node name="handbrake" type="TouchScreenButton" parent="Container" unique_id=1239852327]
+position = Vector2(162, 28.999992)
+scale = Vector2(0.09277344, 0.08886718)
+texture_normal = ExtResource("5_xouy0")
+texture_pressed = ExtResource("6_cqa07")
+script = ExtResource("7_kks0w")
+
+[node name="gear_up" type="TouchScreenButton" parent="Container" unique_id=2133296562]
+position = Vector2(40, 17)
+scale = Vector2(0.10644532, 0.111328125)
+texture_normal = ExtResource("8_lkurn")
+script = ExtResource("9_l50n0")
+
+[node name="gear_down" type="TouchScreenButton" parent="Container" unique_id=825227347]
+position = Vector2(33, 125)
+scale = Vector2(0.11425782, 0.10742191)
+texture_normal = ExtResource("10_6t5qj")
+script = ExtResource("11_46dll")
+
+[node name="start_button" type="TouchScreenButton" parent="Container" unique_id=1062803026]
+position = Vector2(160, 133)
+scale = Vector2(0.07416269, 0.07177036)
+texture_normal = ExtResource("12_a5p4c")
+script = ExtResource("13_q8b65")
+
+[node name="Virtual Joystick" type="Control" parent="." unique_id=842936399]
+anchors_preset = 0
+offset_left = 843.0
+offset_top = 161.0
+offset_right = 1135.7339
+offset_bottom = 470.0
+script = ExtResource("14_cqa07")
+metadata/_custom_type_script = "uid://sxtvje6r7qsq"
+
+[node name="Button" type="Button" parent="." unique_id=329067081]
+layout_mode = 0
+offset_left = 463.0
+offset_top = 2.0
+offset_right = 622.1025
+offset_bottom = 95.69223
+text = "Restart sim"
+script = ExtResource("15_kks0w")
