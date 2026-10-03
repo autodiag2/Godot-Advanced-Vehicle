@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ci00y7m4kyp0t"
-path="res://.godot/imported/handbrake_released.png-13c54afebb47068687b31d5b3472dc0f.ctex"
+uid="uid://ou1q0a42l0n"
+path="res://.godot/imported/key_turn_on.png-484e5c87eb2da697158ae5c91f584fc3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/handbrake_released.png"
-dest_files=["res://.godot/imported/handbrake_released.png-13c54afebb47068687b31d5b3472dc0f.ctex"]
+source_file="res://assets/ui/key_turn_on.png"
+dest_files=["res://.godot/imported/key_turn_on.png-484e5c87eb2da697158ae5c91f584fc3.ctex"]
 
 [params]
 

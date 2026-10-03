@@ -3,15 +3,15 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cvtrwygi5sdib"
-path="res://.godot/imported/handbrake_pressed.png-95faab33515645e4595a0a74c1c70e13.ctex"
+path="res://.godot/imported/handbrake_pressed.png-fa9c07684b864ed233f6459bfe3d9863.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/handbrake_pressed.png"
-dest_files=["res://.godot/imported/handbrake_pressed.png-95faab33515645e4595a0a74c1c70e13.ctex"]
+source_file="res://assets/ui/handbrake_pressed.png"
+dest_files=["res://.godot/imported/handbrake_pressed.png-fa9c07684b864ed233f6459bfe3d9863.ctex"]
 
 [params]
 

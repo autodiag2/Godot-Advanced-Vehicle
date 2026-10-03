@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ou1q0a42l0n"
-path="res://.godot/imported/key_turn_on.png-9799335c1523f8b8c3c7e6802131657e.ctex"
+uid="uid://bgamw8rw5t2t6"
+path="res://.godot/imported/gear_up.png-a4929ce4afdbbcaa9391279fe0f557cc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/key_turn_on.png"
-dest_files=["res://.godot/imported/key_turn_on.png-9799335c1523f8b8c3c7e6802131657e.ctex"]
+source_file="res://assets/ui/gear_up.png"
+dest_files=["res://.godot/imported/gear_up.png-a4929ce4afdbbcaa9391279fe0f557cc.ctex"]
 
 [params]
 

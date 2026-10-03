@@ -10,9 +10,9 @@ enum State {
 
 var state: State = State.OFF
 
-var key_turn_on: Texture2D = preload("res://assets/key_turn_on.png")
-var key_contact_on: Texture2D = preload("res://assets/key_contact_on.png")
-var key_engine_on: Texture2D = preload("res://assets/key_engine_on.png")
+var key_turn_on: Texture2D = preload("res://assets/ui/key_turn_on.png")
+var key_contact_on: Texture2D = preload("res://assets/ui/key_contact_on.png")
+var key_engine_on: Texture2D = preload("res://assets/ui/key_engine_on.png")
 
 
 func _ready() -> void:
