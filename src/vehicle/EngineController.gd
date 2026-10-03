@@ -23,11 +23,11 @@ var net_torque: float = 0.0
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var fuel_litres: float = 0.0
+var combustion_running: bool = false
 
 var engine_audio_player: AudioStreamPlayer
 
 var was_running: bool = false
-
 
 var rpm: float:
 	get:
@@ -86,6 +86,7 @@ func initialize(
 	limiter_torque = 0.0
 	reaction_torque = 0.0
 	was_running = false
+	combustion_running = false
 
 	car.mass += (
 		fuel_litres *
@@ -107,15 +108,35 @@ func update(
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
 
-	var was_running_before_update := angular_velocity > 0.0
+	var was_running_before_update : float = angular_velocity > 0.0
 
 	output_torque = calculate_torque(
 		rpm,
 		throttle_input,
-		parameters
+		parameters,
+		combustion_running || starter.get_torque() > 0.0
 	)
 
+	if fuel_litres <= 0.0:
+		output_torque = calculate_torque(
+			rpm,
+			0.0,
+			parameters,
+			false
+		)
+		combustion_running = false
+
 	limiter_torque = 0.0
+
+	if (
+		starter.get_torque() > 0.0 &&
+		rpm >= parameters.rpm_idle &&
+		output_torque > 0.0
+	):
+		combustion_running = true
+
+		for listener in listeners:
+			listener.onCombustionSelfSustaining(self)
 
 	net_torque = (
 		output_torque +
@@ -177,11 +198,13 @@ func update(
 		angular_velocity,
 		0.0
 	)
-
+	
 	if (
 		was_running_before_update &&
 		angular_velocity == 0.0
 	):
+		combustion_running = false
+
 		for listener in listeners:
 			listener.onStall(self)
 
@@ -191,11 +214,12 @@ func update(
 func calculate_torque(
 	engine_rpm: float,
 	throttle_input: float,
-	parameters: CarParameters
+	parameters: CarParameters,
+	combustion_enabled: bool = true
 ) -> float:
 	assert(parameters != null)
 	assert(parameters.max_engine_rpm > 0.0)
-	#assert(engine_rpm >= 0.0)
+	assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 
@@ -223,10 +247,13 @@ func calculate_torque(
 		)
 	)
 
-	var combustion_torque := (
-		maximum_torque *
-		throttle_factor
-	)
+	var combustion_torque := 0.0
+
+	if combustion_enabled:
+		combustion_torque = (
+			maximum_torque *
+			throttle_factor
+		)
 
 	var engine_friction_torque := (
 		parameters.engine_brake *
@@ -236,6 +263,7 @@ func calculate_torque(
 	var idle_torque := 0.0
 
 	if (
+		combustion_enabled &&
 		throttle_input == 0.0 &&
 		engine_rpm > 0.0 &&
 		engine_rpm < parameters.rpm_idle

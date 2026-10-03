@@ -246,6 +246,7 @@ func test_idle_control_is_zero_at_idle() -> void:
 func test_update_accelerates_engine() -> void:
 	engine.rpm = 1000.0
 	engine.reaction_torque = 0.0
+	engine.combustion_running = true
 
 	var initial_angular_velocity := engine.angular_velocity
 
@@ -373,6 +374,7 @@ func test_limiter_keeps_rotational_state_consistent() -> void:
 func test_limiter_does_not_modify_output_torque() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
+	engine.combustion_running = true
 
 	engine.update(
 		parameters,
@@ -630,4 +632,94 @@ func test_stop_sound() -> void:
 
 	assert_false(
 		audio_player.playing
+	)
+
+func test_engine_does_not_start_from_zero_rpm_without_starter() -> void:
+	engine.rpm = 0.0
+
+	engine.update(
+		parameters,
+		1.0,
+		0.1
+	)
+
+	assert_eq(
+		engine.rpm,
+		0.0
+	)
+
+func test_starter_increases_engine_rpm() -> void:
+	engine.rpm = 0.0
+	starter.start()
+
+	engine.update(
+		parameters,
+		0.0,
+		0.1
+	)
+
+	assert_gt(
+		engine.rpm,
+		0.0
+	)
+
+func test_starter_remains_active_below_idle() -> void:
+	engine.rpm = 0.0
+	starter.start()
+
+	engine.update(
+		parameters,
+		0.0,
+		0.001
+	)
+
+	assert_true(
+		starter.active
+	)
+
+func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
+	engine.rpm = parameters.rpm_idle
+	starter.start()
+	assert_eq(
+		engine.starter,
+		starter
+	)
+	engine.update(
+		parameters,
+		0.0,
+		0.001
+	)
+
+	assert_false(
+		starter.active
+	)
+	
+func test_engine_produces_no_combustion_torque_without_fuel() -> void:
+	engine.rpm = parameters.rpm_idle
+	engine.fuel_litres = 0.0
+
+	engine.update(
+		parameters,
+		1.0,
+		0.0
+	)
+
+	assert_lte(
+		engine.output_torque,
+		0.0
+	)
+
+func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
+	engine.rpm = parameters.rpm_idle
+	engine.combustion_running = true
+	engine.fuel_litres = 0.0
+
+	engine.update(
+		parameters,
+		0.0,
+		1.0
+	)
+
+	assert_false(
+		engine.combustion_running
 	)
