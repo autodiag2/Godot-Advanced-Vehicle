@@ -10,8 +10,10 @@
 [ext_resource type="Script" uid="uid://377xjj66y52m" path="res://levels/gear_up.gd" id="7_vons5"]
 [ext_resource type="Script" uid="uid://dn205eygyaky3" path="res://levels/gear_down.gd" id="8_legw5"]
 [ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/gear_down.png" id="9_re8x6"]
+[ext_resource type="Script" uid="uid://bqxykt3vicpy5" path="res://levels/start_button.gd" id="11_54i5j"]
 [ext_resource type="Script" uid="uid://bf7tq3qn7evti" path="res://levels/CarBridge.gd" id="11_re8x6"]
 [ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://levels/restart_scene.gd" id="11_wqmfy"]
+[ext_resource type="Texture2D" uid="uid://ou1q0a42l0n" path="res://assets/key_turn_on.png" id="11_wrd2w"]
 [ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://levels/restart_sim.gd" id="12_mla2a"]
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://levels/close.gd" id="13_oxfhy"]
 
@@ -151,6 +153,13 @@ texture_normal = ExtResource("4_i8ckm")
 texture_pressed = ExtResource("5_vons5")
 visibility_mode = 1
 script = ExtResource("4_w32yo")
+
+[node name="startButton" type="TouchScreenButton" parent="Sportcar/RigidBodyCar/Gui/Control" unique_id=106969908 node_paths=PackedStringArray("car")]
+position = Vector2(233, 278.5)
+scale = Vector2(0.092503995, 0.09370018)
+texture_normal = ExtResource("11_wrd2w")
+script = ExtResource("11_54i5j")
+car = NodePath("../../..")
 
 [node name="MenuLaunchBtn" type="Button" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="6" unique_id=360794777]
 layout_mode = 1
