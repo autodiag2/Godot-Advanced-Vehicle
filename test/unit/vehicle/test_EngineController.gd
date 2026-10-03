@@ -4,6 +4,7 @@ extends GutTest
 var engine: EngineController
 var parameters: CarParameters
 var car: RigidBody3D
+var starter: EngineStarterController = EngineStarterController.new()
 var audio_player: AudioStreamPlayer
 
 
@@ -55,6 +56,7 @@ func before_each() -> void:
 	engine.initialize(
 		parameters,
 		car,
+		starter,
 		audio_player
 	)
 
@@ -94,6 +96,7 @@ func test_initialize_resets_rotational_state() -> void:
 	engine.initialize(
 		parameters,
 		car,
+		starter,
 		audio_player
 	)
 
@@ -575,7 +578,7 @@ func test_update_sound_sets_pitch_from_rpm() -> void:
 	)
 
 
-func test_update_sound_stops_below_idle() -> void:
+func test_update_sound_plays_below_idle() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
 	engine.rpm = parameters.rpm_idle
 
@@ -589,7 +592,7 @@ func test_update_sound_stops_below_idle() -> void:
 
 	engine.update_sound(parameters)
 
-	assert_false(
+	assert_true(
 		audio_player.playing
 	)
 

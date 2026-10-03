@@ -11,6 +11,7 @@ var input_controller := CarInputController.new()
 var steering_controller := SteeringController.new()
 var brake_controller := BrakeController.new()
 var engine_controller := EngineController.new()
+var engine_starter_controller := EngineStarterController.new()
 var powertrain_controller := PowertrainController.new()
 var suspension := SuspensionSystemController.new()
 var motion_controller := VehicleMotionController.new()
@@ -65,8 +66,10 @@ func _ready() -> void:
 	engine_controller.initialize(
 		car_params,
 		self,
+		engine_starter_controller,
 		$EngineSound
 	)
+	engine_controller.add_listener(engine_starter_controller)
 
 	powertrain_controller.initialize(
 		car_params
@@ -76,6 +79,11 @@ func _ready() -> void:
 		self
 	)
 
+func start():
+	engine_starter_controller.start()
+
+func stop():
+	pass
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ShiftUp"):

@@ -7,6 +7,16 @@ const NEWTON_METRE_RPM_TO_KW: int = 9549
 const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
 
+class Listener:
+	func onCombustionSelfSustaining(engine: EngineController) -> void:
+		pass
+
+	func onStall(engine: EngineController) -> void:
+		pass
+
+
+var listeners: Array[Listener] = []
+var starter: EngineStarterController
 var angular_velocity: float = 0.0
 var output_torque: float = 0.0
 var net_torque: float = 0.0
@@ -14,8 +24,9 @@ var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var fuel_litres: float = 0.0
 
-# View
 var engine_audio_player: AudioStreamPlayer
+
+var was_running: bool = false
 
 
 var rpm: float:
@@ -32,14 +43,29 @@ var rpm: float:
 		)
 
 
+func add_listener(listener: Listener) -> void:
+	assert(listener != null)
+
+	if !listeners.has(listener):
+		listeners.append(listener)
+
+
+func remove_listener(listener: Listener) -> void:
+	assert(listener != null)
+
+	listeners.erase(listener)
+
+
 func initialize(
 	parameters: CarParameters,
 	car: RigidBody3D,
+	starter_arg: EngineStarterController,
 	audio_player: AudioStreamPlayer
 ) -> void:
 	assert(parameters != null)
 	assert(car != null)
 	assert(audio_player != null)
+	assert(starter_arg != null)
 	assert(parameters.fuel_tank_size >= 0.0)
 	assert(parameters.fuel_percentage >= 0.0)
 	assert(parameters.fuel_percentage <= 100.0)
@@ -55,9 +81,11 @@ func initialize(
 	engine_audio_player = audio_player
 	angular_velocity = 0.0
 	output_torque = 0.0
+	starter = starter_arg
 	net_torque = 0.0
 	limiter_torque = 0.0
 	reaction_torque = 0.0
+	was_running = false
 
 	car.mass += (
 		fuel_litres *
@@ -79,6 +107,8 @@ func update(
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
 
+	var was_running_before_update := angular_velocity > 0.0
+
 	output_torque = calculate_torque(
 		rpm,
 		throttle_input,
@@ -89,8 +119,17 @@ func update(
 
 	net_torque = (
 		output_torque +
+		starter.get_torque() +
 		reaction_torque
 	)
+
+	if (
+		starter.get_torque() > 0.0 &&
+		rpm > 0.0 &&
+		output_torque > 0.0
+	):
+		for listener in listeners:
+			listener.onCombustionSelfSustaining(self)
 
 	if (
 		rpm >= parameters.max_engine_rpm &&
@@ -138,6 +177,15 @@ func update(
 		angular_velocity,
 		0.0
 	)
+
+	if (
+		was_running_before_update &&
+		angular_velocity == 0.0
+	):
+		for listener in listeners:
+			listener.onStall(self)
+
+	was_running = angular_velocity > 0.0
 
 
 func calculate_torque(
