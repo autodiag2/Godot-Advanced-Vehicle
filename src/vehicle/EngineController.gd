@@ -130,8 +130,8 @@ func update(
 
 	if (
 		starter.get_torque() > 0.0 &&
-		rpm >= parameters.rpm_idle &&
-		output_torque > 0.0
+		fuel_litres > 0.0 &&
+		rpm >= parameters.rpm_idle
 	):
 		combustion_running = true
 
@@ -143,14 +143,6 @@ func update(
 		starter.get_torque() +
 		reaction_torque
 	)
-
-	if (
-		starter.get_torque() > 0.0 &&
-		rpm > 0.0 &&
-		output_torque > 0.0
-	):
-		for listener in listeners:
-			listener.onCombustionSelfSustaining(self)
 
 	if (
 		rpm >= parameters.max_engine_rpm &&

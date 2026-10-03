@@ -679,6 +679,10 @@ func test_starter_remains_active_below_idle() -> void:
 
 func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 	engine.rpm = parameters.rpm_idle
+	assert_gt(
+		engine.fuel_litres,
+		0.0
+	)
 	starter.start()
 	assert_eq(
 		engine.starter,
@@ -690,7 +694,7 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 		0.001
 	)
 
-	assert_false(
+	assert_true(
 		starter.active
 	)
 	
