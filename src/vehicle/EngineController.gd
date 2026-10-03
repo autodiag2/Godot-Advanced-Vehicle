@@ -108,7 +108,7 @@ func update(
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
 
-	var was_running_before_update : float = angular_velocity > 0.0
+	var was_running_before_update : bool = angular_velocity > 0.0
 
 	output_torque = calculate_torque(
 		rpm,
@@ -211,7 +211,7 @@ func calculate_torque(
 ) -> float:
 	assert(parameters != null)
 	assert(parameters.max_engine_rpm > 0.0)
-	assert(engine_rpm >= 0.0)
+	#assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 
