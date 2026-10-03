@@ -180,14 +180,6 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
-	if engine_controller.fuel_litres <= 0.0:
-		engine_controller.fuel_litres = 0.0
-		engine_controller.output_torque = 0.0
-		engine_controller.rpm = 0.0
-		engine_controller.stop_sound()
-	else:
-		engine_controller.update_sound(car_params)
-
 	motion_controller.apply_aerodynamic_drag(
 		self,
 		car_params

@@ -26,7 +26,7 @@ var fuel_litres: float = 0.0
 var combustion_running: bool = false
 
 var engine_audio_player: AudioStreamPlayer
-
+var engine_sound: AudioStream
 var was_running: bool = false
 
 var rpm: float:
@@ -41,7 +41,7 @@ var rpm: float:
 			value /
 			RPM_PER_RADIAN_PER_SECOND
 		)
-
+var max_engine_rpm: float = 8000.0
 
 func add_listener(listener: Listener) -> void:
 	assert(listener != null)
@@ -72,7 +72,9 @@ func initialize(
 	assert(parameters.engine_moment > 0.0)
 	assert(parameters.max_engine_rpm > 0.0)
 	assert(parameters.rpm_idle >= 0.0)
-
+	
+	engine_sound = parameters.engine_sound
+	max_engine_rpm = parameters.max_engine_rpm
 	fuel_litres = (
 		parameters.fuel_tank_size *
 		parameters.fuel_percentage *
@@ -332,14 +334,17 @@ func consume_fuel(
 		fuel_consumed *
 		PETROL_KG_PER_LITRE
 	)
+	
+	if fuel_litres <= 0.0:
+		fuel_litres = 0.0
+		output_torque = 0.0
+		rpm = 0.0
+		stop_sound()
+	else:
+		update_sound()
 
 
-func update_sound(
-	parameters: CarParameters
-) -> void:
-	assert(parameters != null)
-	assert(parameters.max_engine_rpm > 0.0)
-	assert(parameters.rpm_idle >= 0.0)
+func update_sound() -> void:
 	assert(engine_audio_player != null)
 	assert(angular_velocity >= 0.0)
 
@@ -347,11 +352,11 @@ func update_sound(
 
 	if (
 		rpm > 0.0 &&
-		rpm < parameters.max_engine_rpm
+		rpm < max_engine_rpm
 	):
-		if engine_audio_player.stream != parameters.engine_sound:
+		if engine_audio_player.stream != engine_sound:
 			engine_audio_player.set_stream(
-				parameters.engine_sound
+				engine_sound
 			)
 
 		if !engine_audio_player.playing:

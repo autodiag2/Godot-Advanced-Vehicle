@@ -559,9 +559,9 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 
 func test_update_sound_starts_engine_sound() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = parameters.rpm_idle
-
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_true(
 		audio_player.playing
@@ -570,9 +570,10 @@ func test_update_sound_starts_engine_sound() -> void:
 
 func test_update_sound_sets_pitch_from_rpm() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = 2000.0
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_float_eq(
 		audio_player.pitch_scale,
@@ -582,9 +583,10 @@ func test_update_sound_sets_pitch_from_rpm() -> void:
 
 func test_update_sound_plays_below_idle() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = parameters.rpm_idle
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_true(
 		audio_player.playing
@@ -592,7 +594,7 @@ func test_update_sound_plays_below_idle() -> void:
 
 	engine.rpm = 500.0
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_true(
 		audio_player.playing
@@ -601,9 +603,10 @@ func test_update_sound_plays_below_idle() -> void:
 
 func test_update_sound_stops_at_maximum_rpm() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = parameters.max_engine_rpm - 1.0
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_true(
 		audio_player.playing
@@ -611,7 +614,7 @@ func test_update_sound_stops_at_maximum_rpm() -> void:
 
 	engine.rpm = parameters.max_engine_rpm
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_false(
 		audio_player.playing
@@ -620,9 +623,10 @@ func test_update_sound_stops_at_maximum_rpm() -> void:
 
 func test_stop_sound() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = parameters.rpm_idle
 
-	engine.update_sound(parameters)
+	engine.update_sound()
 
 	assert_true(
 		audio_player.playing
