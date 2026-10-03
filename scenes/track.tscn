@@ -1,6 +1,6 @@
 [gd_scene format=3]
 
-[ext_resource type="Script" uid="uid://bqf6r4jk2omlr" path="res://scenes/road.gd" id="1"]
+[ext_resource type="Script" uid="uid://bqf6r4jk2omlr" path="res://src/road.gd" id="1"]
 [ext_resource type="Material" path="res://assets/world/tarmac.tres" id="2"]
 [ext_resource type="Material" path="res://assets/world/gravel.tres" id="3"]
 
