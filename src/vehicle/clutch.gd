@@ -20,11 +20,11 @@ func get_reaction_torques(av1: float, av2: float, t1: float, t2: float, slip_tor
 		if absf(delta_av) < 0.5:
 			locked = true
 	
-	if av1 < av2:
+	if delta_av < 0.0:
 		reaction_torques.x = -clutch_torque
 		reaction_torques.y = clutch_torque
-	else:
+	elif delta_av > 0.0:
 		reaction_torques.x = clutch_torque
 		reaction_torques.y = -clutch_torque
+
 	return reaction_torques
-	
