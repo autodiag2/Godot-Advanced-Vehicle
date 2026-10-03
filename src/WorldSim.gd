@@ -112,7 +112,7 @@ func load_vehicle(vehicle: Variant) -> void:
 
 	var car := current_vehicle as BaseCar
 	if car == null:
-		car = current_vehicle.find_child("RigidBodyCar", true, false) as BaseCar
+		car = current_vehicle.find_child("Vehicle", true, false) as BaseCar
 
 	assert(car != null)
 

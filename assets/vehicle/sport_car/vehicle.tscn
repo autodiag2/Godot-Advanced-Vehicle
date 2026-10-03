@@ -163,61 +163,61 @@ shadow_mesh = SubResource("ArrayMesh_mnl4s")
 
 [node name="Sportcar" type="Node3D" unique_id=1637588661]
 
-[node name="RigidBodyCar" parent="." unique_id=778852457 instance=ExtResource("1_rpk6a")]
+[node name="Vehicle" parent="." unique_id=778852457 instance=ExtResource("1_rpk6a")]
 mass = 1000.0
 car_params = SubResource("Resource_0mcht")
 
-[node name="Camera3D" parent="RigidBodyCar" index="0" unique_id=1911917214]
+[node name="Camera3D" parent="Vehicle" index="0" unique_id=1911917214]
 transform = Transform3D(1, 2.75852e-15, -1.02949e-14, 0, 0.965926, 0.258819, 1.06581e-14, -0.258819, 0.965926, -0.0299997, 2.14271, 6.55229)
 current = true
 far = 1000.0
 
-[node name="Wheel_br" parent="RigidBodyCar" index="1" unique_id=765607006]
+[node name="Wheel_br" parent="Vehicle" index="1" unique_id=765607006]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.77, -0.202062, 0.699959)
 
-[node name="MeshInstance3D" parent="RigidBodyCar/Wheel_br" index="0" unique_id=813159860]
+[node name="MeshInstance3D" parent="Vehicle/Wheel_br" index="0" unique_id=813159860]
 mesh = SubResource("ArrayMesh_yi758")
 
-[node name="Wheel_bl" parent="RigidBodyCar" index="2" unique_id=924801550]
+[node name="Wheel_bl" parent="Vehicle" index="2" unique_id=924801550]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.770196, -0.202062, 0.699959)
 
-[node name="MeshInstance3D" parent="RigidBodyCar/Wheel_bl" index="0" unique_id=71983677]
+[node name="MeshInstance3D" parent="Vehicle/Wheel_bl" index="0" unique_id=71983677]
 mesh = SubResource("ArrayMesh_yi758")
 
-[node name="Wheel_fr" parent="RigidBodyCar" index="3" unique_id=1670975184]
+[node name="Wheel_fr" parent="Vehicle" index="3" unique_id=1670975184]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.77, -0.202062, -1.71178)
 
-[node name="MeshInstance3D" parent="RigidBodyCar/Wheel_fr" index="0" unique_id=1349715783]
+[node name="MeshInstance3D" parent="Vehicle/Wheel_fr" index="0" unique_id=1349715783]
 mesh = SubResource("ArrayMesh_yi758")
 
-[node name="Wheel_fl" parent="RigidBodyCar" index="4" unique_id=541806852]
+[node name="Wheel_fl" parent="Vehicle" index="4" unique_id=541806852]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.770196, -0.202062, -1.71178)
 
-[node name="MeshInstance3D" parent="RigidBodyCar/Wheel_fl" index="0" unique_id=1439406704]
+[node name="MeshInstance3D" parent="Vehicle/Wheel_fl" index="0" unique_id=1439406704]
 mesh = SubResource("ArrayMesh_yi758")
 
-[node name="EngineSound" parent="RigidBodyCar" index="5" unique_id=461744164]
+[node name="EngineSound" parent="Vehicle" index="5" unique_id=461744164]
 stream = ExtResource("3_u8x6m")
 
-[node name="CamTarget" parent="RigidBodyCar" index="6" unique_id=683028303]
+[node name="CamTarget" parent="Vehicle" index="6" unique_id=683028303]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.99303, -0.0781195)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="RigidBodyCar" unique_id=1135409587]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Vehicle" unique_id=1135409587]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.14458, -0.537506)
 shape = SubResource("5")
 
-[node name="CollisionShape3D2" type="CollisionShape3D" parent="RigidBodyCar" unique_id=976904526]
+[node name="CollisionShape3D2" type="CollisionShape3D" parent="Vehicle" unique_id=976904526]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.332292, -0.174233)
 shape = SubResource("BoxShape3D_vdwmd")
 
-[node name="sport_car" parent="RigidBodyCar" unique_id=133820440 instance=ExtResource("10_sat6w")]
+[node name="sport_car" parent="Vehicle" unique_id=133820440 instance=ExtResource("10_sat6w")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.672, -0.47664)
 
-[node name="Wheel_001" parent="RigidBodyCar/sport_car" index="0" unique_id=922847559]
+[node name="Wheel_001" parent="Vehicle/sport_car" index="0" unique_id=922847559]
 visible = false
 
-[node name="Glass_004" parent="RigidBodyCar/sport_car" index="5" unique_id=739953767]
+[node name="Glass_004" parent="Vehicle/sport_car" index="5" unique_id=739953767]
 mesh = SubResource("ArrayMesh_ut2q0")
 
-[editable path="RigidBodyCar"]
-[editable path="RigidBodyCar/sport_car"]
+[editable path="Vehicle"]
+[editable path="Vehicle/sport_car"]

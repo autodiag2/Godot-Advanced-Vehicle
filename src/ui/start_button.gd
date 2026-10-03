@@ -19,7 +19,7 @@ func _ready() -> void:
 
 func _on_pressed() -> void:
 	var car := get_tree().current_scene.find_child(
-		"RigidBodyCar",
+		"Vehicle",
 		true,
 		false
 	) as BaseCar
