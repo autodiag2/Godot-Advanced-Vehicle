@@ -52,6 +52,12 @@ size = Vector3(12, 0.15, 0.5)
 
 [sub_resource type="Environment" id="Environment_h24t4"]
 background_mode = 2
+background_color = Color(0, 0.8060506, 0.82847095, 1)
+background_energy_multiplier = 1.38
+ambient_light_source = 3
+ambient_light_color = Color(0.06666667, 0.6666667, 1, 1)
+ambient_light_sky_contribution = 0.2
+ambient_light_energy = 0.69
 
 [node name="World" type="Node3D" unique_id=1656723443]
 
@@ -117,7 +123,7 @@ mesh = SubResource("BoxMesh_wall_top")
 
 [node name="Sun" type="DirectionalLight3D" parent="." unique_id=303404670]
 transform = Transform3D(1, 0, 0, 0, -0.05301577, 0.9985937, 0, -0.9985937, -0.05301577, 6.130497, 17.335228, 71.23318)
-light_energy = 8.945
+light_energy = 9.58
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=614966557]
