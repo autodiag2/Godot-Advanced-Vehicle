@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://dqqcf60u11tfq"]
 
-[ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://src/vehicle/base_car.tscn" id="1_rpk6a"]
+[ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://assets/vehicle/base_car.tscn" id="1_rpk6a"]
 [ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="2_07fle"]
 [ext_resource type="Script" uid="uid://beoy7rb7kinu4" path="res://src/vehicle/diff_params.gd" id="2_e2oix"]
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="3_i57cj"]

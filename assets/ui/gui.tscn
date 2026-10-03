@@ -1,11 +1,11 @@
 [gd_scene format=3 uid="uid://djbt3ltge1aat"]
 
 [ext_resource type="Script" uid="uid://cjl1t5ebx6upv" path="res://src/ui/gui.gd" id="1_bv3ap"]
-[ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://src/ui/tireinfo_app.tscn" id="2_6tyms"]
-[ext_resource type="PackedScene" path="res://src/ui/input_app.tscn" id="3_m5e8j"]
-[ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://src/ui/render_stats.tscn" id="4_4dmvl"]
+[ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://assets/ui/tireinfo_app.tscn" id="2_6tyms"]
+[ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
+[ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://assets/ui/render_stats.tscn" id="4_4dmvl"]
 
-[node name="Gui" type="Control"]
+[node name="Gui" type="Control" unique_id=907116754]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bv3ap")
 
-[node name="Essentials" type="Panel" parent="."]
+[node name="Essentials" type="Panel" parent="." unique_id=894017398]
 self_modulate = Color(1, 1, 1, 0.556863)
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 1
@@ -25,7 +25,7 @@ offset_top = -141.0
 offset_right = 200.0
 grow_vertical = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Essentials"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Essentials" unique_id=927646150]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,23 +33,24 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1700692947]
 layout_mode = 2
 text = "Gear"
 
-[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1397843522]
 layout_mode = 2
 text = "Speed"
 
-[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1853937056]
 layout_mode = 2
 text = "Rpm"
 
-[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1690262574]
 layout_mode = 2
 text = "Fuel"
 
-[node name="TireInfoApp" parent="." instance=ExtResource("2_6tyms")]
+[node name="TireInfoApp" parent="." unique_id=448416227 instance=ExtResource("2_6tyms")]
+layout_mode = 0
 anchors_preset = 0
 anchor_left = 0.0
 anchor_top = 0.0
@@ -66,7 +67,7 @@ wheel_fr_path = NodePath("../../Wheel_fr")
 wheel_bl_path = NodePath("../../Wheel_bl")
 wheel_br_path = NodePath("../../Wheel_br")
 
-[node name="InputApp" parent="." instance=ExtResource("3_m5e8j")]
+[node name="InputApp" parent="." unique_id=893328040 instance=ExtResource("3_m5e8j")]
 layout_mode = 1
 anchors_preset = 3
 offset_left = -283.0
@@ -74,7 +75,7 @@ offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="RenderStats" parent="." instance=ExtResource("4_4dmvl")]
+[node name="RenderStats" parent="." unique_id=401350761 instance=ExtResource("4_4dmvl")]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0

@@ -1,0 +1,16 @@
+[gd_scene format=3 uid="uid://b6njc3v4v3y8x"]
+
+[ext_resource type="Script" uid="uid://odpf6ebpprpf" path="res://src/WorldSim.gd" id="1_mmges"]
+
+[node name="WorldSim" type="Node3D" unique_id=1743840443]
+script = ExtResource("1_mmges")
+
+[node name="WorldRoot" type="WorldEnvironment" parent="." unique_id=1541391873]
+
+[node name="VehicleRoot" type="RigidBody3D" parent="." unique_id=630294435]
+
+[node name="UIRoot" type="Control" parent="." unique_id=1773820254]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 40.0
+offset_bottom = 40.0

@@ -46,7 +46,8 @@ func get_tire_wear(wheel: RaycastSuspension) -> float:
 func _process(delta: float) -> void:
 	if wheels_init != 4:
 		return
-
+	if true:
+		return
 	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireWearLabel.text = "%3.1f %% " % (get_tire_wear(wheel_fl) * 100)
 	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireWearLabel.text = "%3.1f %% " % (get_tire_wear(wheel_fr) * 100)
 	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireWearLabel.text ="%3.1f %% " % (get_tire_wear(wheel_bl) * 100)
