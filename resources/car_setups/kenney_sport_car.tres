@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CarParameters" format=3 uid="uid://cu4jo10x8b1se"]
 
-[ext_resource type="AudioStream" path="res://assets/vehicle/engine/tres/engine_sample.tres" id="1_wqlgx"]
+[ext_resource type="AudioStream" path="res://assets/engine/tres/engine_sample.tres" id="1_wqlgx"]
 [ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="2_8ru0w"]
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="3_scbug"]
 [ext_resource type="Script" uid="uid://bxdmhsny5ddvd" path="res://src/vehicle/wheel/tire/PacejkaTireModel.gd" id="4_ilwyn"]

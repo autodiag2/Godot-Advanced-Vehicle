@@ -1,8 +1,11 @@
 class_name WorldSim
 extends Node
 
-@export var default_world: PackedScene = preload("res://assets/world/grass_loop/world.tscn")
-@export var default_vehicle: PackedScene = preload("res://assets/vehicle/sport_car.tscn")
+const WORLD_PATH := "res://assets/world/"
+const VEHICLE_PATH := "res://assets/vehicle/"
+
+@export var default_world: PackedScene = preload(WORLD_PATH + "/grass_loop/world.tscn")
+@export var default_vehicle: PackedScene = preload(VEHICLE_PATH + "/sport_car/vehicle.tscn")
 @export var hud_scene: PackedScene = preload("res://assets/ui/gui.tscn")
 @export var setup_scene: PackedScene
 
@@ -15,10 +18,11 @@ var current_vehicle: Node
 var hud: Control
 var setup_screen: Control
 var world_scenes: Array[PackedScene] = []
-const WORLD_PATH := "res://assets/world"
+var vehicle_scenes: Array[PackedScene] = []
 
 func _ready() -> void:
 	_load_world_scenes()
+	_load_vehicle_scenes()
 	if hud_scene != null:
 		hud = hud_scene.instantiate()
 		ui_root.add_child(hud)
@@ -45,6 +49,18 @@ func _load_world_scenes() -> void:
 		if scene != null:
 			world_scenes.append(scene)
 
+func _load_vehicle_scenes() -> void:
+	vehicle_scenes.clear()
+
+	var dir := DirAccess.open(VEHICLE_PATH)
+	assert(dir != null)
+
+	for folder_name in dir.get_directories():
+		var path := "%s/%s/vehicle.tscn" % [VEHICLE_PATH, folder_name]
+		var scene := load(path) as PackedScene
+		if scene != null:
+			vehicle_scenes.append(scene)
+
 func load_world(world: Variant) -> void:
 	var scene: PackedScene
 	if world is String:
@@ -69,8 +85,22 @@ func load_world(world: Variant) -> void:
 	current_world = scene.instantiate()
 	world_root.add_child(current_world)
 
+func load_vehicle(vehicle: Variant) -> void:
+	var scene: PackedScene
 
-func load_vehicle(scene: PackedScene) -> void:
+	if vehicle is String:
+		var path: String
+		if vehicle.begins_with(VEHICLE_PATH):
+			path = vehicle
+		else:
+			path = "%s/%s/vehicle.tscn" % [VEHICLE_PATH, vehicle]
+
+		scene = load(path) as PackedScene
+	elif vehicle is PackedScene:
+		scene = vehicle
+	else:
+		assert(false, "Invalid vehicle type")
+
 	assert(scene != null)
 
 	if current_vehicle != null:
@@ -87,6 +117,7 @@ func load_vehicle(scene: PackedScene) -> void:
 		var joystick := hud.find_child("Joystick", true, false) as Control
 		assert(joystick != null)
 		car.set_joystick(joystick)
+
 		if hud.has_method("set_vehicle"):
 			hud.set_vehicle(car)
 
