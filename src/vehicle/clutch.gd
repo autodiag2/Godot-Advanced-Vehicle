@@ -4,9 +4,16 @@ extends Node
 @export var friction := 250.0
 
 var locked := true
-var prev_av := 0.0
 
-func get_reaction_torques(av1: float, av2: float, t1: float, t2: float, slip_torque: float, kick := 0.0):
+
+func get_reaction_torques(
+	av1: float,
+	av2: float,
+	t1: float,
+	t2: float,
+	slip_torque: float,
+	kick := 0.0
+) -> Vector2:
 	var clutch_torque := friction + kick
 	var delta_torque := t1 - t2
 	var delta_av := av1 - av2
@@ -20,10 +27,10 @@ func get_reaction_torques(av1: float, av2: float, t1: float, t2: float, slip_tor
 		if absf(delta_av) < 0.5:
 			locked = true
 	
-	if delta_av < 0.0:
+	if delta_av < -0.5:
 		reaction_torques.x = -clutch_torque
 		reaction_torques.y = clutch_torque
-	elif delta_av > 0.0:
+	elif delta_av > 0.5:
 		reaction_torques.x = clutch_torque
 		reaction_torques.y = -clutch_torque
 
