@@ -4,15 +4,32 @@ extends RefCounted
 const PETROL_KG_PER_LITRE: float = 0.7489
 const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 const NEWTON_METRE_RPM_TO_KW: int = 9549
+const WATTS_PER_KILOWATT: float = 1000.0
+const IDLE_CONTROL_GAIN: float = 1.0
 
-var rpm: float = 0.0
 var angular_velocity: float = 0.0
 var output_torque: float = 0.0
 var net_torque: float = 0.0
+var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var fuel_litres: float = 0.0
+
 # View
 var engine_audio_player: AudioStreamPlayer
+
+
+var rpm: float:
+	get:
+		return (
+			angular_velocity *
+			RPM_PER_RADIAN_PER_SECOND
+		)
+	set(value):
+		assert(value >= 0.0)
+		angular_velocity = (
+			value /
+			RPM_PER_RADIAN_PER_SECOND
+		)
 
 
 func initialize(
@@ -28,6 +45,7 @@ func initialize(
 	assert(parameters.fuel_percentage <= 100.0)
 	assert(parameters.engine_moment > 0.0)
 	assert(parameters.max_engine_rpm > 0.0)
+	assert(parameters.rpm_idle >= 0.0)
 
 	fuel_litres = (
 		parameters.fuel_tank_size *
@@ -35,6 +53,12 @@ func initialize(
 		0.01
 	)
 	engine_audio_player = audio_player
+	angular_velocity = 0.0
+	output_torque = 0.0
+	net_torque = 0.0
+	limiter_torque = 0.0
+	reaction_torque = 0.0
+
 	car.mass += (
 		fuel_litres *
 		PETROL_KG_PER_LITRE
@@ -50,7 +74,7 @@ func update(
 	assert(parameters.engine_moment > 0.0)
 	assert(parameters.max_engine_rpm > 0.0)
 	assert(parameters.rpm_idle >= 0.0)
-	assert(rpm >= 0.0)
+	assert(angular_velocity >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
@@ -61,28 +85,58 @@ func update(
 		parameters
 	)
 
+	limiter_torque = 0.0
+
 	net_torque = (
 		output_torque +
 		reaction_torque
 	)
 
-	rpm += (
-		RPM_PER_RADIAN_PER_SECOND *
-		delta *
-		net_torque /
-		parameters.engine_moment
-	)
+	if (
+		rpm >= parameters.max_engine_rpm &&
+		net_torque > 0.0
+	):
+		limiter_torque = -net_torque
+		net_torque = 0.0
 
-	if rpm < 0.0:
-		rpm = 0.0
+	if delta > 0.0:
+		var next_angular_velocity := (
+			angular_velocity +
+			delta *
+			net_torque /
+			parameters.engine_moment
+		)
 
-	if rpm >= parameters.max_engine_rpm:
-		rpm = parameters.max_engine_rpm
-		output_torque = 0.0
+		var max_angular_velocity := (
+			parameters.max_engine_rpm /
+			RPM_PER_RADIAN_PER_SECOND
+		)
 
-	angular_velocity = (
-		rpm /
-		RPM_PER_RADIAN_PER_SECOND
+		if next_angular_velocity > max_angular_velocity:
+			limiter_torque = (
+				(
+					max_angular_velocity -
+					angular_velocity
+				) *
+				parameters.engine_moment /
+				delta -
+				net_torque
+			)
+
+			net_torque += limiter_torque
+			angular_velocity = max_angular_velocity
+		else:
+			angular_velocity = maxf(
+				next_angular_velocity,
+				0.0
+			)
+
+			if angular_velocity == 0.0 and net_torque < 0.0:
+				net_torque = 0.0
+
+	angular_velocity = maxf(
+		angular_velocity,
+		0.0
 	)
 
 
@@ -93,7 +147,7 @@ func calculate_torque(
 ) -> float:
 	assert(parameters != null)
 	assert(parameters.max_engine_rpm > 0.0)
-	assert(engine_rpm >= 0.0)
+	#assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 
@@ -110,11 +164,6 @@ func calculate_torque(
 		)
 	)
 
-	var engine_braking_torque: float = (
-		-parameters.engine_brake *
-		rpm_factor
-	)
-
 	var maximum_torque: float = (
 		torque_curve_factor *
 		parameters.max_torque
@@ -126,20 +175,49 @@ func calculate_torque(
 		)
 	)
 
-	return lerpf(
-		engine_braking_torque,
-		maximum_torque,
+	var combustion_torque := (
+		maximum_torque *
 		throttle_factor
+	)
+
+	var engine_friction_torque := (
+		parameters.engine_brake *
+		rpm_factor
+	)
+
+	var idle_torque := 0.0
+
+	if (
+		throttle_input == 0.0 &&
+		engine_rpm > 0.0 &&
+		engine_rpm < parameters.rpm_idle
+	):
+		var idle_error := (
+			parameters.rpm_idle -
+			engine_rpm
+		) / parameters.rpm_idle
+
+		idle_torque = (
+			parameters.max_torque *
+			IDLE_CONTROL_GAIN *
+			idle_error
+		)
+
+	return (
+		combustion_torque +
+		idle_torque -
+		engine_friction_torque
 	)
 
 
 func clamp_to_idle(parameters: CarParameters) -> void:
 	assert(parameters != null)
 	assert(parameters.rpm_idle >= 0.0)
+	assert(angular_velocity >= 0.0)
 
-	rpm = max(
-		rpm,
-		parameters.rpm_idle
+	angular_velocity = maxf(
+		angular_velocity,
+		0.0
 	)
 
 
@@ -153,15 +231,20 @@ func consume_fuel(
 	assert(parameters.engine_bsfc >= 0.0)
 	assert(delta >= 0.0)
 
+	var mechanical_power_kw : float = (
+		max(output_torque, 0.0) *
+		angular_velocity /
+		WATTS_PER_KILOWATT
+	)
+
 	var fuel_consumed: float = (
 		parameters.engine_bsfc *
-		max(output_torque, 0.0) *
-		rpm *
+		mechanical_power_kw *
 		delta /
 		(
 			3600.0 *
-			PETROL_KG_PER_LITRE *
-			NEWTON_METRE_RPM_TO_KW
+			1000.0 *
+			PETROL_KG_PER_LITRE
 		)
 	)
 
@@ -190,7 +273,7 @@ func update_sound(
 	assert(parameters.max_engine_rpm > 0.0)
 	assert(parameters.rpm_idle >= 0.0)
 	assert(engine_audio_player != null)
-	assert(rpm >= 0.0)
+	assert(angular_velocity >= 0.0)
 
 	var pitch_scale: float = rpm / 1000.0
 

@@ -84,10 +84,92 @@ func test_initialize_adds_fuel_mass() -> void:
 	)
 
 
+func test_initialize_resets_rotational_state() -> void:
+	engine.angular_velocity = 100.0
+	engine.output_torque = 100.0
+	engine.net_torque = 100.0
+	engine.limiter_torque = 100.0
+	engine.reaction_torque = 100.0
+
+	engine.initialize(
+		parameters,
+		car,
+		audio_player
+	)
+
+	assert_eq(
+		engine.angular_velocity,
+		0.0
+	)
+
+	assert_eq(
+		engine.output_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.net_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.limiter_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.reaction_torque,
+		0.0
+	)
+
+
 func test_initialize_stores_audio_player() -> void:
 	assert_eq(
 		engine.engine_audio_player,
 		audio_player
+	)
+
+
+func test_rpm_is_derived_from_angular_velocity() -> void:
+	engine.angular_velocity = 100.0
+
+	assert_float_eq(
+		engine.rpm,
+		100.0 *
+		EngineController.RPM_PER_RADIAN_PER_SECOND
+	)
+
+
+func test_rpm_setter_updates_angular_velocity() -> void:
+	engine.rpm = 3000.0
+
+	assert_float_eq(
+		engine.angular_velocity,
+		3000.0 /
+		EngineController.RPM_PER_RADIAN_PER_SECOND
+	)
+
+
+func test_rpm_and_angular_velocity_are_consistent() -> void:
+	engine.rpm = 3000.0
+
+	assert_float_eq(
+		engine.rpm,
+		engine.angular_velocity *
+		EngineController.RPM_PER_RADIAN_PER_SECOND
+	)
+
+
+func test_calculate_torque_at_full_throttle() -> void:
+	var torque := engine.calculate_torque(
+		4000.0,
+		1.0,
+		parameters
+	)
+
+	assert_float_eq(
+		torque,
+		190.0
 	)
 
 
@@ -104,19 +186,6 @@ func test_calculate_torque_at_zero_throttle() -> void:
 	)
 
 
-func test_calculate_torque_at_full_throttle() -> void:
-	var torque := engine.calculate_torque(
-		4000.0,
-		1.0,
-		parameters
-	)
-
-	assert_float_eq(
-		torque,
-		200.0
-	)
-
-
 func test_calculate_torque_at_half_throttle() -> void:
 	var torque := engine.calculate_torque(
 		4000.0,
@@ -126,26 +195,56 @@ func test_calculate_torque_at_half_throttle() -> void:
 
 	assert_float_eq(
 		torque,
-		95.0
+		90.0
 	)
 
 
-func test_calculate_torque_clamps_rpm_factor() -> void:
+func test_calculate_torque_at_zero_rpm_has_no_engine_friction() -> void:
 	var torque := engine.calculate_torque(
-		10000.0,
-		1.0,
+		0.0,
+		0.0,
 		parameters
 	)
 
-	assert_float_eq(
+	assert_eq(
 		torque,
-		200.0
+		0.0
+	)
+
+
+func test_idle_control_produces_positive_torque_below_idle() -> void:
+	var torque := engine.calculate_torque(
+		400.0,
+		0.0,
+		parameters
+	)
+
+	assert_gt(
+		torque,
+		0.0
+	)
+
+
+func test_idle_control_is_zero_at_idle() -> void:
+	var torque := engine.calculate_torque(
+		parameters.rpm_idle,
+		0.0,
+		parameters
+	)
+
+	assert_eq(
+		torque,
+		-parameters.engine_brake *
+		parameters.rpm_idle /
+		parameters.max_engine_rpm
 	)
 
 
 func test_update_accelerates_engine() -> void:
 	engine.rpm = 1000.0
 	engine.reaction_torque = 0.0
+
+	var initial_angular_velocity := engine.angular_velocity
 
 	engine.update(
 		parameters,
@@ -154,30 +253,16 @@ func test_update_accelerates_engine() -> void:
 	)
 
 	assert_gt(
-		engine.rpm,
-		1000.0
-	)
-
-
-func test_update_updates_angular_velocity() -> void:
-	engine.rpm = 2000.0
-
-	engine.update(
-		parameters,
-		0.0,
-		0.0
-	)
-
-	assert_float_eq(
 		engine.angular_velocity,
-		engine.rpm /
-		EngineController.RPM_PER_RADIAN_PER_SECOND
+		initial_angular_velocity
 	)
 
 
-func test_update_includes_reaction_torque() -> void:
+func test_update_uses_reaction_torque() -> void:
 	engine.rpm = 3000.0
 	engine.reaction_torque = -100.0
+
+	var initial_angular_velocity := engine.angular_velocity
 
 	engine.update(
 		parameters,
@@ -185,22 +270,55 @@ func test_update_includes_reaction_torque() -> void:
 		0.1
 	)
 
-	var expected_rpm := (
-		3000.0 +
-		EngineController.RPM_PER_RADIAN_PER_SECOND *
-		0.1 *
-		100.0 /
-		parameters.engine_moment
+	assert_lt(
+		engine.angular_velocity,
+		initial_angular_velocity +
+		(
+			190.0 *
+			0.1 /
+			parameters.engine_moment
+		)
 	)
 
-	assert_float_eq(
+
+func test_update_can_stall_engine() -> void:
+	engine.rpm = 1000.0
+	engine.reaction_torque = -10000.0
+
+	engine.update(
+		parameters,
+		0.0,
+		0.1
+	)
+
+	assert_eq(
+		engine.angular_velocity,
+		0.0
+	)
+
+	assert_eq(
 		engine.rpm,
-		expected_rpm,
-		0.001
+		0.0
 	)
 
 
-func test_update_clamps_rpm_to_maximum() -> void:
+func test_update_does_not_force_engine_to_idle() -> void:
+	engine.rpm = 400.0
+	engine.reaction_torque = -10000.0
+
+	engine.update(
+		parameters,
+		0.0,
+		0.01
+	)
+
+	assert_lt(
+		engine.rpm,
+		parameters.rpm_idle
+	)
+
+
+func test_limiter_prevents_rpm_above_maximum() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
@@ -216,7 +334,7 @@ func test_update_clamps_rpm_to_maximum() -> void:
 	)
 
 
-func test_update_zeroes_output_torque_at_limiter() -> void:
+func test_limiter_generates_opposing_torque() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
@@ -226,13 +344,13 @@ func test_update_zeroes_output_torque_at_limiter() -> void:
 		0.1
 	)
 
-	assert_eq(
-		engine.output_torque,
+	assert_lt(
+		engine.limiter_torque,
 		0.0
 	)
 
 
-func test_update_keeps_angular_velocity_consistent_at_limiter() -> void:
+func test_limiter_keeps_rotational_state_consistent() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
@@ -243,58 +361,69 @@ func test_update_keeps_angular_velocity_consistent_at_limiter() -> void:
 	)
 
 	assert_float_eq(
-		engine.angular_velocity,
-		engine.rpm /
+		engine.rpm,
+		engine.angular_velocity *
 		EngineController.RPM_PER_RADIAN_PER_SECOND
 	)
 
 
-func test_update_clamps_negative_rpm_to_zero() -> void:
-	engine.rpm = 100.0
-	engine.reaction_torque = -10000.0
+func test_limiter_does_not_modify_output_torque() -> void:
+	engine.rpm = 7900.0
+	engine.reaction_torque = 10000.0
 
 	engine.update(
 		parameters,
-		0.0,
+		1.0,
 		0.1
 	)
 
-	assert_eq(
-		engine.rpm,
+	assert_float_eq(
+		engine.output_torque,
+		180.25
+	)
+
+func test_update_zero_delta_does_not_change_angular_velocity() -> void:
+	engine.rpm = 3000.0
+
+	var initial_angular_velocity := engine.angular_velocity
+
+	engine.update(
+		parameters,
+		1.0,
 		0.0
 	)
 
-	assert_eq(
+	assert_float_eq(
 		engine.angular_velocity,
-		0.0
+		initial_angular_velocity
 	)
 
 
-func test_clamp_to_idle() -> void:
+func test_clamp_to_idle_does_not_raise_rpm() -> void:
 	engine.rpm = 400.0
 
 	engine.clamp_to_idle(parameters)
 
 	assert_eq(
 		engine.rpm,
-		parameters.rpm_idle
+		400.0
 	)
 
 
-func test_clamp_to_idle_does_not_reduce_rpm() -> void:
+func test_clamp_to_idle_does_not_change_valid_rpm() -> void:
 	engine.rpm = 1500.0
 
 	engine.clamp_to_idle(parameters)
 
-	assert_eq(
+	assert_float_eq(
 		engine.rpm,
 		1500.0
 	)
 
 
 func test_consume_fuel_reduces_fuel() -> void:
-	engine.output_torque = 100.0
 	engine.rpm = 3000.0
+	engine.output_torque = 100.0
 
 	var initial_fuel := engine.fuel_litres
 
@@ -311,8 +440,8 @@ func test_consume_fuel_reduces_fuel() -> void:
 
 
 func test_consume_fuel_reduces_vehicle_mass() -> void:
-	engine.output_torque = 100.0
 	engine.rpm = 3000.0
+	engine.output_torque = 100.0
 
 	var initial_mass := car.mass
 
@@ -328,9 +457,45 @@ func test_consume_fuel_reduces_vehicle_mass() -> void:
 	)
 
 
-func test_zero_output_torque_does_not_consume_fuel() -> void:
-	engine.output_torque = 0.0
+func test_fuel_consumption_uses_angular_velocity() -> void:
 	engine.rpm = 3000.0
+	engine.output_torque = 100.0
+
+	var initial_fuel := engine.fuel_litres
+
+	engine.consume_fuel(
+		parameters,
+		car,
+		1.0
+	)
+
+	var expected_power_kw := (
+		100.0 *
+		engine.angular_velocity /
+		1000.0
+	)
+
+	var expected_fuel := (
+		parameters.engine_bsfc *
+		expected_power_kw /
+		(
+			3600.0 *
+			1000.0 *
+			EngineController.PETROL_KG_PER_LITRE
+		)
+	)
+
+	assert_float_eq(
+		initial_fuel -
+		engine.fuel_litres,
+		expected_fuel,
+		0.000001
+	)
+
+
+func test_zero_output_torque_does_not_consume_fuel() -> void:
+	engine.rpm = 3000.0
+	engine.output_torque = 0.0
 
 	var initial_fuel := engine.fuel_litres
 	var initial_mass := car.mass
@@ -352,9 +517,27 @@ func test_zero_output_torque_does_not_consume_fuel() -> void:
 	)
 
 
+func test_zero_angular_velocity_does_not_consume_fuel() -> void:
+	engine.angular_velocity = 0.0
+	engine.output_torque = 100.0
+
+	var initial_fuel := engine.fuel_litres
+
+	engine.consume_fuel(
+		parameters,
+		car,
+		1.0
+	)
+
+	assert_eq(
+		engine.fuel_litres,
+		initial_fuel
+	)
+
+
 func test_fuel_consumption_cannot_go_below_zero() -> void:
-	engine.output_torque = 1000000.0
 	engine.rpm = 8000.0
+	engine.output_torque = 1000000.0
 	engine.fuel_litres = 0.001
 
 	engine.consume_fuel(
