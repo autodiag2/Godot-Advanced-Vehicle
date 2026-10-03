@@ -4,6 +4,19 @@ const WORLDSIM_SCENE = preload("res://src/WorldSim.tscn")
 const VEHICLE_SCENE = preload("res://assets/vehicle/sport_car/vehicle.tscn")
 
 
+func _wait_for_vehicle_to_fall(car: BaseCar) -> void:
+	for i in range(120):
+		await get_tree().physics_frame
+
+		if (
+			car.wheel_fl.is_colliding() &&
+			car.wheel_fr.is_colliding() &&
+			car.wheel_bl.is_colliding() &&
+			car.wheel_br.is_colliding()
+		):
+			return
+
+
 func _create_ground() -> StaticBody3D:
 	var ground := StaticBody3D.new()
 
@@ -24,6 +37,19 @@ func _create_world_sim() -> WorldSim:
 	await get_tree().process_frame
 	world_sim.load_vehicle(VEHICLE_SCENE)
 	await get_tree().physics_frame
+
+	var car := world_sim.current_vehicle as BaseCar
+	assert_not_null(car)
+
+	car.global_position = Vector3(0.0, 1.0, 0.0)
+	car.linear_velocity = Vector3.ZERO
+	car.angular_velocity = Vector3.ZERO
+
+	await _wait_for_vehicle_to_fall(car)
+
+	for i in range(30):
+		await get_tree().physics_frame
+
 	return world_sim
 
 
@@ -68,15 +94,6 @@ func test_car_at_rest_does_not_start_wheels_spinning() -> void:
 	var world_sim := await _create_world_sim()
 	var car := world_sim.current_vehicle as BaseCar
 	assert_not_null(car)
-
-	car.global_position = Vector3(0.0, 1.0, 0.0)
-	car.linear_velocity = Vector3.ZERO
-	car.angular_velocity = Vector3.ZERO
-
-	await get_tree().physics_frame
-
-	for i in range(30):
-		await get_tree().physics_frame
 
 	assert_true(
 		car.wheel_fl.is_colliding(),

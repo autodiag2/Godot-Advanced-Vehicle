@@ -13,6 +13,7 @@ var rolling_resistance := 0.0
 
 var force := Vector3.ZERO
 
+
 func setup(
 	wheel_param: WheelController,
 	suspension_param: SuspensionController
@@ -21,6 +22,7 @@ func setup(
 	suspension = suspension_param
 	assert(wheel != null)
 	assert(suspension != null)
+
 
 func update(
 	local_velocity: Vector3,
@@ -36,16 +38,19 @@ func update(
 	var planar_velocity := Vector2(
 		local_velocity.x,
 		local_velocity.z
-	).normalized()
-
-	var lateral_slip := asin(
-		clamp(
-			-planar_velocity.x,
-			-1.0,
-			1.0
-		)
 	)
-	
+
+	var lateral_slip := 0.0
+
+	if planar_velocity.length() > wheel.speed_threshold:
+		lateral_slip = asin(
+			clamp(
+				-planar_velocity.normalized().x,
+				-1.0,
+				1.0
+			)
+		)
+
 	wheel.update_slip(
 		longitudinal_velocity,
 		lateral_slip
