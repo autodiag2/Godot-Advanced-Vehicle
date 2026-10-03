@@ -20,6 +20,14 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_bl = $Wheel_bl as RaycastSuspension
 @onready var wheel_br = $Wheel_br as RaycastSuspension
 
+func getBrakePadsUsagePercent() -> Array:
+	return [
+		wheel_fl.brake_disc.inner_pad.usage,
+		wheel_fr.brake_disc.inner_pad.usage,
+		wheel_bl.brake_disc.inner_pad.usage,
+		wheel_br.brake_disc.inner_pad.usage
+	]
+
 func _ready() -> void:
 	add_to_group("player_car")
 

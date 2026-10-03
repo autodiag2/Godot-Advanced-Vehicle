@@ -85,6 +85,19 @@ transform = Transform3D(0.833779, 0, 0.552097, 0, 1, 0, -0.552097, 0, 0.833779, 
 [node name="RigidBodyCar" parent="Sportcar" index="0" unique_id=778852457 node_paths=PackedStringArray("joystick")]
 joystick = NodePath("Gui/joystick")
 
+[node name="Essentials" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="0"]
+offset_right = 514.0
+
+[node name="VBoxContainer" parent="Sportcar/RigidBodyCar/Gui/Essentials" index="0"]
+offset_left = 5.0
+offset_top = 1.0
+offset_right = -5.0
+offset_bottom = 1.0
+
+[node name="BreakPadsUsageLabel" type="Label" parent="Sportcar/RigidBodyCar/Gui/Essentials/VBoxContainer" index="4" unique_id=914754107]
+layout_mode = 2
+text = "BreakPads usage (FL,FR,BL,BR)"
+
 [node name="InputApp" parent="Sportcar/RigidBodyCar/Gui" parent_id_path=PackedInt32Array(1426730906, 778852457, 1625177410) index="2" node_paths=PackedStringArray("joystick")]
 joystick = NodePath("../joystick")
 
