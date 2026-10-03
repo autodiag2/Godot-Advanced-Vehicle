@@ -1,5 +1,5 @@
-
-class_name PowertrainController  extends RefCounted
+class_name PowertrainController
+extends RefCounted
 
 var drivetrain := DriveTrain.new()
 var clutch := Clutch.new()
@@ -20,6 +20,7 @@ func initialize(parameters: CarParameters) -> void:
 	drivetrain.set_input_inertia(
 		parameters.engine_moment
 	)
+
 
 func update_automatic_shifting(
 	engine: EngineController,
@@ -105,6 +106,7 @@ func update_automatic_shifting(
 		longitudinal_speed
 	)
 
+
 func update_wheel_speeds(
 	front_left_wheel: RaycastSuspension,
 	front_right_wheel: RaycastSuspension,
@@ -124,6 +126,7 @@ func update_wheel_speeds(
 			front_right_wheel.wheel.spin
 		) * 0.5
 	)
+
 
 func freewheel(
 	front_left_wheel: RaycastSuspension,
@@ -145,8 +148,10 @@ func freewheel(
 		rear_left_brake_torque +
 		rear_right_brake_torque
 	)
+
 	clutch_reaction_torque = 0.0
 	wheel_drive_torque = 0.0
+	clutch.locked = false
 	drivetrain.reaction_torque = 0.0
 
 	front_left_wheel.apply_torque(
@@ -184,6 +189,7 @@ func freewheel(
 		rear_right_wheel
 	)
 
+
 func engage(
 	engine: EngineController,
 	parameters: CarParameters,
@@ -202,10 +208,12 @@ func engage(
 		front_left_brake_torque +
 		front_right_brake_torque
 	)
+
 	var rear_brake_torque := (
 		rear_left_brake_torque +
 		rear_right_brake_torque
 	)
+
 	update_wheel_speeds(
 		front_left_wheel,
 		front_right_wheel,
@@ -246,22 +254,17 @@ func engage(
 			drivetrain.get_gearing()
 		)
 
-	var speed_error := (
-		engine.angular_velocity -
-		gearbox_shaft_speed
-	)
-
-	var clutch_kick: float = (
-		abs(speed_error) * 0.2
-	)
-
 	var reaction_torque: float = (
 		drivetrain.reaction_torque
 	)
 
 	var clutch_slip_torque: float = (
-		0.8 * clutch.friction
+		0.8 *
+		clutch.friction *
+		(1.0 - clutch_input)
 	)
+
+	var clutch_kick := 0.0
 
 	var reaction_torques: Vector2 = (
 		clutch.get_reaction_torques(
@@ -274,26 +277,13 @@ func engage(
 		)
 	)
 
-	if clutch.locked:
-		reaction_torques.x = (
-			engine.output_torque
-		)
+	if clutch_input >= 1.0:
+		clutch.locked = false
+		reaction_torques = Vector2.ZERO
 
-	wheel_drive_torque = (
-		reaction_torques.x *
-		(
-			1.0 -
-			clutch_input
-		)
-	)
+	wheel_drive_torque = reaction_torques.x
 
-	clutch_reaction_torque = (
-		reaction_torques.y *
-		(
-			1.0 -
-			clutch_input
-		)
-	)
+	clutch_reaction_torque = reaction_torques.y
 
 	drivetrain.drivetrain(
 		wheel_drive_torque,

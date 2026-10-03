@@ -2,9 +2,11 @@ class_name WheelController
 
 var tire: TireModel
 
-var mass := 15.0
+const MASS_DEFAULT := 15.0
+var mass := MASS_DEFAULT
 var inertia := 0.0
-var ackermann := 0.15
+const ACKERMANN_DEFAULT := 0.15
+var ackermann := ACKERMANN_DEFAULT
 
 var spin := 0.0
 
@@ -16,8 +18,8 @@ var speed_threshold := 0.1
 
 func setup(
 	tire_arg: TireModel,
-	mass_arg: float,
-	ackermann_arg: float
+	mass_arg: float = MASS_DEFAULT,
+	ackermann_arg: float = ACKERMANN_DEFAULT
 ) -> void:
 	assert(tire_arg != null)
 	assert(mass_arg > 0.0)
