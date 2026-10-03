@@ -82,12 +82,12 @@ func test_engine_faster_than_gearbox_reacts_against_engine() -> void:
 
 	assert_float_eq(
 		reaction_torques.x,
-		-250.0
+		250.0
 	)
 
 	assert_float_eq(
 		reaction_torques.y,
-		250.0
+		-250.0
 	)
 
 func test_gearbox_faster_than_engine_reacts_against_gearbox() -> void:
