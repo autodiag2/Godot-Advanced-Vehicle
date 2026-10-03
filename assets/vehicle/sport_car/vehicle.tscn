@@ -62,7 +62,6 @@ max_steer = 0.4
 max_brake_force = 100000.0
 max_handbrake_torque = 4000.0
 max_torque = 260.0
-max_engine_rpm = 16000.0
 torque_curve = SubResource("Curve_t8jp4")
 throttle_model = SubResource("Curve_kdwlw")
 engine_brake = 150.0
