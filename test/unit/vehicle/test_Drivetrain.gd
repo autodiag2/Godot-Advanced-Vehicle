@@ -47,10 +47,6 @@ func before_each() -> void:
 	drivetrain = DriveTrain.new()
 
 
-func after_each() -> void:
-	drivetrain.free()
-
-
 func _create_parameters() -> DriveTrainParameters:
 	var parameters := DriveTrainParameters.new()
 

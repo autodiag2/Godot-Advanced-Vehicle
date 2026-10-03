@@ -1,5 +1,5 @@
 class_name DriveTrain
-extends Node
+extends RefCounted
 
 const AV_2_RPM: float = 60.0 / TAU
 

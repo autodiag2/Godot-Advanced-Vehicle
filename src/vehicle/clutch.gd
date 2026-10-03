@@ -1,5 +1,5 @@
 class_name Clutch
-extends Node
+extends RefCounted
 
 @export var friction := 250.0
 

@@ -7,10 +7,6 @@ var clutch: Clutch
 func before_each() -> void:
 	clutch = Clutch.new()
 
-
-func after_each() -> void:
-	clutch.free()
-
 func assert_float_eq(one: float, two: float, threshold: float = 0.000001) -> void:
 	assert_almost_eq(
 		one,
