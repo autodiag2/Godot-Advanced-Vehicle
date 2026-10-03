@@ -160,6 +160,30 @@ func update(
 		rear_right_wheel
 	)
 
+	var gearing := drivetrain.get_gearing()
+
+	if gearing == 0.0:
+		clutch.locked = false
+		wheel_drive_torque = 0.0
+		clutch_reaction_torque = 0.0
+		drivetrain.reaction_torque = 0.0
+
+		drivetrain.drivetrain(
+			wheel_drive_torque,
+			rear_brake_torque,
+			front_brake_torque,
+			[
+				rear_left_wheel,
+				rear_right_wheel,
+				front_left_wheel,
+				front_right_wheel
+			],
+			clutch_input,
+			delta
+		)
+
+		return
+
 	var gearbox_shaft_speed := 0.0
 
 	if (
@@ -168,7 +192,7 @@ func update(
 	):
 		gearbox_shaft_speed = (
 			average_rear_wheel_speed *
-			drivetrain.get_gearing()
+			gearing
 		)
 
 	elif (
@@ -177,7 +201,7 @@ func update(
 	):
 		gearbox_shaft_speed = (
 			average_front_wheel_speed *
-			drivetrain.get_gearing()
+			gearing
 		)
 
 	elif (
@@ -190,7 +214,7 @@ func update(
 				average_rear_wheel_speed
 			) *
 			0.5 *
-			drivetrain.get_gearing()
+			gearing
 		)
 
 	var reaction_torque: float = (

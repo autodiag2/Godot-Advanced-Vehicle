@@ -568,6 +568,112 @@ func _create_wheels() -> Array:
 
 	return wheels
 
+func test_selecting_neutral_does_not_stop_running_engine() -> void:
+	var parameters := _create_parameters()
+	var engine := _create_engine(parameters)
+	var wheels := _create_wheels()
+
+	parameters.rpm_idle = 800.0
+
+	powertrain.initialize(parameters)
+	powertrain.drivetrain.set_selected_gear(1)
+
+	engine.rpm = parameters.rpm_idle
+
+	# First run with a gear engaged.
+	powertrain.update(
+		engine,
+		parameters,
+		0.0,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3],
+		0.0,
+		0.0,
+		0.0,
+		0.0,
+		0.01
+	)
+
+	powertrain.drivetrain.set_selected_gear(0)
+
+	powertrain.update(
+		engine,
+		parameters,
+		0.0,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3],
+		0.0,
+		0.0,
+		0.0,
+		0.0,
+		0.01
+	)
+
+	assert_gt(
+		engine.rpm,
+		0.0
+	)
+
+	_free_wheels(wheels)
+
+func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
+	var parameters := _create_parameters()
+	var engine := _create_engine(parameters)
+	var wheels := _create_wheels()
+
+	powertrain.initialize(parameters)
+	powertrain.drivetrain.set_selected_gear(1)
+
+	engine.angular_velocity = 100.0
+	engine.output_torque = 100.0
+
+	powertrain.update(
+		engine,
+		parameters,
+		0.0,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3],
+		0.0,
+		0.0,
+		0.0,
+		0.0,
+		0.01
+	)
+
+	powertrain.drivetrain.set_selected_gear(0)
+
+	powertrain.update(
+		engine,
+		parameters,
+		0.0,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3],
+		0.0,
+		0.0,
+		0.0,
+		0.0,
+		0.01
+	)
+
+	assert_float_eq(
+		powertrain.clutch_reaction_torque,
+		0.0
+	)
+
+	assert_float_eq(
+		powertrain.wheel_drive_torque,
+		0.0
+	)
+
+	_free_wheels(wheels)
 
 func _free_wheels(wheels: Array) -> void:
 	for wheel in wheels:
