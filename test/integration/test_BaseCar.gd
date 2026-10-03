@@ -1,6 +1,8 @@
 extends GutTest
 
-const BASE_CAR_SCENE = preload("res://src/vehicle/base_car.tscn")
+const WORLDSIM_SCENE = preload("res://src/WorldSim.tscn")
+const VEHICLE_SCENE = preload("res://assets/vehicle/sport_car/vehicle.tscn")
+
 
 func _create_ground() -> StaticBody3D:
 	var ground := StaticBody3D.new()
@@ -16,14 +18,21 @@ func _create_ground() -> StaticBody3D:
 	return ground
 
 
-func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void:
-	var car := BASE_CAR_SCENE.instantiate()
-	car.get_node("Gui").process_mode = Node.PROCESS_MODE_DISABLED
-	add_child(car)
-
+func _create_world_sim() -> WorldSim:
+	var world_sim := WORLDSIM_SCENE.instantiate() as WorldSim
+	add_child(world_sim)
+	await get_tree().process_frame
+	world_sim.load_vehicle(VEHICLE_SCENE)
 	await get_tree().physics_frame
+	return world_sim
 
-	var wheel : RaycastSuspension = car.wheel_fl
+
+func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void:
+	var world_sim := await _create_world_sim()
+	var car := world_sim.current_vehicle as BaseCar
+	assert_not_null(car)
+
+	var wheel: RaycastSuspension = car.wheel_fl
 	var dynamics := wheel.dynamics
 
 	var local_velocity := Vector3(
@@ -55,12 +64,15 @@ func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void
 		"Near-zero planar velocity must not generate a significant tire force"
 	)
 
+	world_sim.queue_free()
+
 
 func test_car_at_rest_does_not_start_wheels_spinning() -> void:
 	_create_ground()
 
-	var car := BASE_CAR_SCENE.instantiate()
-	add_child(car)
+	var world_sim := await _create_world_sim()
+	var car := world_sim.current_vehicle as BaseCar
+	assert_not_null(car)
 
 	# Allow the complete physics simulation to initialize:
 	# RigidBody3D, raycasts, suspension and wheel dynamics.
@@ -118,4 +130,4 @@ func test_car_at_rest_does_not_start_wheels_spinning() -> void:
 		"Rear-right wheel must not start spinning at rest"
 	)
 
-	car.queue_free()
+	world_sim.queue_free()

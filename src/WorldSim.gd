@@ -14,7 +14,8 @@ const VEHICLE_PATH := "res://assets/vehicle/"
 @onready var ui_root := $UIRoot
 
 var current_world: Node
-var current_vehicle: Node
+var current_vehicle_container: Node
+var current_vehicle: BaseCar
 var hud: Control
 var setup_screen: Control
 var world_scenes: Array[PackedScene] = []
@@ -107,14 +108,19 @@ func load_vehicle(vehicle: Variant) -> void:
 		current_vehicle.queue_free()
 		current_vehicle = null
 
-	current_vehicle = scene.instantiate()
-	vehicle_root.add_child(current_vehicle)
+	if current_vehicle_container != null:
+		current_vehicle_container.queue_free()
+		current_vehicle_container = null
 
-	var car := current_vehicle as BaseCar
+	current_vehicle_container = scene.instantiate()
+	vehicle_root.add_child(current_vehicle_container)
+
+	var car := current_vehicle_container as BaseCar
 	if car == null:
-		car = current_vehicle.find_child("Vehicle", true, false) as BaseCar
+		car = current_vehicle_container.find_child("Vehicle", true, false) as BaseCar
 
 	assert(car != null)
+	current_vehicle = car
 
 	if hud != null:
 		var joystick := hud.find_child("Joystick", true, false) as Control
