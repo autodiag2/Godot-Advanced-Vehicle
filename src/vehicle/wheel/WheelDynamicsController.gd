@@ -42,13 +42,13 @@ func update(
 
 	var lateral_slip := 0.0
 
-	if planar_velocity.length() > wheel.speed_threshold:
-		lateral_slip = asin(
-			clamp(
-				-planar_velocity.normalized().x,
-				-1.0,
-				1.0
-			)
+	if (
+		planar_velocity.length_squared() >
+		pow(wheel.speed_threshold, 2)
+	):
+		lateral_slip = atan2(
+			-planar_velocity.x,
+			absf(planar_velocity.y)
 		)
 
 	wheel.update_slip(
