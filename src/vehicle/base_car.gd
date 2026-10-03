@@ -129,10 +129,6 @@ func _physics_process(delta: float) -> void:
 		wheel_br
 	)
 
-	engine_controller.reaction_torque = (
-		powertrain_controller.clutch_reaction_torque
-	)
-
 	engine_controller.update(
 		car_params,
 		input_controller.throttle,
@@ -155,33 +151,24 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
-	if powertrain_controller.drivetrain.selected_gear == 0:
-		powertrain_controller.freewheel(
-			wheel_fl,
-			wheel_fr,
-			wheel_bl,
-			wheel_br,
-			brake_controller.front_left_brake_torque,
-			brake_controller.front_right_brake_torque,
-			brake_controller.rear_left_brake_torque,
-			brake_controller.rear_right_brake_torque,
-			delta
-		)
-	else:
-		powertrain_controller.engage(
-			engine_controller,
-			car_params,
-			input_controller.clutch,
-			wheel_fl,
-			wheel_fr,
-			wheel_bl,
-			wheel_br,
-			brake_controller.front_left_brake_torque,
-			brake_controller.front_right_brake_torque,
-			brake_controller.rear_left_brake_torque,
-			brake_controller.rear_right_brake_torque,
-			delta
-		)
+	powertrain_controller.update(
+		engine_controller,
+		car_params,
+		input_controller.clutch,
+		wheel_fl,
+		wheel_fr,
+		wheel_bl,
+		wheel_br,
+		brake_controller.front_left_brake_torque,
+		brake_controller.front_right_brake_torque,
+		brake_controller.rear_left_brake_torque,
+		brake_controller.rear_right_brake_torque,
+		delta
+	)
+
+	engine_controller.reaction_torque = (
+		powertrain_controller.clutch_reaction_torque
+	)
 
 	engine_controller.clamp_to_idle(
 		car_params
@@ -205,7 +192,6 @@ func _physics_process(delta: float) -> void:
 		self,
 		car_params
 	)
-
 
 func getSpeedKmH() -> int:
 	return int(motion_controller.longitudinal_velocity *

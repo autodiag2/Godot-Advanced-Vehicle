@@ -10,6 +10,7 @@ var wheel_drive_torque: float = 0.0
 var average_front_wheel_speed: float = 0.0
 var average_rear_wheel_speed: float = 0.0
 
+
 func initialize(parameters: CarParameters) -> void:
 	clutch.friction = parameters.clutch_friction
 
@@ -128,69 +129,7 @@ func update_wheel_speeds(
 	)
 
 
-func freewheel(
-	front_left_wheel: RaycastSuspension,
-	front_right_wheel: RaycastSuspension,
-	rear_left_wheel: RaycastSuspension,
-	rear_right_wheel: RaycastSuspension,
-	front_left_brake_torque: float,
-	front_right_brake_torque: float,
-	rear_left_brake_torque: float,
-	rear_right_brake_torque: float,
-	delta: float
-) -> void:
-	var front_brake_torque := (
-		front_left_brake_torque +
-		front_right_brake_torque
-	)
-
-	var rear_brake_torque := (
-		rear_left_brake_torque +
-		rear_right_brake_torque
-	)
-
-	clutch_reaction_torque = 0.0
-	wheel_drive_torque = 0.0
-	clutch.locked = false
-	drivetrain.reaction_torque = 0.0
-
-	front_left_wheel.apply_torque(
-		0.0,
-		front_brake_torque,
-		0.0,
-		delta
-	)
-
-	front_right_wheel.apply_torque(
-		0.0,
-		front_brake_torque,
-		0.0,
-		delta
-	)
-
-	rear_left_wheel.apply_torque(
-		0.0,
-		rear_brake_torque,
-		0.0,
-		delta
-	)
-
-	rear_right_wheel.apply_torque(
-		0.0,
-		rear_brake_torque,
-		0.0,
-		delta
-	)
-
-	update_wheel_speeds(
-		front_left_wheel,
-		front_right_wheel,
-		rear_left_wheel,
-		rear_right_wheel
-	)
-
-
-func engage(
+func update(
 	engine: EngineController,
 	parameters: CarParameters,
 	clutch_input: float,
