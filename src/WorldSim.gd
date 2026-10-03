@@ -3,6 +3,7 @@ extends Node
 
 const WORLD_PATH := "res://assets/world/"
 const VEHICLE_PATH := "res://assets/vehicle/"
+const VEHICLE_SPAWN := "VehicleSpawn"
 
 @export var default_world: PackedScene = preload(WORLD_PATH + "/factory_test/world.tscn")
 @export var default_vehicle: PackedScene = preload(VEHICLE_PATH + "/sport_car/vehicle.tscn")
@@ -45,10 +46,11 @@ func _load_world_scenes() -> void:
 	assert(dir != null)
 
 	for folder_name in dir.get_directories():
-		var path := "%s/%s/world.tscn" % [WORLD_PATH,folder_name]
+		var path := "%s/%s/world.tscn" % [WORLD_PATH, folder_name]
 		var scene := load(path) as PackedScene
 		if scene != null:
 			world_scenes.append(scene)
+
 
 func _load_vehicle_scenes() -> void:
 	vehicle_scenes.clear()
@@ -61,6 +63,7 @@ func _load_vehicle_scenes() -> void:
 		var scene := load(path) as PackedScene
 		if scene != null:
 			vehicle_scenes.append(scene)
+
 
 func load_world(world: Variant) -> void:
 	var scene: PackedScene
@@ -85,6 +88,9 @@ func load_world(world: Variant) -> void:
 
 	current_world = scene.instantiate()
 	world_root.add_child(current_world)
+
+	_position_vehicle_on_world()
+
 
 func load_vehicle(vehicle: Variant) -> void:
 	var scene: PackedScene
@@ -130,6 +136,30 @@ func load_vehicle(vehicle: Variant) -> void:
 		if hud.has_method("set_vehicle"):
 			hud.set_vehicle(car)
 
+	_position_vehicle_on_world()
+
+
+func _position_vehicle_on_world() -> void:
+	if current_world == null:
+		return
+
+	if current_vehicle == null:
+		return
+
+	var vehicle_spawn := current_world.find_child(
+		VEHICLE_SPAWN,
+		true,
+		false
+	) as Node3D
+
+	assert(vehicle_spawn != null, "World must contain a " + VEHICLE_SPAWN + " Node3D")
+
+	current_vehicle.global_position = vehicle_spawn.global_position
+	current_vehicle.linear_velocity = Vector3.ZERO
+	current_vehicle.angular_velocity = Vector3.ZERO
+	current_vehicle.sleeping = false
+
+
 func show_setup_screen() -> void:
 	if setup_screen != null:
 		return
@@ -156,6 +186,7 @@ func setup_vehicle(scene: PackedScene) -> void:
 
 func setup_world(world: Variant) -> void:
 	load_world(world)
+
 
 func setup(world: Variant, vehicle_scene: PackedScene) -> void:
 	load_world(world)

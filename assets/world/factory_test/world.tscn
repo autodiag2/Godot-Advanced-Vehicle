@@ -125,3 +125,6 @@ environment = SubResource("Environment_h24t4")
 
 [node name="CameraReference" type="Marker3D" parent="." unique_id=1008883091]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 8)
+
+[node name="VehicleSpawn" type="Node3D" parent="." unique_id=45898660]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.7307587, 96.460846)

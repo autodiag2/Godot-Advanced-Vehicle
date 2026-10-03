@@ -73,4 +73,7 @@ environment = SubResource("Environment_1y4ai")
 [node name="CarBridge" type="Node" parent="." unique_id=1644839760]
 script = ExtResource("2_aa1hc")
 
+[node name="VehicleSpawn" type="Node3D" parent="." unique_id=169113057]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -26.445362, 0, -35.507294)
+
 [editable path="Track"]

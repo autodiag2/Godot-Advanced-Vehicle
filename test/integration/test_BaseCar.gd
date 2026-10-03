@@ -51,11 +51,6 @@ func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void
 		0.016
 	)
 
-	# With almost no planar velocity, the wheel must not see
-	# a ~78 degree lateral slip angle.
-	#
-	# The longitudinal force may contain rolling resistance,
-	# therefore test the tire force independently.
 	var tire_force_y := force.y - dynamics.rolling_resistance
 
 	assert_lt(
@@ -74,8 +69,12 @@ func test_car_at_rest_does_not_start_wheels_spinning() -> void:
 	var car := world_sim.current_vehicle as BaseCar
 	assert_not_null(car)
 
-	# Allow the complete physics simulation to initialize:
-	# RigidBody3D, raycasts, suspension and wheel dynamics.
+	car.global_position = Vector3(0.0, 1.0, 0.0)
+	car.linear_velocity = Vector3.ZERO
+	car.angular_velocity = Vector3.ZERO
+
+	await get_tree().physics_frame
+
 	for i in range(30):
 		await get_tree().physics_frame
 
@@ -96,14 +95,10 @@ func test_car_at_rest_does_not_start_wheels_spinning() -> void:
 		"Rear-right wheel must be in contact with the ground"
 	)
 
-	# The engine has not been started.
 	assert_false(
 		car.engine_controller.combustion_running,
 		"Engine must not be running"
 	)
-
-	for i in range(30):
-		await get_tree().physics_frame
 
 	assert_almost_eq(
 		car.wheel_fl.get_spin(),
