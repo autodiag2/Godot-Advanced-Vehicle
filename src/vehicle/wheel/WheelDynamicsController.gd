@@ -45,7 +45,7 @@ func update(
 			1.0
 		)
 	)
-
+	
 	wheel.update_slip(
 		longitudinal_velocity,
 		lateral_slip

@@ -163,7 +163,7 @@ func _get_locked_spin(
 ) -> float:
 	assert(wheels.size() > 0)
 	assert(delta >= 0.0)
-
+	
 	var net_torque := drive_torque
 	var total_inertia := drive_inertia
 

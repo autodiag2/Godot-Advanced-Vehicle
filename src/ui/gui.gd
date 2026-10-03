@@ -1,6 +1,5 @@
 extends Control
 
-
 @onready var car = get_parent()
 @onready var speedlabel = $Essentials/VBoxContainer/Speedlabel
 @onready var gearlabel = $Essentials/VBoxContainer/GearLabel

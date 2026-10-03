@@ -15,9 +15,9 @@ enum DRIVE_TYPE{
 @export var gear_inertia := 0.10
 @export var automatic := true
 
-@export var rear_diff: DiffParameters
-@export var front_diff: DiffParameters
-@export var center_diff: DiffParameters
+@export var rear_diff: DiffParameters = DiffParameters.new()
+@export var front_diff: DiffParameters = DiffParameters.new()
+@export var center_diff: DiffParameters = DiffParameters.new()
 
 
 @export var center_split_fr := 0.4 # AWD torque split front / rear, unused if central diff is not limited slip

@@ -38,14 +38,14 @@ enum DRIVE_TYPE{
 @export var clutch_friction := 500.0
 
 ######### Drivetrain variables #########
-@export var drivetrain_params: DriveTrainParameters
+@export var drivetrain_params: DriveTrainParameters = DriveTrainParameters.new()
 
 ######### Aero #########
 @export var cd = 0.3
 @export var air_density = 1.225
 @export var frontal_area = 2.0
 
-@export var wheel_params_fl: WheelSuspensionParameters
-@export var wheel_params_fr: WheelSuspensionParameters
-@export var wheel_params_bl: WheelSuspensionParameters
-@export var wheel_params_br: WheelSuspensionParameters
+@export var wheel_params_fl: WheelSuspensionParameters = WheelSuspensionParameters.new()
+@export var wheel_params_fr: WheelSuspensionParameters = WheelSuspensionParameters.new()
+@export var wheel_params_bl: WheelSuspensionParameters = WheelSuspensionParameters.new()
+@export var wheel_params_br: WheelSuspensionParameters = WheelSuspensionParameters.new()

@@ -1,7 +1,7 @@
 class_name WheelSuspensionParameters
 extends Resource
 
-@export var tire_model: TireModel
+@export var tire_model: TireModel = CurveTireModel.new()
 @export var spring_length := 0.15
 @export var spring_stiffness := 45.0
 @export var bump := 6.0

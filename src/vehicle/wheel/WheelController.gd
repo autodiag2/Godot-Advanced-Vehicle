@@ -59,7 +59,7 @@ func update_force(
 	surface_mu: float
 ) -> Vector3:
 	assert(tire != null)
-
+	
 	force = tire.update_forces(
 		slip,
 		normal_load,
