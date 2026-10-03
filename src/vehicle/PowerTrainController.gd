@@ -63,7 +63,7 @@ func update_automatic_shifting(
 				next_gear - 1
 			] *
 			parameters.drivetrain_params.final_drive *
-			driven_wheel_speed *
+			absf(driven_wheel_speed) *
 			EngineController.RPM_PER_RADIAN_PER_SECOND
 		)
 
@@ -77,7 +77,7 @@ func update_automatic_shifting(
 				previous_gear - 1
 			] *
 			parameters.drivetrain_params.final_drive *
-			driven_wheel_speed *
+			absf(driven_wheel_speed) *
 			EngineController.RPM_PER_RADIAN_PER_SECOND
 		)
 

@@ -211,7 +211,7 @@ func calculate_torque(
 ) -> float:
 	assert(parameters != null)
 	assert(parameters.max_engine_rpm > 0.0)
-	#assert(engine_rpm >= 0.0)
+	assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 
