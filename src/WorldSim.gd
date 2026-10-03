@@ -4,7 +4,7 @@ extends Node
 const WORLD_PATH := "res://assets/world/"
 const VEHICLE_PATH := "res://assets/vehicle/"
 
-@export var default_world: PackedScene = preload(WORLD_PATH + "/grass_loop/world.tscn")
+@export var default_world: PackedScene = preload(WORLD_PATH + "/factory_test/world.tscn")
 @export var default_vehicle: PackedScene = preload(VEHICLE_PATH + "/sport_car/vehicle.tscn")
 @export var hud_scene: PackedScene = preload("res://assets/ui/gui.tscn")
 @export var setup_scene: PackedScene

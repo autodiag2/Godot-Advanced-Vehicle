@@ -1,0 +1,127 @@
+[gd_scene format=3 uid="uid://bsjfmyg722aw2"]
+
+[sub_resource type="StandardMaterial3D" id="Material_track"]
+albedo_color = Color(0.12, 0.12, 0.12, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_track"]
+size = Vector3(12, 0.1, 200)
+
+[sub_resource type="BoxShape3D" id="BoxShape_track"]
+size = Vector3(12, 0.1, 200)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_h24t4"]
+size = Vector3(2.354004, 1, 20.00381)
+
+[sub_resource type="StandardMaterial3D" id="Material_grass"]
+albedo_color = Color(0.16, 0.35, 0.1, 1)
+
+[sub_resource type="BoxMesh" id="BoxMesh_grass"]
+size = Vector3(24, 0.1, 200)
+
+[sub_resource type="StandardMaterial3D" id="Material_curb_red"]
+albedo_color = Color(0.75, 0.03, 0.03, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_curb"]
+size = Vector3(0.5, 0.12, 200)
+
+[sub_resource type="StandardMaterial3D" id="Material_curb_white"]
+albedo_color = Color(0.95, 0.95, 0.95, 1)
+roughness = 0.9
+
+[sub_resource type="BoxMesh" id="BoxMesh_curb_white"]
+size = Vector3(0.5, 0.12, 200)
+
+[sub_resource type="StandardMaterial3D" id="Material_wall"]
+albedo_color = Color(0.65, 0.65, 0.65, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+size = Vector3(12, 2, 0.5)
+
+[sub_resource type="BoxShape3D" id="BoxShape_wall"]
+size = Vector3(12, 2, 0.5)
+
+[sub_resource type="StandardMaterial3D" id="Material_wall_top"]
+albedo_color = Color(0.85, 0.05, 0.05, 1)
+roughness = 0.8
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall_top"]
+size = Vector3(12, 0.15, 0.5)
+
+[sub_resource type="Environment" id="Environment_h24t4"]
+background_mode = 2
+
+[node name="World" type="Node3D" unique_id=1656723443]
+
+[node name="Track" type="StaticBody3D" parent="." unique_id=1259886034]
+
+[node name="Mesh" type="MeshInstance3D" parent="Track" unique_id=19493768]
+material_override = SubResource("Material_track")
+mesh = SubResource("BoxMesh_track")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Track" unique_id=614463877]
+shape = SubResource("BoxShape_track")
+
+[node name="GrassLeft" type="StaticBody3D" parent="." unique_id=952495423]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -30.207455, 0.02, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GrassLeft" unique_id=831465833]
+transform = Transform3D(10, 0, 0, 0, 0.1, 0, 0, 0, 10, 11.92334, -0.015, 0.035583496)
+shape = SubResource("BoxShape3D_h24t4")
+
+[node name="Grass" type="MeshInstance3D" parent="GrassLeft" unique_id=1177633905]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.75, -0.015, 0)
+material_override = SubResource("Material_grass")
+mesh = SubResource("BoxMesh_grass")
+skeleton = NodePath("../../CurbRight")
+
+[node name="GrassRight" type="StaticBody3D" parent="." unique_id=118501296]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.25, 0.01, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="GrassRight" unique_id=208612653]
+transform = Transform3D(10, 0, 0, 0, 0.1, 0, 0, 0, 10, 11.92334, -0.015, 0.035583496)
+shape = SubResource("BoxShape3D_h24t4")
+
+[node name="Grass" type="MeshInstance3D" parent="GrassRight" unique_id=682580411]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 11.75, -0.015, 0)
+material_override = SubResource("Material_grass")
+mesh = SubResource("BoxMesh_grass")
+skeleton = NodePath("../..")
+
+[node name="CurbRight" type="MeshInstance3D" parent="." unique_id=967339196]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 6.25, 0.01, 0)
+material_override = SubResource("Material_curb_red")
+mesh = SubResource("BoxMesh_curb")
+
+[node name="CurbLeft" type="MeshInstance3D" parent="." unique_id=1139710135]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -6.25, 0.01, 0)
+material_override = SubResource("Material_curb_white")
+mesh = SubResource("BoxMesh_curb_white")
+
+[node name="Wall" type="StaticBody3D" parent="." unique_id=1291237134]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, -98)
+
+[node name="Mesh" type="MeshInstance3D" parent="Wall" unique_id=1026321528]
+material_override = SubResource("Material_wall")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Wall" unique_id=2146315752]
+shape = SubResource("BoxShape_wall")
+
+[node name="Top" type="MeshInstance3D" parent="Wall" unique_id=246431469]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.95, 0)
+material_override = SubResource("Material_wall_top")
+mesh = SubResource("BoxMesh_wall_top")
+
+[node name="Sun" type="DirectionalLight3D" parent="." unique_id=303404670]
+transform = Transform3D(1, 0, 0, 0, -0.05301577, 0.9985937, 0, -0.9985937, -0.05301577, 6.130497, 17.335228, 71.23318)
+light_energy = 8.945
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=614966557]
+environment = SubResource("Environment_h24t4")
+
+[node name="CameraReference" type="Marker3D" parent="." unique_id=1008883091]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 8)
