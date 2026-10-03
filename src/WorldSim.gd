@@ -110,7 +110,10 @@ func load_vehicle(vehicle: Variant) -> void:
 	current_vehicle = scene.instantiate()
 	vehicle_root.add_child(current_vehicle)
 
-	var car := current_vehicle.find_child("RigidBodyCar", true, false) as BaseCar
+	var car := current_vehicle as BaseCar
+	if car == null:
+		car = current_vehicle.find_child("RigidBodyCar", true, false) as BaseCar
+
 	assert(car != null)
 
 	if hud != null:
