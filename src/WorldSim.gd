@@ -1,7 +1,7 @@
 class_name WorldSim
 extends Node
 
-@export var default_world: PackedScene = preload("res://assets/world/grass_loop.tscn")
+@export var default_world: PackedScene = preload("res://assets/world/grass_loop/world.tscn")
 @export var default_vehicle: PackedScene = preload("res://assets/vehicle/sport_car.tscn")
 @export var hud_scene: PackedScene = preload("res://assets/ui/gui.tscn")
 @export var setup_scene: PackedScene
@@ -14,8 +14,11 @@ var current_world: Node
 var current_vehicle: Node
 var hud: Control
 var setup_screen: Control
+var world_scenes: Array[PackedScene] = []
+const WORLD_PATH := "res://assets/world"
 
 func _ready() -> void:
+	_load_world_scenes()
 	if hud_scene != null:
 		hud = hud_scene.instantiate()
 		ui_root.add_child(hud)
@@ -30,7 +33,33 @@ func _ready() -> void:
 		show_setup_screen()
 
 
-func load_world(scene: PackedScene) -> void:
+func _load_world_scenes() -> void:
+	world_scenes.clear()
+
+	var dir := DirAccess.open(WORLD_PATH)
+	assert(dir != null)
+
+	for folder_name in dir.get_directories():
+		var path := "%s/%s/world.tscn" % [WORLD_PATH,folder_name]
+		var scene := load(path) as PackedScene
+		if scene != null:
+			world_scenes.append(scene)
+
+func load_world(world: Variant) -> void:
+	var scene: PackedScene
+	if world is String:
+		var path: String
+		if world.begins_with(WORLD_PATH):
+			path = world
+		else:
+			path = "%s/%s/world.tscn" % [WORLD_PATH, world]
+
+		scene = load(path) as PackedScene
+	elif world is PackedScene:
+		scene = world
+	else:
+		assert(false, "Invalid world type")
+	
 	assert(scene != null)
 
 	if current_world != null:
@@ -85,11 +114,10 @@ func setup_vehicle(scene: PackedScene) -> void:
 	hide_setup_screen()
 
 
-func setup_world(scene: PackedScene) -> void:
-	load_world(scene)
+func setup_world(world: Variant) -> void:
+	load_world(world)
 
-
-func setup(world_scene: PackedScene, vehicle_scene: PackedScene) -> void:
-	load_world(world_scene)
+func setup(world: Variant, vehicle_scene: PackedScene) -> void:
+	load_world(world)
 	load_vehicle(vehicle_scene)
 	hide_setup_screen()
