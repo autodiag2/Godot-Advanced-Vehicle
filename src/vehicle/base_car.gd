@@ -166,9 +166,6 @@ func _physics_process(delta: float) -> void:
 	)
 	#print("MIDDLE3 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
-	engine_controller.clamp_to_idle()
-	#print("MIDDLE4 wheel spin = " + str(wheel_bl.wheel.get_spin()))
-
 	motion_controller.apply_aerodynamic_drag(
 		self,
 		car_params

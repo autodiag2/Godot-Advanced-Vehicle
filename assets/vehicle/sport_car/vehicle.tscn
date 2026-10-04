@@ -19,6 +19,7 @@ script = ExtResource("2_e2oix")
 
 [sub_resource type="Resource" id="Resource_3hrmt"]
 script = ExtResource("3_2fru8")
+automatic = false
 metadata/_custom_type_script = "uid://cumcs3yp4no2v"
 
 [sub_resource type="Resource" id="Resource_6073w"]

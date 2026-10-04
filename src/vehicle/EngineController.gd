@@ -289,16 +289,6 @@ func calculate_torque(
 		engine_friction_torque
 	)
 
-
-func clamp_to_idle() -> void:
-	assert(angular_velocity >= 0.0)
-
-	angular_velocity = maxf(
-		angular_velocity,
-		0.0
-	)
-
-
 func consume_fuel(
 	car: RigidBody3D,
 	delta: float

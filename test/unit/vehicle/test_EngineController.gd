@@ -397,29 +397,6 @@ func test_update_zero_delta_does_not_change_angular_velocity() -> void:
 		initial_angular_velocity
 	)
 
-
-func test_clamp_to_idle_does_not_raise_rpm() -> void:
-	engine.rpm = 400.0
-
-	engine.clamp_to_idle()
-
-	assert_eq(
-		engine.rpm,
-		400.0
-	)
-
-
-func test_clamp_to_idle_does_not_change_valid_rpm() -> void:
-	engine.rpm = 1500.0
-
-	engine.clamp_to_idle()
-
-	assert_float_eq(
-		engine.rpm,
-		1500.0
-	)
-
-
 func test_consume_fuel_reduces_fuel() -> void:
 	engine.rpm = 3000.0
 	engine.output_torque = 100.0
