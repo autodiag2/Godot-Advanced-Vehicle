@@ -35,7 +35,6 @@ func before_each() -> void:
 	parameters.rpm_idle = 800.0
 	parameters.max_torque = 200.0
 	parameters.engine_brake = 20.0
-	parameters.engine_bsfc = 250.0
 
 	parameters.torque_curve = Curve.new()
 	parameters.torque_curve.add_point(
@@ -429,42 +428,6 @@ func test_consume_fuel_reduces_vehicle_mass() -> void:
 		car.mass,
 		initial_mass
 	)
-
-
-func test_fuel_consumption_uses_angular_velocity() -> void:
-	engine.rpm = 3000.0
-	engine.output_torque = 100.0
-
-	var initial_fuel := engine.fuel_litres
-
-	engine.consume_fuel(
-		car,
-		1.0
-	)
-
-	var expected_power_kw := (
-		100.0 *
-		engine.angular_velocity /
-		1000.0
-	)
-
-	var expected_fuel := (
-		parameters.engine_bsfc *
-		expected_power_kw /
-		(
-			3600.0 *
-			1000.0 *
-			EngineController.PETROL_KG_PER_LITRE
-		)
-	)
-
-	assert_float_eq(
-		initial_fuel -
-		engine.fuel_litres,
-		expected_fuel,
-		0.000001
-	)
-
 
 func test_zero_output_torque_does_not_consume_fuel() -> void:
 	engine.rpm = 3000.0

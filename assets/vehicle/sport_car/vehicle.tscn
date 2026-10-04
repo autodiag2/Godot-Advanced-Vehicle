@@ -7,6 +7,7 @@
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="3_i57cj"]
 [ext_resource type="AudioStream" path="res://assets/engine/tres/engine_sample.tres" id="3_u8x6m"]
 [ext_resource type="Script" uid="uid://cq401wgg5c803" path="res://src/vehicle/drivetrain_params.gd" id="3_xtqkk"]
+[ext_resource type="Resource" uid="uid://dgywvijqfg0j8" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="5_3hrmt"]
 [ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve/CurveTireModel.gd" id="6_2o354"]
 [ext_resource type="Texture2D" uid="uid://xcvloq7plggh" path="res://assets/vehicle/sport_car/sport_car_colorpalette8x8.png" id="7_cvq8b"]
 [ext_resource type="PackedScene" uid="uid://vls3meliu3jk" path="res://assets/vehicle/sport_car/sport_car.glb" id="10_sat6w"]

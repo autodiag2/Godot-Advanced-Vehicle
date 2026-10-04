@@ -24,6 +24,7 @@ var output_torque: float = 0.0
 var net_torque: float = 0.0
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
+var combustion_torque: float = 0.0
 var fuel_litres: float = 0.0
 var combustion_running: bool = false
 var parameters: CarParameters
@@ -74,19 +75,8 @@ func initialize(
 	assert(parameters_arg.engine_moment > 0.0)
 	assert(parameters_arg.max_engine_rpm > 0.0)
 	assert(parameters_arg.rpm_idle >= 0.0)
-	if (
-		parameters_arg.engine_bsfc < BSFC_MIN_REALISTIC ||
-		parameters_arg.engine_bsfc > BSFC_MAX_REALISTIC
-	):
-		push_warning(
-			"Engine BSFC is outside the realistic range for a car engine: " +
-			str(parameters_arg.engine_bsfc) +
-			" g/kWh (expected approximately " +
-			str(BSFC_MIN_REALISTIC) +
-			"–" +
-			str(BSFC_MAX_REALISTIC) +
-			" g/kWh)"
-		)
+	assert(parameters_arg.engine_bsfc_map != null)
+	
 	parameters = parameters_arg
 	engine_sound = parameters.engine_sound
 	max_engine_rpm = parameters.max_engine_rpm
@@ -98,6 +88,7 @@ func initialize(
 	engine_audio_player = audio_player
 	angular_velocity = 0.0
 	output_torque = 0.0
+	combustion_torque = 0.0
 	starter = starter_arg
 	net_torque = 0.0
 	limiter_torque = 0.0
@@ -251,7 +242,7 @@ func calculate_torque(
 		)
 	)
 
-	var combustion_torque := 0.0
+	combustion_torque = 0.0
 
 	if combustion_enabled:
 		combustion_torque = (
@@ -296,14 +287,41 @@ func consume_fuel(
 	assert(car != null)
 	assert(delta >= 0.0)
 
-	var mechanical_power_kw : float = (
+	var mechanical_power_kw: float = (
 		max(output_torque, 0.0) *
 		angular_velocity /
 		WATTS_PER_KILOWATT
 	)
 
+	var maximum_combustion_torque: float = (
+		parameters.torque_curve.sample_baked(
+			clamp(
+				rpm /
+				parameters.max_engine_rpm,
+				0.0,
+				1.0
+			)
+		) *
+		parameters.max_torque
+	)
+
+	var engine_load: float = 0.0
+
+	if maximum_combustion_torque > 0.0:
+		engine_load = clamp(
+			combustion_torque /
+			maximum_combustion_torque,
+			0.0,
+			1.0
+		)
+
+	var bsfc: float = parameters.engine_bsfc_map.sample(
+		rpm,
+		engine_load
+	)
+
 	var fuel_consumed: float = (
-		parameters.engine_bsfc *
+		bsfc *
 		mechanical_power_kw *
 		delta /
 		(
@@ -312,7 +330,7 @@ func consume_fuel(
 			PETROL_KG_PER_LITRE
 		)
 	)
-	
+
 	fuel_consumed = min(
 		fuel_consumed,
 		fuel_litres
@@ -328,7 +346,7 @@ func consume_fuel(
 		fuel_consumed *
 		PETROL_KG_PER_LITRE
 	)
-	
+
 	if fuel_litres <= 0.0:
 		fuel_litres = 0.0
 		output_torque = 0.0
