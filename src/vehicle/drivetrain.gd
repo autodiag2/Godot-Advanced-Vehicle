@@ -21,20 +21,20 @@ enum DRIVE_TYPE {
 	AWD,
 }
 
-@export var drivetrain_params: DriveTrainParameters
+var gearbox := Gearbox.new()
 
-var selected_gear := 0
+@export var drivetrain_params: DriveTrainParameters:
+	set(value):
+		drivetrain_params = value
+		gearbox.setup(value)
+
 var _diff_clutch := Clutch.new()
-var _engine_inertia := 0.0
 var _diff_split := 0.5
-var last_shift_time := 0
 
 var avg_rear_spin := 0.0
 var avg_front_spin := 0.0
 
-var drive_inertia := 10.0
 var reaction_torque := 0.0
-
 
 func automatic_shifting(
 	cur_torque,
@@ -45,114 +45,36 @@ func automatic_shifting(
 	brake_input,
 	speed
 ):
-	if !drivetrain_params.automatic:
-		return
 
-	var reversing = false
-	var shift_time = 700
-
-	if selected_gear == -1:
-		reversing = true
-
-	if (
-		selected_gear > 0 &&
-		higher_gear_torque > cur_torque
-	):
-		if rpm > 0.85 * max_rpm:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_up()
-
-	if (
-		selected_gear > 1 &&
-		rpm < 0.5 * max_rpm &&
-		lower_gear_torque > cur_torque
-	):
-		if Time.get_ticks_msec() - last_shift_time > shift_time:
-			shift_down()
-
-	if abs(selected_gear) <= 1 and abs(speed) < 3.0 and brake_input > 0.2:
-		if !reversing:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_down()
-		else:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_up()
+	gearbox.automatic_shifting(
+		cur_torque,
+		lower_gear_torque,
+		higher_gear_torque,
+		rpm,
+		max_rpm,
+		brake_input,
+		speed
+	)
 
 
 func set_selected_gear(gear):
-	assert(drivetrain_params != null)
-
-	gear = clamp(
-		gear,
-		-1,
-		drivetrain_params.gear_ratios.size()
-	)
-
-	selected_gear = gear
+	gearbox.set_selected_gear(gear)
 
 
 func shift_up():
-	if selected_gear < drivetrain_params.gear_ratios.size():
-		selected_gear += 1
-		last_shift_time = Time.get_ticks_msec()
-		set_selected_gear(selected_gear)
+	gearbox.shift_up()
 
 
 func shift_down():
-	if selected_gear > -1:
-		selected_gear -= 1
-		last_shift_time = Time.get_ticks_msec()
-		set_selected_gear(selected_gear)
+	gearbox.shift_down()
 
 
 func get_gearing() -> float:
-	assert(drivetrain_params != null)
-	assert(
-		selected_gear >= -1 &&
-		selected_gear <= drivetrain_params.gear_ratios.size()
-	)
-
-	if selected_gear > 0:
-		return (
-			drivetrain_params.gear_ratios[selected_gear - 1] *
-			drivetrain_params.final_drive
-		)
-
-	if selected_gear == -1:
-		return (
-			-drivetrain_params.reverse_ratio *
-			drivetrain_params.final_drive
-		)
-
-	return 0.0
+	return gearbox.get_gearing()
 
 
 func set_input_inertia(value):
-	assert(value > 0.0)
-	_engine_inertia = value
-
-
-func _get_drive_inertia(clutch_input: float) -> float:
-	assert(clutch_input >= 0.0)
-	assert(clutch_input <= 1.0)
-	assert(drivetrain_params != null)
-
-	var gearing : int = abs(get_gearing())
-
-	var gearbox_inertia := (
-		pow(gearing, 2) *
-		drivetrain_params.gear_inertia
-	)
-
-	var reflected_engine_inertia := (
-		_engine_inertia *
-		(1.0 - clutch_input)
-	)
-
-	return (
-		gearbox_inertia +
-		reflected_engine_inertia
-	)
+	gearbox.set_input_inertia(value)
 
 
 func _get_locked_spin(
@@ -163,9 +85,9 @@ func _get_locked_spin(
 ) -> float:
 	assert(wheels.size() > 0)
 	assert(delta >= 0.0)
-	
+
 	var net_torque := drive_torque
-	var total_inertia := drive_inertia
+	var total_inertia := gearbox.drive_inertia
 
 	for wheel in wheels:
 		net_torque += wheel.get_reaction_torque()
@@ -181,7 +103,7 @@ func _get_locked_spin(
 
 	average_spin /= wheels.size()
 
-	var brake_direction : float = sign(average_spin)
+	var brake_direction: float = sign(average_spin)
 
 	if brake_direction == 0.0:
 		brake_direction = sign(net_torque)
@@ -267,14 +189,14 @@ func differential(
 			diff_sum += wheels[0].apply_torque(
 				t1,
 				brake_torque * 0.5,
-				drive_inertia,
+				gearbox.drive_inertia,
 				delta
 			)
 
 			diff_sum -= wheels[1].apply_torque(
 				t2,
 				brake_torque * 0.5,
-				drive_inertia,
+				gearbox.drive_inertia,
 				delta
 			)
 
@@ -306,14 +228,14 @@ func differential(
 			wheels[0].apply_torque(
 				t1,
 				brake_torque * 0.5,
-				drive_inertia,
+				gearbox.drive_inertia,
 				delta
 			)
 
 			wheels[1].apply_torque(
 				t2,
 				brake_torque * 0.5,
-				drive_inertia,
+				gearbox.drive_inertia,
 				delta
 			)
 
@@ -364,11 +286,11 @@ func drivetrain(
 		wheels[3].get_spin()
 	) * 0.5
 
-	drive_inertia = _get_drive_inertia(
+	gearbox.drive_inertia = gearbox.get_drive_inertia(
 		clutch_input
 	)
 
-	var gearing := get_gearing()
+	var gearing := gearbox.get_gearing()
 	var drive_torque := torque * gearing
 
 	reaction_torque = 0.0

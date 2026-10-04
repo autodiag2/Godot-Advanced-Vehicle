@@ -78,8 +78,8 @@ func update_automatic_shifting(
 	var next_gear_rpm := 0.0
 	var previous_gear_rpm := 0.0
 
-	var next_gear := drivetrain.selected_gear + 1
-	var previous_gear := drivetrain.selected_gear - 1
+	var next_gear := drivetrain.gearbox.selected_gear + 1
+	var previous_gear := drivetrain.gearbox.selected_gear - 1
 
 	if (
 		next_gear > 0 &&

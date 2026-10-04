@@ -65,30 +65,30 @@ func _create_parameters() -> DriveTrainParameters:
 
 func test_neutral_has_zero_gearing() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_selected_gear(0)
+	drivetrain.gearbox.set_selected_gear(0)
 
 	assert_float_eq(
-		drivetrain.get_gearing(),
+		drivetrain.gearbox.get_gearing(),
 		0.0
 	)
 
 
 func test_first_gear_has_positive_gearing() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_selected_gear(1)
+	drivetrain.gearbox.set_selected_gear(1)
 
 	assert_float_eq(
-		drivetrain.get_gearing(),
+		drivetrain.gearbox.get_gearing(),
 		14.0
 	)
 
 
 func test_reverse_has_negative_gearing() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_selected_gear(-1)
+	drivetrain.gearbox.set_selected_gear(-1)
 
 	assert_float_eq(
-		drivetrain.get_gearing(),
+		drivetrain.gearbox.get_gearing(),
 		-12.8
 	)
 
@@ -96,20 +96,20 @@ func test_reverse_has_negative_gearing() -> void:
 func test_invalid_gear_is_clamped() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
 
-	drivetrain.set_selected_gear(99)
+	drivetrain.gearbox.set_selected_gear(99)
 
 	assert_eq(
-		drivetrain.selected_gear,
+		drivetrain.gearbox.selected_gear,
 		drivetrain.drivetrain_params.gear_ratios.size()
 	)
 
 
 func test_disengaged_clutch_keeps_gearbox_inertia() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_input_inertia(2.0)
-	drivetrain.set_selected_gear(1)
+	drivetrain.gearbox.set_input_inertia(2.0)
+	drivetrain.gearbox.set_selected_gear(1)
 
-	var inertia : float = drivetrain._get_drive_inertia(1.0)
+	var inertia : float = drivetrain.gearbox.get_drive_inertia(1.0)
 
 	assert_float_eq(
 		inertia,
@@ -119,10 +119,10 @@ func test_disengaged_clutch_keeps_gearbox_inertia() -> void:
 
 func test_engaged_clutch_reflects_engine_inertia() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_input_inertia(2.0)
-	drivetrain.set_selected_gear(1)
+	drivetrain.gearbox.set_input_inertia(2.0)
+	drivetrain.gearbox.set_selected_gear(1)
 
-	var inertia : float = drivetrain._get_drive_inertia(0.0)
+	var inertia : float = drivetrain.gearbox.get_drive_inertia(0.0)
 
 	assert_float_eq(
 		inertia,
@@ -132,10 +132,10 @@ func test_engaged_clutch_reflects_engine_inertia() -> void:
 
 func test_partially_engaged_clutch_only_scales_engine_inertia() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_input_inertia(2.0)
-	drivetrain.set_selected_gear(1)
+	drivetrain.gearbox.set_input_inertia(2.0)
+	drivetrain.gearbox.set_selected_gear(1)
 
-	var inertia : float = drivetrain._get_drive_inertia(0.5)
+	var inertia : float = drivetrain.gearbox.get_drive_inertia(0.5)
 
 	assert_float_eq(
 		inertia,
@@ -145,10 +145,10 @@ func test_partially_engaged_clutch_only_scales_engine_inertia() -> void:
 
 func test_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.set_input_inertia(2.0)
-	drivetrain.set_selected_gear(1)
+	drivetrain.gearbox.set_input_inertia(2.0)
+	drivetrain.gearbox.set_selected_gear(1)
 
-	var inertia : float = drivetrain._get_drive_inertia(1.0)
+	var inertia : float = drivetrain.gearbox.get_drive_inertia(1.0)
 
 	assert_gt(
 		inertia,
@@ -158,7 +158,7 @@ func test_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 
 func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.drive_inertia = 1.0
+	drivetrain.gearbox.drive_inertia = 1.0
 
 	var left := FakeWheel.new()
 	var right := FakeWheel.new()
@@ -184,7 +184,7 @@ func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop()
 
 func test_locked_differential_brakes_progressively() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.drive_inertia = 1.0
+	drivetrain.gearbox.drive_inertia = 1.0
 
 	var left := FakeWheel.new()
 	var right := FakeWheel.new()
@@ -215,7 +215,7 @@ func test_locked_differential_brakes_progressively() -> void:
 
 func test_locked_differential_preserves_zero_speed_without_torque() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.drive_inertia = 1.0
+	drivetrain.gearbox.drive_inertia = 1.0
 
 	var left := FakeWheel.new()
 	var right := FakeWheel.new()
@@ -241,7 +241,7 @@ func test_locked_differential_preserves_zero_speed_without_torque() -> void:
 
 func test_locked_differential_accelerates_from_zero_when_drive_torque_exists() -> void:
 	drivetrain.drivetrain_params = _create_parameters()
-	drivetrain.drive_inertia = 1.0
+	drivetrain.gearbox.drive_inertia = 1.0
 
 	var left := FakeWheel.new()
 	var right := FakeWheel.new()

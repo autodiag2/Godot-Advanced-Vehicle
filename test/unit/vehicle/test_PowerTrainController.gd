@@ -58,7 +58,7 @@ func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
 	)
 
 	assert_float_eq(
-		powertrain.drivetrain._engine_inertia,
+		powertrain.drivetrain.gearbox._engine_inertia,
 		2.5
 	)
 
@@ -174,7 +174,7 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	)
 
 	assert_gt(
-		powertrain.drivetrain.drive_inertia,
+		powertrain.drivetrain.gearbox.drive_inertia,
 		0.0
 	)
 
