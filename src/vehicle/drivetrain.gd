@@ -64,14 +64,6 @@ func set_selected_gear(gear):
 	gearbox.set_selected_gear(gear)
 
 
-func shift_up():
-	gearbox.shift_up()
-
-
-func shift_down():
-	gearbox.shift_down()
-
-
 func get_gearing() -> float:
 	return gearbox.get_gearing()
 

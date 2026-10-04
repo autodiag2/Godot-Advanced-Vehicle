@@ -179,8 +179,8 @@ func getSpeedKmH() -> int:
 
 
 func shift_up() -> void:
-	powertrain_controller.drivetrain.shift_up()
+	powertrain_controller.drivetrain.gearbox.shift_up()
 
 
 func shift_down() -> void:
-	powertrain_controller.drivetrain.shift_down()
+	powertrain_controller.drivetrain.gearbox.shift_down()
