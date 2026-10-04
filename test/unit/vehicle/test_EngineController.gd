@@ -502,29 +502,38 @@ func test_consume_fuel_reduces_vehicle_mass() -> void:
 		initial_mass
 	)
 
-func test_zero_output_torque_does_not_consume_fuel() -> void:
+func test_zero_output_torque_consumes_fuel_based_on_engine_friction() -> void:
 	engine.rpm = 3000.0
 	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
 
 	var initial_fuel := engine.fuel_litres
 	var initial_mass := car.mass
 
 	engine.consume_fuel(
 		car,
-		0.0,
+		1.0,
 		1.0
 	)
 
-	assert_eq(
-		engine.fuel_litres,
-		initial_fuel
+	var fuel_consumed := initial_fuel - engine.fuel_litres
+	var mass_consumed := initial_mass - car.mass
+
+	assert_gt(
+		fuel_consumed,
+		0.0
 	)
 
-	assert_eq(
-		car.mass,
-		initial_mass
+	assert_gt(
+		mass_consumed,
+		0.0
 	)
 
+	assert_almost_eq(
+		mass_consumed,
+		fuel_consumed * EngineController.PETROL_KG_PER_LITRE,
+		0.000001
+	)
 
 func test_zero_angular_velocity_does_not_consume_fuel() -> void:
 	engine.angular_velocity = 0.0
@@ -599,6 +608,56 @@ func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
 		fuel_consumed,
 		parameters.engine_idle_fuel_rate,
 		0.000001
+	)
+
+func test_no_load_fuel_consumption_increases_with_rpm() -> void:
+	parameters.engine_idle_fuel_rate = 0.8
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.combustion_running = true
+	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
+
+	engine.rpm = 2000.0
+
+	var fuel_before_2000 := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		1.0,
+		1.0
+	)
+
+	var consumption_2000 := (
+		fuel_before_2000 -
+		engine.fuel_litres
+	)
+
+	engine.fuel_litres = fuel_before_2000
+	engine.rpm = 6000.0
+
+	var fuel_before_6000 := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		1.0,
+		1.0
+	)
+
+	var consumption_6000 := (
+		fuel_before_6000 -
+		engine.fuel_litres
+	)
+
+	assert_gt(
+		consumption_6000,
+		consumption_2000
 	)
 
 func test_update_sound_sets_pitch_from_rpm() -> void:

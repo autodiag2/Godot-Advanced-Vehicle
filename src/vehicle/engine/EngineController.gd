@@ -7,6 +7,7 @@ const NEWTON_METRE_RPM_TO_KW: int = 9549
 const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
 const SECONDS_PER_HOUR: float = 3600.0
+const NO_LOAD_BSFC_LOAD: float = 0.10
 
 class Listener:
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
@@ -321,12 +322,33 @@ func consume_fuel(
 
 		var bsfc: float = parameters.engine_bsfc_map.sample(
 			rpm,
-			engine_load
+			maxf(engine_load, NO_LOAD_BSFC_LOAD)
+		)
+
+		var friction_torque := (
+			parameters.engine_brake *
+			clampf(
+				rpm /
+				parameters.max_engine_rpm,
+				0.0,
+				1.0
+			)
+		)
+
+		var friction_power_kw: float = (
+			friction_torque *
+			angular_velocity /
+			WATTS_PER_KILOWATT
+		)
+
+		var fuel_power_kw := (
+			mechanical_power_kw +
+			friction_power_kw
 		)
 
 		fuel_consumed = (
 			bsfc *
-			mechanical_power_kw *
+			fuel_power_kw *
 			delta /
 			(
 				SECONDS_PER_HOUR *
