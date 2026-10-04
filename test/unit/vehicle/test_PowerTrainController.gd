@@ -144,7 +144,7 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	var parameters := _create_parameters()
 	parameters.engine_moment = 2.0
-	parameters.drivetrain_params.gear_ratios = [3.0]
+	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
 
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
@@ -351,7 +351,7 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 
 func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	var parameters := _create_parameters()
-	parameters.drivetrain_params.gear_ratios = [3.0]
+	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
 
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
@@ -398,7 +398,7 @@ func _create_parameters() -> CarParameters:
 	parameters.max_torque = 200.0
 
 	parameters.drivetrain_params = DriveTrainParameters.new()
-	parameters.drivetrain_params.gear_ratios = [3.0]
+	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
 	parameters.drivetrain_params.final_drive = 3.5
 	parameters.drivetrain_params.drivetype = (
 		DriveTrainParameters.DRIVE_TYPE.RWD

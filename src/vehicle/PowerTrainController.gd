@@ -84,10 +84,10 @@ func update_automatic_shifting(
 	if (
 		next_gear > 0 &&
 		next_gear <=
-		parameters.drivetrain_params.gear_ratios.size()
+		parameters.drivetrain_params.gearbox.gear_ratios.size()
 	):
 		next_gear_rpm = (
-			parameters.drivetrain_params.gear_ratios[
+			parameters.drivetrain_params.gearbox.gear_ratios[
 				next_gear - 1
 			] *
 			parameters.drivetrain_params.final_drive *
@@ -98,10 +98,10 @@ func update_automatic_shifting(
 	if (
 		previous_gear > 0 &&
 		previous_gear <=
-		parameters.drivetrain_params.gear_ratios.size()
+		parameters.drivetrain_params.gearbox.gear_ratios.size()
 	):
 		previous_gear_rpm = (
-			parameters.drivetrain_params.gear_ratios[
+			parameters.drivetrain_params.gearbox.gear_ratios[
 				previous_gear - 1
 			] *
 			parameters.drivetrain_params.final_drive *

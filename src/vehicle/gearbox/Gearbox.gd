@@ -2,6 +2,7 @@ class_name Gearbox
 extends RefCounted
 
 var drivetrain_params: DriveTrainParameters
+@export var params: GearboxParameters
 
 var selected_gear := 0
 var _engine_inertia := 0.0
@@ -11,6 +12,7 @@ var last_shift_time := 0
 func setup(parameters: DriveTrainParameters) -> void:
 	assert(parameters != null)
 	drivetrain_params = parameters
+	params = drivetrain_params.gearbox
 
 
 func automatic_shifting(
@@ -22,7 +24,7 @@ func automatic_shifting(
 	brake_input,
 	speed
 ):
-	if not drivetrain_params.automatic:
+	if not params.automatic:
 		return
 
 	var reversing = false
@@ -57,19 +59,19 @@ func automatic_shifting(
 
 
 func set_selected_gear(gear):
-	assert(drivetrain_params != null)
+	assert(params != null)
 
 	gear = clamp(
 		gear,
 		-1,
-		drivetrain_params.gear_ratios.size()
+		params.gear_ratios.size()
 	)
 
 	selected_gear = gear
 
 
 func shift_up():
-	if selected_gear < drivetrain_params.gear_ratios.size():
+	if selected_gear < params.gear_ratios.size():
 		selected_gear += 1
 		last_shift_time = Time.get_ticks_msec()
 		set_selected_gear(selected_gear)
@@ -83,21 +85,21 @@ func shift_down():
 
 
 func get_gearing() -> float:
-	assert(drivetrain_params != null)
+	assert(params != null)
 	assert(
 		selected_gear >= -1 &&
-		selected_gear <= drivetrain_params.gear_ratios.size()
+		selected_gear <= params.gear_ratios.size()
 	)
 
 	if selected_gear > 0:
 		return (
-			drivetrain_params.gear_ratios[selected_gear - 1] *
+			params.gear_ratios[selected_gear - 1] *
 			drivetrain_params.final_drive
 		)
 
 	if selected_gear == -1:
 		return (
-			-drivetrain_params.reverse_ratio *
+			-params.reverse_ratio *
 			drivetrain_params.final_drive
 		)
 
@@ -112,13 +114,13 @@ func set_input_inertia(value):
 func get_drive_inertia(clutch_input: float) -> float:
 	assert(clutch_input >= 0.0)
 	assert(clutch_input <= 1.0)
-	assert(drivetrain_params != null)
+	assert(params != null)
 
 	var gearing: int = abs(get_gearing())
 
 	var gearbox_inertia := (
 		pow(gearing, 2) *
-		drivetrain_params.gear_inertia
+		params.gear_inertia
 	)
 
 	var reflected_engine_inertia := (

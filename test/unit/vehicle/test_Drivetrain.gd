@@ -50,15 +50,15 @@ func before_each() -> void:
 func _create_parameters() -> DriveTrainParameters:
 	var parameters := DriveTrainParameters.new()
 
-	parameters.gear_ratios = [
+	parameters.gearbox.gear_ratios = [
 		3.5,
 		2.0,
 		1.4
 	]
 
 	parameters.final_drive = 4.0
-	parameters.reverse_ratio = 3.2
-	parameters.gear_inertia = 1.0
+	parameters.gearbox.reverse_ratio = 3.2
+	parameters.gearbox.gear_inertia = 1.0
 
 	return parameters
 
@@ -100,7 +100,7 @@ func test_invalid_gear_is_clamped() -> void:
 
 	assert_eq(
 		drivetrain.gearbox.selected_gear,
-		drivetrain.drivetrain_params.gear_ratios.size()
+		drivetrain.drivetrain_params.gearbox.gear_ratios.size()
 	)
 
 
