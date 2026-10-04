@@ -6,11 +6,6 @@ var front_right: RaycastSuspension
 var rear_left: RaycastSuspension
 var rear_right: RaycastSuspension
 
-var front_left_brake_torque: float = 0.0
-var front_right_brake_torque: float = 0.0
-var rear_left_brake_torque: float = 0.0
-var rear_right_brake_torque: float = 0.0
-
 
 func setup(
 	front_left_corner: RaycastSuspension,
@@ -58,29 +53,24 @@ func update(
 		2.0
 	)
 
-	front_left_brake_torque = front_left.calculate_brake_torque(
-		front_clamping_force
-	)
+	front_left.brake(front_clamping_force)
+	front_right.brake(front_clamping_force)
 
-	front_right_brake_torque = front_right.calculate_brake_torque(
-		front_clamping_force
-	)
-
-	rear_left_brake_torque = rear_left.calculate_brake_torque(
-		rear_clamping_force
-	)
-
-	rear_right_brake_torque = rear_right.calculate_brake_torque(
-		rear_clamping_force
-	)
+	rear_left.brake(rear_clamping_force)
+	rear_right.brake(rear_clamping_force)
 
 	if handbrake_pressed:
-		rear_left_brake_torque += (
-			parameters.max_handbrake_torque *
+		var handbrake_clamping_force := (
+			parameters.max_handbrake_force *
 			0.5
 		)
 
-		rear_right_brake_torque += (
-			parameters.max_handbrake_torque *
-			0.5
+		rear_left.brake(
+			rear_clamping_force +
+			handbrake_clamping_force
+		)
+
+		rear_right.brake(
+			rear_clamping_force +
+			handbrake_clamping_force
 		)

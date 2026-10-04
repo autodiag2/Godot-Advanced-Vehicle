@@ -10,6 +10,7 @@ func assert_float_eq(one: float, two: float, threshold: float = 0.000001) -> voi
 class FakeWheel:
 	var spin: float = 0.0
 	var reaction_torque: float = 0.0
+	var brake_torque: float = 0.0
 
 	var wheel := FakeWheelData.new()
 
@@ -30,9 +31,12 @@ class FakeWheel:
 		return reaction_torque
 
 
+	func get_brake_torque() -> float:
+		return brake_torque
+
+
 	func apply_torque(
 		torque: float,
-		brake_torque: float,
 		inertia: float,
 		delta: float
 	) -> float:
@@ -172,7 +176,6 @@ func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop()
 			right
 		],
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -191,6 +194,8 @@ func test_locked_differential_brakes_progressively() -> void:
 
 	left.spin = 4.0
 	right.spin = 4.0
+	left.brake_torque = 1.0
+	right.brake_torque = 1.0
 
 	var spin : float = drivetrain._get_locked_spin(
 		[
@@ -198,7 +203,6 @@ func test_locked_differential_brakes_progressively() -> void:
 			right
 		],
 		0.0,
-		1.0,
 		0.1
 	)
 
@@ -229,7 +233,6 @@ func test_locked_differential_preserves_zero_speed_without_torque() -> void:
 			right
 		],
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -255,7 +258,6 @@ func test_locked_differential_accelerates_from_zero_when_drive_torque_exists() -
 			right
 		],
 		10.0,
-		0.0,
 		0.1
 	)
 

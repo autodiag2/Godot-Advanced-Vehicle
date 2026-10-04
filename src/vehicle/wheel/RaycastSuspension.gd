@@ -178,17 +178,19 @@ func apply_forces(opposite_comp, delta):
 
 	return 0.0
 
-func calculate_brake_torque(
-	clamping_force: float
-) -> float:
-	return brake_disc.calculate_brake_torque(clamping_force)
+func brake(clamping_force: float) -> void:
+	brake_disc.brake(clamping_force)
+
+func get_brake_torque() -> float:
+	return brake_disc.calculate_brake_torque()
 
 func apply_torque(
 	drive_torque,
-	brake_torque,
 	drive_inertia,
 	delta
 ):
+	var brake_torque := brake_disc.calculate_brake_torque()
+
 	var result := wheel.apply_torque(
 		drive_torque,
 		brake_torque,
@@ -204,7 +206,6 @@ func apply_torque(
 	)
 
 	return result
-
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)

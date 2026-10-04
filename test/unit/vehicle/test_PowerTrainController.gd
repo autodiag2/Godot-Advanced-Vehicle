@@ -117,10 +117,6 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -166,10 +162,6 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -204,10 +196,6 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	powertrain.update(
 		engine,
 		parameters,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.0,
 		0.01
 	)
@@ -244,10 +232,6 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -281,10 +265,6 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -319,10 +299,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -333,10 +309,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	powertrain.update(
 		engine,
 		parameters,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.0,
 		0.01
 	)
@@ -372,10 +344,6 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	powertrain.update(
 		engine,
 		parameters,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.0,
 		0.01
 	)
@@ -441,10 +409,6 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -475,10 +439,6 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -509,10 +469,6 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -544,10 +500,6 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 		engine,
 		parameters,
 		1.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -640,10 +592,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 		engine,
 		parameters,
 		0.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -652,10 +600,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	powertrain.update(
 		engine,
 		parameters,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.0,
 		0.01
 	)
@@ -690,10 +634,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 		engine,
 		parameters,
 		0.0,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.01
 	)
 
@@ -702,10 +642,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	powertrain.update(
 		engine,
 		parameters,
-		0.0,
-		0.0,
-		0.0,
-		0.0,
 		0.0,
 		0.01
 	)

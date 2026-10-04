@@ -46,7 +46,6 @@ func automatic_shifting(
 	brake_input,
 	speed
 ):
-
 	gearbox.automatic_shifting(
 		cur_torque,
 		lower_gear_torque,
@@ -81,7 +80,6 @@ func set_input_inertia(value):
 func _get_locked_spin(
 	wheels: Array,
 	drive_torque: float,
-	brake_torque: float,
 	delta: float
 ) -> float:
 	assert(wheels.size() > 0)
@@ -89,9 +87,11 @@ func _get_locked_spin(
 
 	var net_torque := drive_torque
 	var total_inertia := gearbox.drive_inertia
+	var brake_torque := 0.0
 
 	for wheel in wheels:
 		net_torque += wheel.get_reaction_torque()
+		brake_torque += wheel.get_brake_torque()
 		total_inertia += wheel.wheel.inertia
 
 	if total_inertia <= 0.0:
@@ -124,7 +124,6 @@ func _get_locked_spin(
 
 func differential(
 	torque: float,
-	brake_torque,
 	wheels,
 	diff: DiffParameters,
 	delta: float
@@ -189,14 +188,12 @@ func differential(
 
 			diff_sum += wheels[0].apply_torque(
 				t1,
-				brake_torque * 0.5,
 				gearbox.drive_inertia,
 				delta
 			)
 
 			diff_sum -= wheels[1].apply_torque(
 				t2,
-				brake_torque * 0.5,
 				gearbox.drive_inertia,
 				delta
 			)
@@ -228,14 +225,12 @@ func differential(
 
 			wheels[0].apply_torque(
 				t1,
-				brake_torque * 0.5,
 				gearbox.drive_inertia,
 				delta
 			)
 
 			wheels[1].apply_torque(
 				t2,
-				brake_torque * 0.5,
 				gearbox.drive_inertia,
 				delta
 			)
@@ -246,7 +241,6 @@ func differential(
 			var spin := _get_locked_spin(
 				wheels,
 				torque,
-				brake_torque,
 				delta
 			)
 
@@ -256,8 +250,6 @@ func differential(
 
 func drivetrain(
 	torque: float,
-	rear_brake_torque: float,
-	front_brake_torque: float,
 	wheels: Array,
 	clutch_input: float,
 	delta: float
@@ -300,7 +292,6 @@ func drivetrain(
 
 		differential(
 			drive_torque,
-			rear_brake_torque,
 			rear_wheels,
 			drivetrain_params.rear_diff,
 			delta
@@ -308,14 +299,12 @@ func drivetrain(
 
 		front_wheels[0].apply_torque(
 			0.0,
-			front_brake_torque * 0.5,
 			0.0,
 			delta
 		)
 
 		front_wheels[1].apply_torque(
 			0.0,
-			front_brake_torque * 0.5,
 			0.0,
 			delta
 		)
@@ -332,7 +321,6 @@ func drivetrain(
 
 		differential(
 			drive_torque,
-			front_brake_torque,
 			front_wheels,
 			drivetrain_params.front_diff,
 			delta
@@ -340,14 +328,12 @@ func drivetrain(
 
 		rear_wheels[0].apply_torque(
 			0.0,
-			rear_brake_torque * 0.5,
 			0.0,
 			delta
 		)
 
 		rear_wheels[1].apply_torque(
 			0.0,
-			rear_brake_torque * 0.5,
 			0.0,
 			delta
 		)
@@ -366,7 +352,6 @@ func drivetrain(
 				var spin := _get_locked_spin(
 					wheels,
 					drive_torque,
-					rear_brake_torque + front_brake_torque,
 					delta
 				)
 
@@ -389,7 +374,6 @@ func drivetrain(
 
 				differential(
 					rear_drive,
-					rear_brake_torque,
 					rear_wheels,
 					drivetrain_params.rear_diff,
 					delta
@@ -397,7 +381,6 @@ func drivetrain(
 
 				differential(
 					front_drive,
-					front_brake_torque,
 					front_wheels,
 					drivetrain_params.front_diff,
 					delta
@@ -409,7 +392,6 @@ func drivetrain(
 
 				differential(
 					rear_drive,
-					rear_brake_torque,
 					rear_wheels,
 					drivetrain_params.rear_diff,
 					delta
@@ -417,32 +399,17 @@ func drivetrain(
 
 				differential(
 					front_drive,
-					front_brake_torque,
 					front_wheels,
 					drivetrain_params.front_diff,
 					delta
 				)
 
-		if drivetrain_params.center_diff.diff_type == DIFF_TYPE.LOCKED:
-			# _get_locked_spin() already accounts for the complete
-			# coupled drivetrain inertia and all four wheel reactions.
-			if gearing != 0.0:
-				reaction_torque = (
-					rear_wheels[0].get_reaction_torque() +
-					rear_wheels[1].get_reaction_torque() +
-					front_wheels[0].get_reaction_torque() +
-					front_wheels[1].get_reaction_torque()
-				)
+		if gearing != 0.0:
+			reaction_torque = (
+				rear_wheels[0].get_reaction_torque() +
+				rear_wheels[1].get_reaction_torque() +
+				front_wheels[0].get_reaction_torque() +
+				front_wheels[1].get_reaction_torque()
+			)
 
-				reaction_torque *= 1.0 / gearing
-
-		else:
-			if gearing != 0.0:
-				reaction_torque = (
-					rear_wheels[0].get_reaction_torque() +
-					rear_wheels[1].get_reaction_torque() +
-					front_wheels[0].get_reaction_torque() +
-					front_wheels[1].get_reaction_torque()
-				)
-
-				reaction_torque *= 1.0 / gearing
+			reaction_torque *= 1.0 / gearing

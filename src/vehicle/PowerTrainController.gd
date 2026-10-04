@@ -135,26 +135,13 @@ func update_automatic_shifting(
 		longitudinal_speed
 	)
 
+
 func update(
 	engine: EngineController,
 	parameters: CarParameters,
 	clutch_input: float,
-	front_left_brake_torque: float,
-	front_right_brake_torque: float,
-	rear_left_brake_torque: float,
-	rear_right_brake_torque: float,
 	delta: float
 ) -> void:
-	var front_brake_torque := (
-		front_left_brake_torque +
-		front_right_brake_torque
-	)
-
-	var rear_brake_torque := (
-		rear_left_brake_torque +
-		rear_right_brake_torque
-	)
-
 	var gearing := drivetrain.get_gearing()
 
 	if gearing == 0.0:
@@ -165,8 +152,6 @@ func update(
 
 		drivetrain.drivetrain(
 			wheel_drive_torque,
-			rear_brake_torque,
-			front_brake_torque,
 			[
 				wheel_bl,
 				wheel_br,
@@ -245,8 +230,6 @@ func update(
 
 	drivetrain.drivetrain(
 		wheel_drive_torque,
-		rear_brake_torque,
-		front_brake_torque,
 		[
 			wheel_bl,
 			wheel_br,
