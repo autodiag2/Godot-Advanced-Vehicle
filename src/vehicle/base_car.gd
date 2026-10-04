@@ -133,6 +133,7 @@ func _physics_process(delta: float) -> void:
 
 	engine_controller.update(
 		car_params,
+		self,
 		input_controller.throttle,
 		delta
 	)
@@ -170,13 +171,6 @@ func _physics_process(delta: float) -> void:
 		car_params
 	)
 	print("MIDDLE4 wheel spin = " + str(wheel_bl.wheel.get_spin()))
-
-	engine_controller.consume_fuel(
-		car_params,
-		self,
-		delta
-	)
-	print("MIDDLE5 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	motion_controller.apply_aerodynamic_drag(
 		self,

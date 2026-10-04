@@ -252,6 +252,7 @@ func test_update_accelerates_engine() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -270,6 +271,7 @@ func test_update_uses_reaction_torque() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -291,6 +293,7 @@ func test_update_can_stall_engine() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		0.1
 	)
@@ -312,6 +315,7 @@ func test_update_does_not_force_engine_to_idle() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		0.01
 	)
@@ -328,6 +332,7 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -344,6 +349,7 @@ func test_limiter_generates_opposing_torque() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -360,6 +366,7 @@ func test_limiter_keeps_rotational_state_consistent() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -378,6 +385,7 @@ func test_limiter_does_not_modify_output_torque() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -394,6 +402,7 @@ func test_update_zero_delta_does_not_change_angular_velocity() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.0
 	)
@@ -643,6 +652,7 @@ func test_engine_does_not_start_from_zero_rpm_without_starter() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.1
 	)
@@ -658,6 +668,7 @@ func test_starter_increases_engine_rpm() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		0.1
 	)
@@ -673,6 +684,7 @@ func test_starter_remains_active_below_idle() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		0.001
 	)
@@ -694,6 +706,7 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 	)
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		0.001
 	)
@@ -708,6 +721,7 @@ func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		1.0,
 		0.0
 	)
@@ -724,6 +738,7 @@ func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
 
 	engine.update(
 		parameters,
+		car,
 		0.0,
 		1.0
 	)

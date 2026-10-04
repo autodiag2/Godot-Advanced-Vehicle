@@ -95,13 +95,14 @@ func initialize(
 		PETROL_KG_PER_LITRE
 	)
 
-
 func update(
 	parameters: CarParameters,
+	car: RigidBody3D,
 	throttle_input: float,
 	delta: float
 ) -> void:
 	assert(parameters != null)
+	assert(car != null)
 	assert(parameters.engine_moment > 0.0)
 	assert(parameters.max_engine_rpm > 0.0)
 	assert(parameters.rpm_idle >= 0.0)
@@ -192,7 +193,7 @@ func update(
 		angular_velocity,
 		0.0
 	)
-	
+
 	if (
 		was_running_before_update &&
 		angular_velocity == 0.0
@@ -204,6 +205,11 @@ func update(
 
 	was_running = angular_velocity > 0.0
 
+	consume_fuel(
+		parameters,
+		car,
+		delta
+	)
 
 func calculate_torque(
 	engine_rpm: float,
