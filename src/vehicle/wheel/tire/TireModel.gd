@@ -1,7 +1,7 @@
 class_name TireModel
 extends Resource
 
-const WEAR_CURVE = preload("res://resources/tire_wear_curve.tres")
+const WEAR_CURVE = preload("res://src/vehicle/wheel/tire/wear_curve.tres")
 const TEMPERATURE_MU = preload("res://src/vehicle/wheel/tire/temp_mu.tres")
 
 @export var radius := 0.3
