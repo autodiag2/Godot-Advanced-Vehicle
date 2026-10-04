@@ -36,6 +36,7 @@ var avg_front_spin := 0.0
 
 var reaction_torque := 0.0
 
+
 func automatic_shifting(
 	cur_torque,
 	lower_gear_torque,
@@ -296,6 +297,7 @@ func drivetrain(
 	reaction_torque = 0.0
 
 	if drivetrain_params.drivetype == DRIVE_TYPE.RWD:
+
 		differential(
 			drive_torque,
 			rear_brake_torque,
@@ -322,11 +324,12 @@ func drivetrain(
 			reaction_torque = (
 				rear_wheels[0].get_reaction_torque() +
 				rear_wheels[1].get_reaction_torque()
-			) * 0.5
+			)
 
 			reaction_torque *= 1.0 / gearing
 
 	elif drivetrain_params.drivetype == DRIVE_TYPE.FWD:
+
 		differential(
 			drive_torque,
 			front_brake_torque,
@@ -353,24 +356,11 @@ func drivetrain(
 			reaction_torque = (
 				front_wheels[0].get_reaction_torque() +
 				front_wheels[1].get_reaction_torque()
-			) * 0.5
+			)
 
 			reaction_torque *= 1.0 / gearing
 
 	elif drivetrain_params.drivetype == DRIVE_TYPE.AWD:
-		if gearing != 0.0:
-			reaction_torque = (
-				rear_wheels[0].get_reaction_torque() +
-				rear_wheels[1].get_reaction_torque()
-			) * 0.25
-
-			reaction_torque += (
-				front_wheels[0].get_reaction_torque() +
-				front_wheels[1].get_reaction_torque()
-			) * 0.25
-
-			reaction_torque *= 1.0 / gearing
-
 		match drivetrain_params.center_diff.diff_type:
 			DIFF_TYPE.LOCKED:
 				var spin := _get_locked_spin(
@@ -432,3 +422,27 @@ func drivetrain(
 					drivetrain_params.front_diff,
 					delta
 				)
+
+		if drivetrain_params.center_diff.diff_type == DIFF_TYPE.LOCKED:
+			# _get_locked_spin() already accounts for the complete
+			# coupled drivetrain inertia and all four wheel reactions.
+			if gearing != 0.0:
+				reaction_torque = (
+					rear_wheels[0].get_reaction_torque() +
+					rear_wheels[1].get_reaction_torque() +
+					front_wheels[0].get_reaction_torque() +
+					front_wheels[1].get_reaction_torque()
+				)
+
+				reaction_torque *= 1.0 / gearing
+
+		else:
+			if gearing != 0.0:
+				reaction_torque = (
+					rear_wheels[0].get_reaction_torque() +
+					rear_wheels[1].get_reaction_torque() +
+					front_wheels[0].get_reaction_torque() +
+					front_wheels[1].get_reaction_torque()
+				)
+
+				reaction_torque *= 1.0 / gearing
