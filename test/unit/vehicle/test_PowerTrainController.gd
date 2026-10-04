@@ -2,10 +2,12 @@ extends GutTest
 
 
 var powertrain: PowertrainController
+var engine: EngineController = EngineController.new()
 
 
 func before_each() -> void:
 	powertrain = PowertrainController.new()
+	powertrain.engine = engine
 
 
 func after_each() -> void:
@@ -32,6 +34,7 @@ func test_powertrain_initializes_clutch_friction() -> void:
 
 	powertrain.initialize(
 		parameters,
+		powertrain.engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -51,6 +54,7 @@ func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
 
 	powertrain.initialize(
 		parameters,
+		powertrain.engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -104,6 +108,7 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -114,7 +119,6 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -147,6 +151,7 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -159,7 +164,6 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -182,6 +186,7 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -194,7 +199,6 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -217,6 +221,7 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -229,7 +234,6 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -250,6 +254,7 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -262,7 +267,6 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -284,6 +288,7 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -296,7 +301,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -307,7 +311,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	)
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -330,6 +333,7 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -342,7 +346,6 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -399,6 +402,7 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -406,7 +410,6 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -429,6 +432,7 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -436,7 +440,6 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -459,6 +462,7 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -466,7 +470,6 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -488,6 +491,7 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -497,7 +501,6 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		engine,
 		parameters,
 		1.0,
 		0.01
@@ -516,6 +519,7 @@ func test_average_wheel_speeds_are_live_getters() -> void:
 
 	powertrain.initialize(
 		_create_parameters(),
+		powertrain.engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -578,6 +582,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -589,7 +594,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	engine.rpm = parameters.rpm_idle
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -598,7 +602,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -619,6 +622,7 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 
 	powertrain.initialize(
 		parameters,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
@@ -631,7 +635,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01
@@ -640,7 +643,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		engine,
 		parameters,
 		0.0,
 		0.01

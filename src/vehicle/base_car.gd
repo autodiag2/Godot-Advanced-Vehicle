@@ -76,6 +76,7 @@ func _ready() -> void:
 
 	powertrain_controller.initialize(
 		car_params,
+		engine_controller,
 		wheel_fl,
 		wheel_fr,
 		wheel_bl,
@@ -137,7 +138,6 @@ func _physics_process(delta: float) -> void:
 	)
 
 	powertrain_controller.update_automatic_shifting(
-		engine_controller,
 		input_controller.throttle,
 		input_controller.brake,
 		motion_controller.longitudinal_velocity,
@@ -155,7 +155,6 @@ func _physics_process(delta: float) -> void:
 	print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	powertrain_controller.update(
-		engine_controller,
 		car_params,
 		input_controller.clutch,
 		delta
