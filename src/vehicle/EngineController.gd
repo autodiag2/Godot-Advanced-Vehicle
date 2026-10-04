@@ -6,6 +6,8 @@ const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 const NEWTON_METRE_RPM_TO_KW: int = 9549
 const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
+const BSFC_MIN_REALISTIC: float = 180.0
+const BSFC_MAX_REALISTIC: float = 500.0
 
 class Listener:
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
@@ -72,7 +74,19 @@ func initialize(
 	assert(parameters.engine_moment > 0.0)
 	assert(parameters.max_engine_rpm > 0.0)
 	assert(parameters.rpm_idle >= 0.0)
-	
+	if (
+		parameters.engine_bsfc < BSFC_MIN_REALISTIC ||
+		parameters.engine_bsfc > BSFC_MAX_REALISTIC
+	):
+		push_warning(
+			"Engine BSFC is outside the realistic range for a car engine: " +
+			str(parameters.engine_bsfc) +
+			" g/kWh (expected approximately " +
+			str(BSFC_MIN_REALISTIC) +
+			"–" +
+			str(BSFC_MAX_REALISTIC) +
+			" g/kWh)"
+		)
 	engine_sound = parameters.engine_sound
 	max_engine_rpm = parameters.max_engine_rpm
 	fuel_litres = (
@@ -323,7 +337,7 @@ func consume_fuel(
 			PETROL_KG_PER_LITRE
 		)
 	)
-
+	
 	fuel_consumed = min(
 		fuel_consumed,
 		fuel_litres
@@ -335,7 +349,6 @@ func consume_fuel(
 	)
 
 	fuel_litres -= fuel_consumed
-
 	car.mass -= (
 		fuel_consumed *
 		PETROL_KG_PER_LITRE

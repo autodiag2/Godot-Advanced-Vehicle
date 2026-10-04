@@ -102,7 +102,7 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 func _physics_process(delta: float) -> void:
-	print("START wheel sping = " + str(wheel_bl.wheel.get_spin()))
+	#print("START wheel sping = " + str(wheel_bl.wheel.get_spin()))
 	input_controller.update(
 		joystick
 	)
@@ -153,30 +153,30 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
-	print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
+	#print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	powertrain_controller.update(
 		car_params,
 		input_controller.clutch,
 		delta
 	)
-	print("MIDDLE2 wheel spin = " + str(wheel_bl.wheel.get_spin()))
+	#print("MIDDLE2 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	engine_controller.reaction_torque = (
 		powertrain_controller.clutch_reaction_torque
 	)
-	print("MIDDLE3 wheel spin = " + str(wheel_bl.wheel.get_spin()))
+	#print("MIDDLE3 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	engine_controller.clamp_to_idle(
 		car_params
 	)
-	print("MIDDLE4 wheel spin = " + str(wheel_bl.wheel.get_spin()))
+	#print("MIDDLE4 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	motion_controller.apply_aerodynamic_drag(
 		self,
 		car_params
 	)
-	print("END wheel sping = " + str(wheel_bl.wheel.get_spin()))
+	#print("END wheel sping = " + str(wheel_bl.wheel.get_spin()))
 
 func getSpeedKmH() -> int:
 	return int(motion_controller.longitudinal_velocity *
