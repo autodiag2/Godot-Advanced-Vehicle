@@ -35,6 +35,7 @@ enum DRIVE_TYPE{
 @export var engine_brake := 10.0
 @export var engine_moment := 0.25
 @export var engine_bsfc_map: EngineBSFCMap = preload("res://assets/vehicle/sport_car/petrol_bsfc.tres") # g/kWh
+@export var engine_idle_fuel_rate := 0.8 # L/h
 @export var engine_sound: AudioStream
 @export var clutch_friction := 500.0
 

@@ -6,6 +6,7 @@ const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 const NEWTON_METRE_RPM_TO_KW: int = 9549
 const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
+const SECONDS_PER_HOUR: float = 3600.0
 
 class Listener:
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
@@ -56,7 +57,6 @@ func remove_listener(listener: Listener) -> void:
 
 	listeners.erase(listener)
 
-
 func initialize(
 	parameters_arg: CarParameters,
 	car: RigidBody3D,
@@ -74,7 +74,7 @@ func initialize(
 	assert(parameters_arg.max_engine_rpm > 0.0)
 	assert(parameters_arg.rpm_idle >= 0.0)
 	assert(parameters_arg.engine_bsfc_map != null)
-	
+
 	parameters = parameters_arg
 	engine_sound = parameters.engine_sound
 	max_engine_rpm = parameters.max_engine_rpm
@@ -204,6 +204,7 @@ func update(
 
 	consume_fuel(
 		car,
+		throttle_input,
 		delta
 	)
 
@@ -280,54 +281,59 @@ func calculate_torque(
 
 func consume_fuel(
 	car: RigidBody3D,
+	throttle_input: float,
 	delta: float
 ) -> void:
 	assert(car != null)
 	assert(delta >= 0.0)
 
-	var mechanical_power_kw: float = (
-		max(output_torque, 0.0) *
-		angular_velocity /
-		WATTS_PER_KILOWATT
+	var fuel_consumed: float
+
+	var is_idle := (
+		combustion_running &&
+		throttle_input == 0.0 &&
+		rpm > 0.0 &&
+		rpm <= parameters.rpm_idle
 	)
 
-	var maximum_combustion_torque: float = (
-		parameters.torque_curve.sample_baked(
-			clamp(
-				rpm /
-				parameters.max_engine_rpm,
+	if is_idle:
+		fuel_consumed = (
+			parameters.engine_idle_fuel_rate *
+			delta /
+			SECONDS_PER_HOUR
+		)
+	else:
+		var mechanical_power_kw: float = (
+			max(output_torque, 0.0) *
+			angular_velocity /
+			WATTS_PER_KILOWATT
+		)
+
+		var engine_load: float = 0.0
+
+		if parameters.max_torque > 0.0:
+			engine_load = clampf(
+				combustion_torque /
+				parameters.max_torque,
 				0.0,
 				1.0
 			)
-		) *
-		parameters.max_torque
-	)
 
-	var engine_load: float = 0.0
-
-	if maximum_combustion_torque > 0.0:
-		engine_load = clamp(
-			combustion_torque /
-			maximum_combustion_torque,
-			0.0,
-			1.0
+		var bsfc: float = parameters.engine_bsfc_map.sample(
+			rpm,
+			engine_load
 		)
 
-	var bsfc: float = parameters.engine_bsfc_map.sample(
-		rpm,
-		engine_load
-	)
-
-	var fuel_consumed: float = (
-		bsfc *
-		mechanical_power_kw *
-		delta /
-		(
-			3600.0 *
-			1000.0 *
-			PETROL_KG_PER_LITRE
+		fuel_consumed = (
+			bsfc *
+			mechanical_power_kw *
+			delta /
+			(
+				SECONDS_PER_HOUR *
+				1000.0 *
+				PETROL_KG_PER_LITRE
+			)
 		)
-	)
 
 	fuel_consumed = min(
 		fuel_consumed,

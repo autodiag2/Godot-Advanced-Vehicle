@@ -95,6 +95,7 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 
 	engine.consume_fuel(
 		car,
+		1.0,
 		1.0
 	)
 
@@ -122,6 +123,7 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 
 	engine.consume_fuel(
 		car,
+		1.0,
 		1.0
 	)
 
@@ -473,6 +475,7 @@ func test_consume_fuel_reduces_fuel() -> void:
 
 	engine.consume_fuel(
 		car,
+		1.0,
 		1.0
 	)
 
@@ -490,6 +493,7 @@ func test_consume_fuel_reduces_vehicle_mass() -> void:
 
 	engine.consume_fuel(
 		car,
+		1.0,
 		1.0
 	)
 
@@ -507,6 +511,7 @@ func test_zero_output_torque_does_not_consume_fuel() -> void:
 
 	engine.consume_fuel(
 		car,
+		0.0,
 		1.0
 	)
 
@@ -529,6 +534,7 @@ func test_zero_angular_velocity_does_not_consume_fuel() -> void:
 
 	engine.consume_fuel(
 		car,
+		0.0,
 		1.0
 	)
 
@@ -545,6 +551,7 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 
 	engine.consume_fuel(
 		car,
+		1.0,
 		100.0
 	)
 
@@ -564,6 +571,35 @@ func test_update_sound_starts_engine_sound() -> void:
 		audio_player.playing
 	)
 
+func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
+	parameters.engine_idle_fuel_rate = 0.8
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.rpm = parameters.rpm_idle
+	engine.combustion_running = true
+	engine.output_torque = 0.0
+
+	var fuel_before := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		0.0,
+		3600.0
+	)
+
+	var fuel_consumed := fuel_before - engine.fuel_litres
+
+	assert_almost_eq(
+		fuel_consumed,
+		parameters.engine_idle_fuel_rate,
+		0.000001
+	)
 
 func test_update_sound_sets_pitch_from_rpm() -> void:
 	parameters.engine_sound = AudioStreamGenerator.new()
