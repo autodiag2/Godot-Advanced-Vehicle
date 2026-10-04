@@ -113,16 +113,14 @@ func update_automatic_shifting(
 	var next_gear_torque := (
 		engine.calculate_torque(
 			next_gear_rpm,
-			throttle_input,
-			parameters
+			throttle_input
 		)
 	)
 
 	var previous_gear_torque := (
 		engine.calculate_torque(
 			previous_gear_rpm,
-			throttle_input,
-			parameters
+			throttle_input
 		)
 	)
 

@@ -26,7 +26,7 @@ var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var fuel_litres: float = 0.0
 var combustion_running: bool = false
-
+var parameters: CarParameters
 var engine_audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
 var was_running: bool = false
@@ -59,34 +59,35 @@ func remove_listener(listener: Listener) -> void:
 
 
 func initialize(
-	parameters: CarParameters,
+	parameters_arg: CarParameters,
 	car: RigidBody3D,
 	starter_arg: EngineStarterController,
 	audio_player: AudioStreamPlayer
 ) -> void:
-	assert(parameters != null)
+	assert(parameters_arg != null)
 	assert(car != null)
 	assert(audio_player != null)
 	assert(starter_arg != null)
-	assert(parameters.fuel_tank_size >= 0.0)
-	assert(parameters.fuel_percentage >= 0.0)
-	assert(parameters.fuel_percentage <= 100.0)
-	assert(parameters.engine_moment > 0.0)
-	assert(parameters.max_engine_rpm > 0.0)
-	assert(parameters.rpm_idle >= 0.0)
+	assert(parameters_arg.fuel_tank_size >= 0.0)
+	assert(parameters_arg.fuel_percentage >= 0.0)
+	assert(parameters_arg.fuel_percentage <= 100.0)
+	assert(parameters_arg.engine_moment > 0.0)
+	assert(parameters_arg.max_engine_rpm > 0.0)
+	assert(parameters_arg.rpm_idle >= 0.0)
 	if (
-		parameters.engine_bsfc < BSFC_MIN_REALISTIC ||
-		parameters.engine_bsfc > BSFC_MAX_REALISTIC
+		parameters_arg.engine_bsfc < BSFC_MIN_REALISTIC ||
+		parameters_arg.engine_bsfc > BSFC_MAX_REALISTIC
 	):
 		push_warning(
 			"Engine BSFC is outside the realistic range for a car engine: " +
-			str(parameters.engine_bsfc) +
+			str(parameters_arg.engine_bsfc) +
 			" g/kWh (expected approximately " +
 			str(BSFC_MIN_REALISTIC) +
 			"–" +
 			str(BSFC_MAX_REALISTIC) +
 			" g/kWh)"
 		)
+	parameters = parameters_arg
 	engine_sound = parameters.engine_sound
 	max_engine_rpm = parameters.max_engine_rpm
 	fuel_litres = (
@@ -110,16 +111,11 @@ func initialize(
 	)
 
 func update(
-	parameters: CarParameters,
 	car: RigidBody3D,
 	throttle_input: float,
 	delta: float
 ) -> void:
-	assert(parameters != null)
 	assert(car != null)
-	assert(parameters.engine_moment > 0.0)
-	assert(parameters.max_engine_rpm > 0.0)
-	assert(parameters.rpm_idle >= 0.0)
 	assert(angular_velocity >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
@@ -130,7 +126,6 @@ func update(
 	output_torque = calculate_torque(
 		rpm,
 		throttle_input,
-		parameters,
 		combustion_running || starter.get_torque() > 0.0
 	)
 
@@ -138,7 +133,6 @@ func update(
 		output_torque = calculate_torque(
 			rpm,
 			0.0,
-			parameters,
 			false
 		)
 		combustion_running = false
@@ -220,7 +214,6 @@ func update(
 	was_running = angular_velocity > 0.0
 
 	consume_fuel(
-		parameters,
 		car,
 		delta
 	)
@@ -228,11 +221,8 @@ func update(
 func calculate_torque(
 	engine_rpm: float,
 	throttle_input: float,
-	parameters: CarParameters,
 	combustion_enabled: bool = true
 ) -> float:
-	assert(parameters != null)
-	assert(parameters.max_engine_rpm > 0.0)
 	assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
@@ -300,9 +290,7 @@ func calculate_torque(
 	)
 
 
-func clamp_to_idle(parameters: CarParameters) -> void:
-	assert(parameters != null)
-	assert(parameters.rpm_idle >= 0.0)
+func clamp_to_idle() -> void:
 	assert(angular_velocity >= 0.0)
 
 	angular_velocity = maxf(
@@ -312,13 +300,10 @@ func clamp_to_idle(parameters: CarParameters) -> void:
 
 
 func consume_fuel(
-	parameters: CarParameters,
 	car: RigidBody3D,
 	delta: float
 ) -> void:
-	assert(parameters != null)
 	assert(car != null)
-	assert(parameters.engine_bsfc >= 0.0)
 	assert(delta >= 0.0)
 
 	var mechanical_power_kw : float = (
