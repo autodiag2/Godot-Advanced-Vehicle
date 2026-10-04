@@ -71,6 +71,75 @@ func test_initialize_sets_fuel() -> void:
 		25.0
 	)
 
+func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load() -> void:
+	parameters.engine_bsfc_map = load(
+		"res://assets/vehicle/sport_car/petrol_bsfc.tres"
+	)
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.rpm = 3000.0
+
+	engine.combustion_torque = (
+		parameters.max_torque *
+		0.10
+	)
+	engine.output_torque = engine.combustion_torque
+
+	var fuel_before_10 := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		1.0
+	)
+
+	var consumption_10 := fuel_before_10 - engine.fuel_litres
+	var mechanical_power_10 := (
+		engine.output_torque *
+		engine.angular_velocity /
+		EngineController.WATTS_PER_KILOWATT
+	)
+	var normalized_consumption_10 := (
+		consumption_10 /
+		mechanical_power_10
+	)
+
+	engine.fuel_litres = fuel_before_10
+	engine.rpm = 3000.0
+
+	engine.combustion_torque = (
+		parameters.max_torque *
+		1.0
+	)
+	engine.output_torque = engine.combustion_torque
+
+	var fuel_before_100 := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		1.0
+	)
+
+	var consumption_100 := fuel_before_100 - engine.fuel_litres
+	var mechanical_power_100 := (
+		engine.output_torque *
+		engine.angular_velocity /
+		EngineController.WATTS_PER_KILOWATT
+	)
+	var normalized_consumption_100 := (
+		consumption_100 /
+		mechanical_power_100
+	)
+
+	assert_gt(
+		normalized_consumption_10,
+		normalized_consumption_100
+	)
 
 func test_initialize_adds_fuel_mass() -> void:
 	var expected_mass := (
