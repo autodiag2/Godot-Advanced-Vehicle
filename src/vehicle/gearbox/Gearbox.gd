@@ -4,16 +4,27 @@ extends RefCounted
 var drivetrain_params: DriveTrainParameters
 @export var params: GearboxParameters
 
-var selected_gear := 0
+var _selected_gear: int = 0
+var selected_gear: int:
+	get:
+		return _selected_gear
+	set(value):
+		if value == _selected_gear:
+			return
+
+		_selected_gear = value
+		if ( powertrain != null ):
+			powertrain.onGearboxGearChange(_selected_gear)
 var _engine_inertia := 0.0
 var drive_inertia := 10.0
 var last_shift_time := 0
+var powertrain: PowertrainController
 
-func setup(parameters: DriveTrainParameters) -> void:
+func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController) -> void:
 	assert(parameters != null)
 	drivetrain_params = parameters
+	powertrain = powertrain_arg
 	params = drivetrain_params.gearbox
-
 
 func automatic_shifting(
 	cur_torque,

@@ -112,7 +112,6 @@ func initialize(
 func set_drivetrain_connected(connected: bool) -> void:
 	drivetrain_connected = connected
 
-
 func update(
 	car: RigidBody3D,
 	throttle_input: float,

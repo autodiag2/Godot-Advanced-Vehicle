@@ -30,6 +30,9 @@ var average_rear_wheel_speed: float:
 			) * 0.5
 		)
 
+func onGearboxGearChange(gear: int) -> void:
+	engine.set_drivetrain_connected(gear == 0 )
+
 func initialize(
 	parameters: CarParameters,
 	engine_arg: EngineController,
@@ -40,8 +43,9 @@ func initialize(
 ) -> void:
 	clutch.friction = parameters.clutch_friction
 	engine = engine_arg
-	drivetrain.drivetrain_params = (
-		parameters.drivetrain_params
+	drivetrain.setup(
+		parameters.drivetrain_params,
+		self
 	)
 
 	drivetrain.set_input_inertia(

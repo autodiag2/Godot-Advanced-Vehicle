@@ -23,10 +23,10 @@ enum DRIVE_TYPE {
 
 var gearbox := Gearbox.new()
 
-@export var drivetrain_params: DriveTrainParameters:
+@export var parameters: DriveTrainParameters:
 	set(value):
-		drivetrain_params = value
-		gearbox.setup(value)
+		parameters = value
+		gearbox.setup(value, gearbox.powertrain)
 
 var _diff_clutch := Clutch.new()
 var _diff_split := 0.5
@@ -36,6 +36,9 @@ var avg_front_spin := 0.0
 
 var reaction_torque := 0.0
 
+func setup(parameters_arg: DriveTrainParameters, powertrain: PowertrainController):
+	parameters = parameters_arg
+	gearbox.setup(parameters_arg, powertrain)
 
 func automatic_shifting(
 	cur_torque,
@@ -254,6 +257,7 @@ func drivetrain(
 	clutch_input: float,
 	delta: float
 ):
+	assert(parameters != null)
 	assert(wheels.size() == 4)
 	assert(clutch_input >= 0.0)
 	assert(clutch_input <= 1.0)
@@ -288,12 +292,12 @@ func drivetrain(
 
 	reaction_torque = 0.0
 
-	if drivetrain_params.drivetype == DRIVE_TYPE.RWD:
+	if parameters.drivetype == DRIVE_TYPE.RWD:
 
 		differential(
 			drive_torque,
 			rear_wheels,
-			drivetrain_params.rear_diff,
+			parameters.rear_diff,
 			delta
 		)
 
@@ -317,12 +321,12 @@ func drivetrain(
 
 			reaction_torque *= 1.0 / gearing
 
-	elif drivetrain_params.drivetype == DRIVE_TYPE.FWD:
+	elif parameters.drivetype == DRIVE_TYPE.FWD:
 
 		differential(
 			drive_torque,
 			front_wheels,
-			drivetrain_params.front_diff,
+			parameters.front_diff,
 			delta
 		)
 
@@ -346,8 +350,8 @@ func drivetrain(
 
 			reaction_torque *= 1.0 / gearing
 
-	elif drivetrain_params.drivetype == DRIVE_TYPE.AWD:
-		match drivetrain_params.center_diff.diff_type:
+	elif parameters.drivetype == DRIVE_TYPE.AWD:
+		match parameters.center_diff.diff_type:
 			DIFF_TYPE.LOCKED:
 				var spin := _get_locked_spin(
 					wheels,
@@ -363,26 +367,26 @@ func drivetrain(
 					drive_torque *
 					(
 						1.0 -
-						drivetrain_params.center_split_fr
+						parameters.center_split_fr
 					)
 				)
 
 				var front_drive = (
 					drive_torque *
-					drivetrain_params.center_split_fr
+					parameters.center_split_fr
 				)
 
 				differential(
 					rear_drive,
 					rear_wheels,
-					drivetrain_params.rear_diff,
+					parameters.rear_diff,
 					delta
 				)
 
 				differential(
 					front_drive,
 					front_wheels,
-					drivetrain_params.front_diff,
+					parameters.front_diff,
 					delta
 				)
 
@@ -393,14 +397,14 @@ func drivetrain(
 				differential(
 					rear_drive,
 					rear_wheels,
-					drivetrain_params.rear_diff,
+					parameters.rear_diff,
 					delta
 				)
 
 				differential(
 					front_drive,
 					front_wheels,
-					drivetrain_params.front_diff,
+					parameters.front_diff,
 					delta
 				)
 
