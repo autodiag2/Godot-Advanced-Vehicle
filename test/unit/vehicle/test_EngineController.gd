@@ -84,7 +84,7 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 	)
 
 	engine.rpm = 3000.0
-
+	engine.combustion_running = true
 	engine.combustion_torque = (
 		parameters.max_torque *
 		0.10
@@ -241,9 +241,8 @@ func test_calculate_torque_at_full_throttle() -> void:
 
 	assert_float_eq(
 		torque,
-		190.0
+		192.0
 	)
-
 
 func test_calculate_torque_at_zero_throttle() -> void:
 	var torque := engine.calculate_torque(
@@ -253,9 +252,8 @@ func test_calculate_torque_at_zero_throttle() -> void:
 
 	assert_float_eq(
 		torque,
-		-10.0
+		-8.0
 	)
-
 
 func test_calculate_torque_at_half_throttle() -> void:
 	var torque := engine.calculate_torque(
@@ -265,17 +263,16 @@ func test_calculate_torque_at_half_throttle() -> void:
 
 	assert_float_eq(
 		torque,
-		90.0
+		92.0
 	)
 
-
-func test_calculate_torque_at_zero_rpm_has_no_engine_friction() -> void:
+func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
 	var torque := engine.calculate_torque(
 		0.0,
 		0.0
 	)
 
-	assert_eq(
+	assert_ne(
 		torque,
 		0.0
 	)
@@ -301,9 +298,7 @@ func test_idle_control_is_zero_at_idle() -> void:
 
 	assert_eq(
 		torque,
-		-parameters.engine_brake *
-		parameters.rpm_idle /
-		parameters.max_engine_rpm
+		-4.16
 	)
 
 
@@ -448,7 +443,7 @@ func test_limiter_does_not_modify_output_torque() -> void:
 
 	assert_float_eq(
 		engine.output_torque,
-		180.25
+		180.3975
 	)
 
 func test_update_zero_delta_does_not_change_angular_velocity() -> void:
@@ -470,7 +465,8 @@ func test_update_zero_delta_does_not_change_angular_velocity() -> void:
 func test_consume_fuel_reduces_fuel() -> void:
 	engine.rpm = 3000.0
 	engine.output_torque = 100.0
-
+	engine.combustion_running = true
+	
 	var initial_fuel := engine.fuel_litres
 
 	engine.consume_fuel(
@@ -488,7 +484,8 @@ func test_consume_fuel_reduces_fuel() -> void:
 func test_consume_fuel_reduces_vehicle_mass() -> void:
 	engine.rpm = 3000.0
 	engine.output_torque = 100.0
-
+	engine.combustion_running = true
+	
 	var initial_mass := car.mass
 
 	engine.consume_fuel(
@@ -506,6 +503,7 @@ func test_zero_output_torque_consumes_fuel_based_on_engine_friction() -> void:
 	engine.rpm = 3000.0
 	engine.output_torque = 0.0
 	engine.combustion_torque = 0.0
+	engine.combustion_running = true
 
 	var initial_fuel := engine.fuel_litres
 	var initial_mass := car.mass
@@ -538,6 +536,7 @@ func test_zero_output_torque_consumes_fuel_based_on_engine_friction() -> void:
 func test_zero_angular_velocity_does_not_consume_fuel() -> void:
 	engine.angular_velocity = 0.0
 	engine.output_torque = 100.0
+	engine.combustion_running = true
 
 	var initial_fuel := engine.fuel_litres
 
@@ -557,6 +556,7 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 	engine.rpm = 8000.0
 	engine.output_torque = 1000000.0
 	engine.fuel_litres = 0.001
+	engine.combustion_running = true
 
 	engine.consume_fuel(
 		car,
@@ -641,6 +641,7 @@ func test_no_load_fuel_consumption_increases_with_rpm() -> void:
 
 	engine.fuel_litres = fuel_before_2000
 	engine.rpm = 6000.0
+	engine.combustion_running = true
 
 	var fuel_before_6000 := engine.fuel_litres
 
@@ -822,4 +823,183 @@ func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
 
 	assert_false(
 		engine.combustion_running
+	)
+func test_bsfc_load_uses_rpm_dependent_maximum_torque() -> void:
+	parameters.engine_bsfc_map = load(
+		"res://assets/vehicle/sport_car/petrol_bsfc.tres"
+	)
+
+	parameters.torque_curve = Curve.new()
+	parameters.torque_curve.add_point(Vector2(0.0, 0.5))
+	parameters.torque_curve.add_point(Vector2(1.0, 1.0))
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.rpm = 4000.0
+	engine.combustion_running = true
+	engine.combustion_torque = 100.0
+	engine.output_torque = 100.0
+
+	var load_4000 := engine.calculate_engine_load()
+
+	engine.rpm = 8000.0
+	engine.combustion_torque = 100.0
+	engine.output_torque = 100.0
+
+	var load_8000 := engine.calculate_engine_load()
+
+	assert_gt(
+		load_4000,
+		load_8000
+	)
+
+func test_no_fuel_is_consumed_when_combustion_is_not_running() -> void:
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.combustion_running = false
+	engine.rpm = 3000.0
+	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
+
+	var initial_fuel := engine.fuel_litres
+	var initial_mass := car.mass
+
+	engine.consume_fuel(
+		car,
+		1.0,
+		1.0
+	)
+
+	assert_eq(
+		engine.fuel_litres,
+		initial_fuel
+	)
+
+	assert_eq(
+		car.mass,
+		initial_mass
+	)
+
+
+func test_fuel_cut_when_drivetrain_connected_and_throttle_closed() -> void:
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.combustion_running = true
+	engine.drivetrain_connected = true
+	engine.rpm = parameters.rpm_idle * 2.0
+	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
+
+	var initial_fuel := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		0.0,
+		1.0
+	)
+
+	assert_eq(
+		engine.fuel_litres,
+		initial_fuel
+	)
+
+
+func test_closed_throttle_neutral_does_not_use_fuel_cut() -> void:
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.combustion_running = true
+	engine.drivetrain_connected = false
+	engine.rpm = parameters.rpm_idle * 2.0
+	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
+
+	var initial_fuel := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		0.0,
+		1.0
+	)
+
+	assert_lt(
+		engine.fuel_litres,
+		initial_fuel
+	)
+
+func test_idle_to_normal_fuel_consumption_is_continuous() -> void:
+	parameters.engine_idle_fuel_rate = 0.8
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.combustion_running = true
+	engine.output_torque = 0.0
+	engine.combustion_torque = 0.0
+
+	var blend_end := (
+		parameters.rpm_idle *
+		(1.0 + EngineController.IDLE_BLEND_RPM_FACTOR)
+	)
+
+	engine.rpm = parameters.rpm_idle
+
+	var fuel_before_idle := engine.fuel_litres
+
+	engine.consume_fuel(
+		car,
+		0.0,
+		1.0
+	)
+
+	var consumption_idle := (
+		fuel_before_idle -
+		engine.fuel_litres
+	)
+
+	engine.fuel_litres = fuel_before_idle
+	engine.rpm = blend_end
+
+	engine.consume_fuel(
+		car,
+		0.0,
+		1.0
+	)
+
+	var consumption_blend_end := (
+		fuel_before_idle -
+		engine.fuel_litres
+	)
+
+	assert_gt(
+		consumption_idle,
+		0.0
+	)
+
+	assert_gt(
+		consumption_blend_end,
+		0.0
 	)

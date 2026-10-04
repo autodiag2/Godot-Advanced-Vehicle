@@ -8,6 +8,9 @@ const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
 const SECONDS_PER_HOUR: float = 3600.0
 const NO_LOAD_BSFC_LOAD: float = 0.10
+const FUEL_CUT_RPM_FACTOR: float = 1.10
+const IDLE_BLEND_RPM_FACTOR: float = 0.10
+const FRICTION_IDLE_FACTOR: float = 0.20
 
 class Listener:
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
@@ -27,6 +30,7 @@ var reaction_torque: float = 0.0
 var combustion_torque: float = 0.0
 var fuel_litres: float = 0.0
 var combustion_running: bool = false
+var drivetrain_connected: bool = false
 var parameters: CarParameters
 var engine_audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
@@ -44,7 +48,9 @@ var rpm: float:
 			value /
 			RPM_PER_RADIAN_PER_SECOND
 		)
+
 var max_engine_rpm: float = 8000.0
+
 
 func add_listener(listener: Listener) -> void:
 	assert(listener != null)
@@ -57,6 +63,7 @@ func remove_listener(listener: Listener) -> void:
 	assert(listener != null)
 
 	listeners.erase(listener)
+
 
 func initialize(
 	parameters_arg: CarParameters,
@@ -94,11 +101,17 @@ func initialize(
 	reaction_torque = 0.0
 	was_running = false
 	combustion_running = false
+	drivetrain_connected = false
 
 	car.mass += (
 		fuel_litres *
 		PETROL_KG_PER_LITRE
 	)
+
+
+func set_drivetrain_connected(connected: bool) -> void:
+	drivetrain_connected = connected
+
 
 func update(
 	car: RigidBody3D,
@@ -111,7 +124,7 @@ func update(
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
 
-	var was_running_before_update : bool = angular_velocity > 0.0
+	var was_running_before_update: bool = angular_velocity > 0.0
 
 	output_torque = calculate_torque(
 		rpm,
@@ -209,6 +222,7 @@ func update(
 		delta
 	)
 
+
 func calculate_torque(
 	engine_rpm: float,
 	throttle_input: float,
@@ -250,9 +264,8 @@ func calculate_torque(
 			throttle_factor
 		)
 
-	var engine_friction_torque := (
-		parameters.engine_brake *
-		rpm_factor
+	var engine_friction_torque := calculate_friction_torque(
+		engine_rpm
 	)
 
 	var idle_torque := 0.0
@@ -280,6 +293,30 @@ func calculate_torque(
 		engine_friction_torque
 	)
 
+
+func calculate_friction_torque(engine_rpm: float) -> float:
+	assert(engine_rpm >= 0.0)
+
+	var rpm_factor := clampf(
+		engine_rpm /
+		parameters.max_engine_rpm,
+		0.0,
+		1.0
+	)
+
+	var friction_factor := (
+		FRICTION_IDLE_FACTOR +
+		(1.0 - FRICTION_IDLE_FACTOR) *
+		rpm_factor *
+		rpm_factor
+	)
+
+	return (
+		parameters.engine_brake *
+		friction_factor
+	)
+
+
 func consume_fuel(
 	car: RigidBody3D,
 	throttle_input: float,
@@ -288,73 +325,65 @@ func consume_fuel(
 	assert(car != null)
 	assert(delta >= 0.0)
 
+	if !combustion_running:
+		return
+
 	var fuel_consumed: float
 
-	var is_idle := (
-		combustion_running &&
-		throttle_input == 0.0 &&
-		rpm > 0.0 &&
-		rpm <= parameters.rpm_idle
+	var idle_blend_start := parameters.rpm_idle
+	var idle_blend_end := (
+		parameters.rpm_idle *
+		(1.0 + IDLE_BLEND_RPM_FACTOR)
 	)
 
-	if is_idle:
-		fuel_consumed = (
+	var fuel_cut_rpm := (
+		parameters.rpm_idle *
+		FUEL_CUT_RPM_FACTOR
+	)
+
+	var is_fuel_cut := (
+		drivetrain_connected &&
+		throttle_input == 0.0 &&
+		rpm >= fuel_cut_rpm
+	)
+
+	if is_fuel_cut:
+		fuel_consumed = 0.0
+	elif (
+		throttle_input == 0.0 &&
+		rpm > 0.0 &&
+		rpm <= idle_blend_end
+	):
+		var normal_fuel_consumed := calculate_normal_fuel_consumption(
+			delta
+		)
+
+		var idle_fuel_consumed := (
 			parameters.engine_idle_fuel_rate *
 			delta /
 			SECONDS_PER_HOUR
 		)
+
+		var idle_factor := inverse_lerp(
+			idle_blend_end,
+			idle_blend_start,
+			rpm
+		)
+
+		idle_factor = clampf(
+			idle_factor,
+			0.0,
+			1.0
+		)
+
+		fuel_consumed = lerpf(
+			normal_fuel_consumed,
+			idle_fuel_consumed,
+			idle_factor
+		)
 	else:
-		var mechanical_power_kw: float = (
-			max(output_torque, 0.0) *
-			angular_velocity /
-			WATTS_PER_KILOWATT
-		)
-
-		var engine_load: float = 0.0
-
-		if parameters.max_torque > 0.0:
-			engine_load = clampf(
-				combustion_torque /
-				parameters.max_torque,
-				0.0,
-				1.0
-			)
-
-		var bsfc: float = parameters.engine_bsfc_map.sample(
-			rpm,
-			maxf(engine_load, NO_LOAD_BSFC_LOAD)
-		)
-
-		var friction_torque := (
-			parameters.engine_brake *
-			clampf(
-				rpm /
-				parameters.max_engine_rpm,
-				0.0,
-				1.0
-			)
-		)
-
-		var friction_power_kw: float = (
-			friction_torque *
-			angular_velocity /
-			WATTS_PER_KILOWATT
-		)
-
-		var fuel_power_kw := (
-			mechanical_power_kw +
-			friction_power_kw
-		)
-
-		fuel_consumed = (
-			bsfc *
-			fuel_power_kw *
-			delta /
-			(
-				SECONDS_PER_HOUR *
-				1000.0 *
-				PETROL_KG_PER_LITRE
-			)
+		fuel_consumed = calculate_normal_fuel_consumption(
+			delta
 		)
 
 	fuel_consumed = min(
@@ -377,10 +406,79 @@ func consume_fuel(
 		fuel_litres = 0.0
 		output_torque = 0.0
 		rpm = 0.0
+		combustion_running = false
 		stop_sound()
 	else:
 		update_sound()
 
+
+func calculate_normal_fuel_consumption(delta: float) -> float:
+	assert(delta >= 0.0)
+
+	var mechanical_power_kw: float = (
+		max(output_torque, 0.0) *
+		angular_velocity /
+		WATTS_PER_KILOWATT
+	)
+
+	var engine_load := calculate_engine_load()
+
+	var bsfc: float = parameters.engine_bsfc_map.sample(
+		rpm,
+		maxf(
+			engine_load,
+			NO_LOAD_BSFC_LOAD
+		)
+	)
+
+	var friction_torque := calculate_friction_torque(
+		rpm
+	)
+
+	var friction_power_kw: float = (
+		friction_torque *
+		angular_velocity /
+		WATTS_PER_KILOWATT
+	)
+
+	var fuel_power_kw := (
+		mechanical_power_kw +
+		friction_power_kw
+	)
+
+	return (
+		bsfc *
+		fuel_power_kw *
+		delta /
+		(
+			SECONDS_PER_HOUR *
+			1000.0 *
+			PETROL_KG_PER_LITRE
+		)
+	)
+
+func calculate_engine_load() -> float:
+	var maximum_torque := (
+		parameters.torque_curve.sample_baked(
+			clampf(
+				rpm /
+				parameters.max_engine_rpm,
+				0.0,
+				1.0
+			)
+		) *
+		parameters.max_torque
+	)
+
+	if maximum_torque <= 0.0:
+		return 0.0
+
+	return clampf(
+		combustion_torque /
+		maximum_torque,
+		0.0,
+		1.0
+	)
 
 func update_sound() -> void:
 	assert(engine_audio_player != null)
