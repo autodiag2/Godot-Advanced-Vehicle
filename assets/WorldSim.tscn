@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://b6njc3v4v3y8x"]
+
+[ext_resource type="Script" uid="uid://odpf6ebpprpf" path="res://src/WorldSim.gd" id="1_yt4am"]
+[ext_resource type="PackedScene" uid="uid://bsjfmyg722aw2" path="res://assets/world/factory_test/world.tscn" id="2_yt4am"]
+[ext_resource type="PackedScene" uid="uid://dqqcf60u11tfq" path="res://assets/vehicle/sport_car/vehicle.tscn" id="3_dd4ve"]
+[ext_resource type="PackedScene" uid="uid://djbt3ltge1aat" path="res://assets/ui/gui.tscn" id="4_2wc62"]
+
+[node name="WorldSim" type="Node3D" unique_id=1743840443]
+script = ExtResource("1_yt4am")
+default_world = ExtResource("2_yt4am")
+default_vehicle = ExtResource("3_dd4ve")
+hud_scene = ExtResource("4_2wc62")
+
+[node name="UIRoot" type="Control" parent="." unique_id=1773820254]
+layout_mode = 3
+anchor_right = 0.998
+anchor_bottom = 1.0
+offset_left = -2.0
+offset_right = 0.30395508
+offset_bottom = 2.0
+
+[node name="WorldRoot" type="WorldEnvironment" parent="." unique_id=1541391873]
+
+[node name="VehicleRoot" type="RigidBody3D" parent="." unique_id=630294435]

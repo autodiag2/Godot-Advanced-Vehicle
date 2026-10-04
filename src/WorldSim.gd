@@ -5,9 +5,9 @@ const WORLD_PATH := "res://assets/world/"
 const VEHICLE_PATH := "res://assets/vehicle/"
 const VEHICLE_SPAWN := "VehicleSpawn"
 
-@export var default_world: PackedScene = preload(WORLD_PATH + "/factory_test/world.tscn")
-@export var default_vehicle: PackedScene = preload(VEHICLE_PATH + "/sport_car/vehicle.tscn")
-@export var hud_scene: PackedScene = preload("res://assets/ui/gui.tscn")
+@export var default_world: PackedScene
+@export var default_vehicle: PackedScene
+@export var hud_scene: PackedScene
 @export var setup_scene: PackedScene
 
 @onready var world_root := $WorldRoot
