@@ -73,10 +73,6 @@ offset_right = 164.0
 offset_bottom = 242.0
 grow_horizontal = 1
 grow_vertical = 1
-wheel_fl_path = NodePath("../../Wheel_fl")
-wheel_fr_path = NodePath("../../Wheel_fr")
-wheel_bl_path = NodePath("../../Wheel_bl")
-wheel_br_path = NodePath("../../Wheel_br")
 
 [node name="InputApp" parent="." unique_id=893328040 node_paths=PackedStringArray("joystick") instance=ExtResource("3_m5e8j")]
 layout_mode = 1

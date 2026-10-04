@@ -1,6 +1,6 @@
 extends GutTest
 
-const WORLDSIM_SCENE = preload("res://src/WorldSim.tscn")
+const WORLDSIM_SCENE = preload("res://assets/WorldSim.tscn")
 const VEHICLE_SCENE = preload("res://assets/vehicle/sport_car/vehicle.tscn")
 
 
