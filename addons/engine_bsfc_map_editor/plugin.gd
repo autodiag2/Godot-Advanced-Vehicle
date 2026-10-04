@@ -100,6 +100,7 @@ class EngineBSFCMapEditor extends VBoxContainer:
 		heatmap.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		add_child(heatmap)
 		heatmap.map = map
+		heatmap._update_minimum_height()
 		heatmap.queue_redraw()
 
 	func _refresh() -> void:
@@ -290,6 +291,7 @@ class BSFCHeatmap extends Control:
 	const BOTTOM_MARGIN := 34.0
 	const HEADER_GAP := 10.0
 	const font_size := 30.0
+	const CELL_HEIGHT := 55.0
 
 	func _ready() -> void:
 		queue_redraw()
@@ -297,6 +299,17 @@ class BSFCHeatmap extends Control:
 	func _notification(what: int) -> void:
 		if what == NOTIFICATION_RESIZED:
 			queue_redraw()
+
+
+	func _update_minimum_height() -> void:
+		if map == null:
+			return
+
+		custom_minimum_size.y = (
+			TOP_MARGIN +
+			map.rows.size() * CELL_HEIGHT +
+			BOTTOM_MARGIN
+		)
 
 	func _draw() -> void:
 		if map == null || map.rows.size() < 2:
@@ -306,13 +319,13 @@ class BSFCHeatmap extends Control:
 			LEFT_MARGIN,
 			TOP_MARGIN,
 			size.x - LEFT_MARGIN - RIGHT_MARGIN,
-			size.y - TOP_MARGIN - BOTTOM_MARGIN
+			map.rows.size() * CELL_HEIGHT
 		)
 
 		var columns := 5
 		var rows := map.rows.size()
 		var cell_width := plot.size.x / columns
-		var cell_height := plot.size.y / rows
+		var cell_height := CELL_HEIGHT
 
 		var minimum := INF
 		var maximum := -INF

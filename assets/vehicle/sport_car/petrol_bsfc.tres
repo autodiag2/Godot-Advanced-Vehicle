@@ -14,7 +14,6 @@ load_100 = 285.0
 [sub_resource type="Resource" id="Resource_1500"]
 script = ExtResource("1_kaew3")
 rpm = 1500.0
-load_10 = 500.0
 load_25 = 375.0
 load_50 = 305.0
 load_75 = 265.0
@@ -86,7 +85,6 @@ load_100 = 230.0
 [sub_resource type="Resource" id="Resource_5500"]
 script = ExtResource("1_kaew3")
 rpm = 5500.0
-load_10 = 500.0
 load_25 = 345.0
 load_50 = 280.0
 load_75 = 245.0
@@ -115,7 +113,6 @@ script = ExtResource("1_kaew3")
 rpm = 7000.0
 load_10 = 575.0
 load_25 = 405.0
-load_50 = 330.0
 load_75 = 295.0
 load_100 = 285.0
 
@@ -139,21 +136,5 @@ load_100 = 330.0
 
 [resource]
 script = ExtResource("2_vf461")
-rows = Array[ExtResource("1_kaew3")]([
-SubResource("Resource_1000"),
-SubResource("Resource_1500"),
-SubResource("Resource_2000"),
-SubResource("Resource_2500"),
-SubResource("Resource_3000"),
-SubResource("Resource_3500"),
-SubResource("Resource_4000"),
-SubResource("Resource_4500"),
-SubResource("Resource_5000"),
-SubResource("Resource_5500"),
-SubResource("Resource_6000"),
-SubResource("Resource_6500"),
-SubResource("Resource_7000"),
-SubResource("Resource_7500"),
-SubResource("Resource_8000")
-])
+rows = Array[ExtResource("1_kaew3")]([SubResource("Resource_1000"), SubResource("Resource_1500"), SubResource("Resource_2000"), SubResource("Resource_2500"), SubResource("Resource_3000"), SubResource("Resource_3500"), SubResource("Resource_4000"), SubResource("Resource_4500"), SubResource("Resource_5000"), SubResource("Resource_5500"), SubResource("Resource_6000"), SubResource("Resource_6500"), SubResource("Resource_7000"), SubResource("Resource_7500"), SubResource("Resource_8000")])
 metadata/_custom_type_script = "uid://bc5oue3ltgo7r"
