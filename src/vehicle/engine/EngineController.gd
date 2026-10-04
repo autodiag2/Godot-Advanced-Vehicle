@@ -6,8 +6,6 @@ const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 const NEWTON_METRE_RPM_TO_KW: int = 9549
 const WATTS_PER_KILOWATT: float = 1000.0
 const IDLE_CONTROL_GAIN: float = 1.0
-const BSFC_MIN_REALISTIC: float = 180.0
-const BSFC_MAX_REALISTIC: float = 500.0
 
 class Listener:
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
