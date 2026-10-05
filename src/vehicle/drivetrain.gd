@@ -31,9 +31,6 @@ var gearbox := Gearbox.new()
 var _diff_clutch := Clutch.new()
 var _diff_split := 0.5
 
-var avg_rear_spin := 0.0
-var avg_front_spin := 0.0
-
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
@@ -302,16 +299,6 @@ func apply_torque(
 		wheel_fl,
 		wheel_fr
 	]
-
-	avg_rear_spin = (
-		wheel_bl.get_spin() +
-		wheel_br.get_spin()
-	) * 0.5
-
-	avg_front_spin = (
-		wheel_fl.get_spin() +
-		wheel_fr.get_spin()
-	) * 0.5
 
 	gearbox.drive_inertia = gearbox.get_drive_inertia(
 		clutch_input
