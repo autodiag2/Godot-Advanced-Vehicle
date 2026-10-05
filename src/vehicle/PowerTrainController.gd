@@ -47,9 +47,14 @@ func initialize(
 	clutch.friction = parameters.clutch_friction
 	engine = engine_arg
 	wheel_fl = wheel_fl_arg
+	wheel_fl.set_params(parameters.wheel_params_fl)
 	wheel_fr = wheel_fr_arg
+	wheel_fr.set_params(parameters.wheel_params_fr)
 	wheel_bl = wheel_bl_arg
+	wheel_bl.set_params(parameters.wheel_params_bl)
 	wheel_br = wheel_br_arg
+	wheel_br.set_params(parameters.wheel_params_br)
+	
 	drivetrain.setup(
 		parameters.drivetrain,
 		self

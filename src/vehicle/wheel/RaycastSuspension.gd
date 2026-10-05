@@ -203,6 +203,8 @@ func apply_torque(
 	delta
 ):
 	var brake_torque := get_brake_torque()
+	if 0.0 < brake_torque :
+		assert(sign(brake_torque) != sign(torque))
 	var net_torque := wheel.apply_torque(
 		torque,
 		brake_torque,

@@ -220,7 +220,7 @@ func test_brake_acts_on_stationary_wheel():
 
 	wheel.apply_torque(
 		100.0,
-		50.0,
+		-50.0,
 		0.0,
 		0.0,
 		0.1
@@ -273,7 +273,7 @@ func test_brake_opposes_positive_spin():
 
 	wheel.apply_torque(
 		0.0,
-		10.0,
+		-10.0,
 		0.0,
 		z_vel,
 		0.1
@@ -328,7 +328,7 @@ func test_strong_brake_does_not_reverse_positive_spin():
 
 	wheel.apply_torque(
 		0.0,
-		10000.0,
+		-10000.0,
 		0.0,
 		z_vel,
 		0.1

@@ -1,7 +1,7 @@
 class_name WheelPad
 extends RefCounted
 
-var friction: float = 0.4
+var friction: float = 1.0
 var min_friction: float = 0.2
 var usage: float = 0.0
 var max_usage_energy: float = 1000000.0

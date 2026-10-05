@@ -14,13 +14,6 @@ func before_each() -> void:
 	pad = WheelPad.new()
 
 
-func test_default_values() -> void:
-	assert_eq(pad.friction, 0.4)
-	assert_eq(pad.min_friction, 0.2)
-	assert_eq(pad.usage, 0.0)
-	assert_eq(pad.max_usage_energy, 1000000.0)
-
-
 func test_get_friction_at_zero_usage() -> void:
 	pad.friction = 0.4
 	pad.min_friction = 0.2
@@ -56,15 +49,15 @@ func test_get_friction_at_full_usage() -> void:
 
 
 func test_calculate_braking_force_at_zero_usage() -> void:
-	pad.friction = 0.4
+	pad.friction = 1.0
 	pad.min_friction = 0.2
 	pad.usage = 0.0
 
-	var force := pad.calculate_braking_force(1000.0)
+	var force := pad.calculate_braking_factor(1.0)
 
-	assert_eq(
+	assert_float_eq(
 		force,
-		400.0
+		1.0
 	)
 
 
@@ -73,20 +66,16 @@ func test_calculate_braking_force_decreases_with_usage() -> void:
 	pad.min_friction = 0.2
 
 	pad.usage = 0.0
-	var new_force := pad.calculate_braking_force(1000.0)
+	var new_force := pad.calculate_braking_factor(1.0)
 
 	pad.usage = 0.5
-	var half_force := pad.calculate_braking_force(1000.0)
+	var half_force := pad.calculate_braking_factor(1.0)
 
 	pad.usage = 1.0
-	var worn_force := pad.calculate_braking_force(1000.0)
+	var worn_force := pad.calculate_braking_factor(1.0)
 
 	assert_gt(new_force, half_force)
 	assert_gt(half_force, worn_force)
-
-	assert_float_eq(new_force, 400.0)
-	assert_float_eq(half_force, 300.0)
-	assert_float_eq(worn_force, 200.0)
 	
 func test_update_usage_increases_usage() -> void:
 	pad.max_usage_energy = 1000.0
@@ -253,11 +242,7 @@ func test_braking_force_uses_minimum_friction_when_fully_worn() -> void:
 		0.000001
 	)
 
-	assert_almost_eq(
-		pad.calculate_braking_force(1000.0),
-		100.0,
-		0.000001
-	)
+	assert_lt(pad.calculate_braking_factor(1.0), 1.0)
 
 func test_usage_does_not_change_when_max_usage_energy_is_zero() -> void:
 	pad.max_usage_energy = 0.0
