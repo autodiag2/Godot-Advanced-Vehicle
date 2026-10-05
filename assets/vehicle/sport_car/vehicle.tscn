@@ -1,103 +1,10 @@
 [gd_scene format=4 uid="uid://dqqcf60u11tfq"]
 
 [ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://assets/vehicle/base_car/vehicle.tscn" id="1_rpk6a"]
-[ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="2_07fle"]
-[ext_resource type="Script" uid="uid://beoy7rb7kinu4" path="res://src/vehicle/diff_params.gd" id="2_e2oix"]
-[ext_resource type="Script" uid="uid://cumcs3yp4no2v" path="res://src/vehicle/gearbox/GearboxParameters.gd" id="3_2fru8"]
-[ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="3_i57cj"]
+[ext_resource type="Resource" uid="uid://c5fohh17me33f" path="res://assets/vehicle/sport_car/parameters.tres" id="2_b77au"]
 [ext_resource type="AudioStream" path="res://assets/engine/tres/engine_sample.tres" id="3_u8x6m"]
-[ext_resource type="Script" uid="uid://cq401wgg5c803" path="res://src/vehicle/drivetrain_params.gd" id="3_xtqkk"]
-[ext_resource type="Resource" uid="uid://dgywvijqfg0j8" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="5_3hrmt"]
-[ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve/CurveTireModel.gd" id="6_2o354"]
-[ext_resource type="Script" uid="uid://dyf28fs4lbp0a" path="res://src/vehicle/engine/EngineParameters.gd" id="6_jsjag"]
 [ext_resource type="Texture2D" uid="uid://xcvloq7plggh" path="res://assets/vehicle/sport_car/sport_car_colorpalette8x8.png" id="7_cvq8b"]
 [ext_resource type="PackedScene" uid="uid://vls3meliu3jk" path="res://assets/vehicle/sport_car/sport_car.glb" id="10_sat6w"]
-
-[sub_resource type="Resource" id="Resource_v5axk"]
-script = ExtResource("2_e2oix")
-metadata/_custom_type_script = "uid://beoy7rb7kinu4"
-
-[sub_resource type="Resource" id="Resource_kgm7c"]
-script = ExtResource("2_e2oix")
-metadata/_custom_type_script = "uid://beoy7rb7kinu4"
-
-[sub_resource type="Resource" id="Resource_dl0dc"]
-script = ExtResource("3_2fru8")
-automatic = false
-metadata/_custom_type_script = "uid://cumcs3yp4no2v"
-
-[sub_resource type="Resource" id="Resource_7da8j"]
-script = ExtResource("2_e2oix")
-metadata/_custom_type_script = "uid://beoy7rb7kinu4"
-
-[sub_resource type="Resource" id="Resource_d1n1n"]
-script = ExtResource("3_xtqkk")
-gearbox = SubResource("Resource_dl0dc")
-rear_diff = SubResource("Resource_7da8j")
-front_diff = SubResource("Resource_kgm7c")
-center_diff = SubResource("Resource_v5axk")
-metadata/_custom_type_script = "uid://cq401wgg5c803"
-
-[sub_resource type="Curve" id="Curve_68moi"]
-_data = [Vector2(0.0021691918, 0), 0.0, 0.0, 0, 0, Vector2(0.2863741, 0.23796403), 0.0, 0.0, 0, 0, Vector2(0.734411, 0.8495039), 0.0, 0.0, 0, 0]
-point_count = 3
-
-[sub_resource type="Curve" id="Curve_cjyhj"]
-_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.0071942434, 0), 0.0, 0.0, 0, 0, Vector2(0.30695444, 0.29365075), 0.0, 0.0, 0, 0, Vector2(0.7806004, 0.777839), 0.0, 0.0, 0, 0]
-point_count = 4
-
-[sub_resource type="Resource" id="Resource_hvacy"]
-script = ExtResource("6_jsjag")
-torque_curve = SubResource("Curve_cjyhj")
-throttle_model = SubResource("Curve_68moi")
-sound = ExtResource("3_u8x6m")
-metadata/_custom_type_script = "uid://dyf28fs4lbp0a"
-
-[sub_resource type="Resource" id="Resource_0bi4d"]
-script = ExtResource("6_2o354")
-metadata/_custom_type_script = "uid://770j2as8psxx"
-
-[sub_resource type="Resource" id="Resource_1l7fv"]
-script = ExtResource("3_i57cj")
-tire_model = SubResource("Resource_0bi4d")
-metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
-
-[sub_resource type="Resource" id="Resource_rt8ka"]
-script = ExtResource("6_2o354")
-metadata/_custom_type_script = "uid://770j2as8psxx"
-
-[sub_resource type="Resource" id="Resource_umaoe"]
-script = ExtResource("3_i57cj")
-tire_model = SubResource("Resource_rt8ka")
-metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
-
-[sub_resource type="Resource" id="Resource_v3fvn"]
-script = ExtResource("6_2o354")
-metadata/_custom_type_script = "uid://770j2as8psxx"
-
-[sub_resource type="Resource" id="Resource_58mb6"]
-script = ExtResource("3_i57cj")
-tire_model = SubResource("Resource_v3fvn")
-metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
-
-[sub_resource type="Resource" id="Resource_vfaha"]
-script = ExtResource("6_2o354")
-metadata/_custom_type_script = "uid://770j2as8psxx"
-
-[sub_resource type="Resource" id="Resource_wy15l"]
-script = ExtResource("3_i57cj")
-tire_model = SubResource("Resource_vfaha")
-metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
-
-[sub_resource type="Resource" id="Resource_elm6p"]
-script = ExtResource("2_07fle")
-engine = SubResource("Resource_hvacy")
-drivetrain = SubResource("Resource_d1n1n")
-wheel_params_fl = SubResource("Resource_58mb6")
-wheel_params_fr = SubResource("Resource_wy15l")
-wheel_params_bl = SubResource("Resource_1l7fv")
-wheel_params_br = SubResource("Resource_umaoe")
-metadata/_custom_type_script = "uid://dssspfnea8d08"
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_cw0ms"]
 resource_name = "CarBaseNaterial"
@@ -190,7 +97,7 @@ shadow_mesh = SubResource("ArrayMesh_mnl4s")
 
 [node name="Vehicle" parent="." unique_id=778852457 instance=ExtResource("1_rpk6a")]
 mass = 1000.0
-parameters = SubResource("Resource_elm6p")
+parameters = ExtResource("2_b77au")
 
 [node name="Camera3D" parent="Vehicle" index="0" unique_id=1911917214]
 transform = Transform3D(1, 2.75852e-15, -1.02949e-14, 0, 0.965926, 0.258819, 1.06581e-14, -0.258819, 0.965926, -0.0299997, 2.14271, 6.55229)

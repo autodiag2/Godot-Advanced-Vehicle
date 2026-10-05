@@ -1,0 +1,97 @@
+[gd_resource type="Resource" script_class="CarParameters" format=3 uid="uid://c5fohh17me33f"]
+
+[ext_resource type="Script" uid="uid://beoy7rb7kinu4" path="res://src/vehicle/diff_params.gd" id="1_ebxlq"]
+[ext_resource type="Script" uid="uid://cumcs3yp4no2v" path="res://src/vehicle/gearbox/GearboxParameters.gd" id="2_ftcts"]
+[ext_resource type="Script" uid="uid://cq401wgg5c803" path="res://src/vehicle/drivetrain_params.gd" id="3_pt33x"]
+[ext_resource type="Resource" uid="uid://dgywvijqfg0j8" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="4_educo"]
+[ext_resource type="Script" uid="uid://dyf28fs4lbp0a" path="res://src/vehicle/engine/EngineParameters.gd" id="5_1bc2m"]
+[ext_resource type="AudioStream" path="res://assets/engine/tres/engine_sample.tres" id="6_nl1t6"]
+[ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="7_3iann"]
+[ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="8_o1b1q"]
+[ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve/CurveTireModel.gd" id="9_12dcd"]
+
+[sub_resource type="Resource" id="Resource_v5axk"]
+script = ExtResource("1_ebxlq")
+metadata/_custom_type_script = "uid://beoy7rb7kinu4"
+
+[sub_resource type="Resource" id="Resource_kgm7c"]
+script = ExtResource("1_ebxlq")
+metadata/_custom_type_script = "uid://beoy7rb7kinu4"
+
+[sub_resource type="Resource" id="Resource_dl0dc"]
+script = ExtResource("2_ftcts")
+automatic = false
+metadata/_custom_type_script = "uid://cumcs3yp4no2v"
+
+[sub_resource type="Resource" id="Resource_7da8j"]
+script = ExtResource("1_ebxlq")
+metadata/_custom_type_script = "uid://beoy7rb7kinu4"
+
+[sub_resource type="Resource" id="Resource_d1n1n"]
+script = ExtResource("3_pt33x")
+gearbox = SubResource("Resource_dl0dc")
+rear_diff = SubResource("Resource_7da8j")
+front_diff = SubResource("Resource_kgm7c")
+center_diff = SubResource("Resource_v5axk")
+metadata/_custom_type_script = "uid://cq401wgg5c803"
+
+[sub_resource type="Curve" id="Curve_68moi"]
+_data = [Vector2(0.0021691918, 0), 0.0, 0.0, 0, 0, Vector2(0.2863741, 0.23796403), 0.0, 0.0, 0, 0, Vector2(0.734411, 0.8495039), 0.0, 0.0, 0, 0]
+point_count = 3
+
+[sub_resource type="Curve" id="Curve_cjyhj"]
+_data = [Vector2(0, 0), 0.0, 0.0, 0, 0, Vector2(0.0071942434, 0), 0.0, 0.0, 0, 0, Vector2(0.30695444, 0.29365075), 0.0, 0.0, 0, 0, Vector2(0.7806004, 0.777839), 0.0, 0.0, 0, 0]
+point_count = 4
+
+[sub_resource type="Resource" id="Resource_hvacy"]
+script = ExtResource("5_1bc2m")
+torque_curve = SubResource("Curve_cjyhj")
+throttle_model = SubResource("Curve_68moi")
+sound = ExtResource("6_nl1t6")
+metadata/_custom_type_script = "uid://dyf28fs4lbp0a"
+
+[sub_resource type="Resource" id="Resource_0bi4d"]
+script = ExtResource("9_12dcd")
+metadata/_custom_type_script = "uid://770j2as8psxx"
+
+[sub_resource type="Resource" id="Resource_1l7fv"]
+script = ExtResource("8_o1b1q")
+tire_model = SubResource("Resource_0bi4d")
+metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
+
+[sub_resource type="Resource" id="Resource_rt8ka"]
+script = ExtResource("9_12dcd")
+metadata/_custom_type_script = "uid://770j2as8psxx"
+
+[sub_resource type="Resource" id="Resource_umaoe"]
+script = ExtResource("8_o1b1q")
+tire_model = SubResource("Resource_rt8ka")
+metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
+
+[sub_resource type="Resource" id="Resource_v3fvn"]
+script = ExtResource("9_12dcd")
+metadata/_custom_type_script = "uid://770j2as8psxx"
+
+[sub_resource type="Resource" id="Resource_58mb6"]
+script = ExtResource("8_o1b1q")
+tire_model = SubResource("Resource_v3fvn")
+metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
+
+[sub_resource type="Resource" id="Resource_vfaha"]
+script = ExtResource("9_12dcd")
+metadata/_custom_type_script = "uid://770j2as8psxx"
+
+[sub_resource type="Resource" id="Resource_wy15l"]
+script = ExtResource("8_o1b1q")
+tire_model = SubResource("Resource_vfaha")
+metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
+
+[resource]
+script = ExtResource("7_3iann")
+engine = SubResource("Resource_hvacy")
+drivetrain = SubResource("Resource_d1n1n")
+wheel_params_fl = SubResource("Resource_58mb6")
+wheel_params_fr = SubResource("Resource_wy15l")
+wheel_params_bl = SubResource("Resource_1l7fv")
+wheel_params_br = SubResource("Resource_umaoe")
+metadata/_custom_type_script = "uid://dssspfnea8d08"

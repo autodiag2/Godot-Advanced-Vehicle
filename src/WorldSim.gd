@@ -91,7 +91,6 @@ func load_world(world: Variant) -> void:
 
 	_position_vehicle_on_world()
 
-
 func load_vehicle(vehicle: Variant) -> void:
 	var scene: PackedScene
 
@@ -110,6 +109,10 @@ func load_vehicle(vehicle: Variant) -> void:
 
 	assert(scene != null)
 
+	var parameters_path := scene.resource_path.get_base_dir() + "/parameters.tres"
+	var car_parameters := load(parameters_path) as CarParameters
+	assert(car_parameters != null, "Vehicle must contain parameters.tres")
+
 	if current_vehicle != null:
 		current_vehicle.queue_free()
 		current_vehicle = null
@@ -127,6 +130,7 @@ func load_vehicle(vehicle: Variant) -> void:
 
 	assert(car != null)
 	current_vehicle = car
+	current_vehicle.set_parameters(car_parameters)
 
 	if hud != null:
 		var joystick := hud.find_child("Joystick", true, false) as Control
@@ -137,7 +141,6 @@ func load_vehicle(vehicle: Variant) -> void:
 			hud.set_vehicle(car)
 
 	_position_vehicle_on_world()
-
 
 func _position_vehicle_on_world() -> void:
 	if current_world == null:

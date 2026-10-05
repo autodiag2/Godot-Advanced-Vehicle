@@ -32,9 +32,8 @@ func getBrakePadsUsagePercent() -> Array:
 		wheel_br.brake_disc.inner_pad.usage
 	]
 
-func _ready() -> void:
-	add_to_group("player_car")
-
+func set_parameters(parameters_arg: CarParameters):
+	parameters = parameters_arg
 	parameters.wheel_params_fl.ackermann = (
 		parameters.ackermann
 	)
@@ -72,7 +71,6 @@ func _ready() -> void:
 		engine_starter_controller,
 		$EngineSound
 	)
-	engine_controller.add_listener(engine_starter_controller)
 
 	powertrain_controller.initialize(
 		parameters,
@@ -83,9 +81,15 @@ func _ready() -> void:
 		wheel_br
 	)
 
+func _ready() -> void:
+	add_to_group("player_car")
+	engine_controller.add_listener(engine_starter_controller)
+
 	motion_controller.initialize(
 		self
 	)
+	
+	set_parameters(parameters)
 
 func start():
 	engine_starter_controller.start()
