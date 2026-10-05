@@ -63,8 +63,8 @@ func automatic_shifting(
 		speed
 	)
 
-func set_selected_gear(gear):
-	gearbox.set_selected_gear(gear)
+func set_gear(gear):
+	gearbox.set_gear(gear)
 
 func get_gearing() -> float:
 	return gearbox.get_gearing()

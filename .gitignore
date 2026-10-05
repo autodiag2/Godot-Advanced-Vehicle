@@ -14,3 +14,5 @@ mono_crash.*.json
 
 addons/godot-git-plugin
 .DS_Store
+test_result.txt
+release_notes.txt

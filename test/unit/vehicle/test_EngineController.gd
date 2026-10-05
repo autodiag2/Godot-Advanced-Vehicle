@@ -1003,3 +1003,305 @@ func test_idle_to_normal_fuel_consumption_is_continuous() -> void:
 		consumption_blend_end,
 		0.0
 	)
+
+
+func test_set_drivetrain_connected_updates_state() -> void:
+	engine.set_drivetrain_connected(true)
+
+	assert_true(engine.drivetrain_connected)
+
+	engine.set_drivetrain_connected(false)
+
+	assert_false(engine.drivetrain_connected)
+
+
+func test_update_applies_positive_reaction_torque() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.reaction_torque = 100.0
+
+	var initial_angular_velocity := engine.angular_velocity
+
+	engine.update(
+		car,
+		1.0,
+		0.1
+	)
+
+	assert_gt(
+		engine.angular_velocity,
+		initial_angular_velocity
+	)
+
+
+func test_update_applies_negative_reaction_torque() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.reaction_torque = -1000.0
+
+	var initial_angular_velocity := engine.angular_velocity
+
+	engine.update(
+		car,
+		1.0,
+		0.1
+	)
+
+	assert_lt(
+		engine.angular_velocity,
+		initial_angular_velocity
+	)
+
+
+func test_update_does_not_make_engine_spin_negative() -> void:
+	engine.rpm = 100.0
+	engine.reaction_torque = -10000.0
+
+	engine.update(
+		car,
+		0.0,
+		0.1
+	)
+
+	assert_eq(
+		engine.angular_velocity,
+		0.0
+	)
+
+
+func test_update_limits_angular_velocity_to_zero_when_torque_is_negative() -> void:
+	engine.rpm = 1.0
+	engine.reaction_torque = -10000.0
+
+	engine.update(
+		car,
+		0.0,
+		0.1
+	)
+
+	assert_gte(
+		engine.angular_velocity,
+		0.0
+	)
+
+
+func test_combustion_becomes_running_when_starter_reaches_idle() -> void:
+	engine.rpm = parameters.engine.rpm_idle
+	starter.start()
+
+	engine.update(
+		car,
+		0.0,
+		0.001
+	)
+
+	assert_true(
+		engine.combustion_running
+	)
+
+
+func test_combustion_does_not_start_below_idle_from_starter() -> void:
+	engine.rpm = parameters.engine.rpm_idle * 0.5
+	starter.start()
+
+	engine.update(
+		car,
+		0.0,
+		0.001
+	)
+
+	assert_false(
+		engine.combustion_running
+	)
+
+
+func test_running_engine_stops_combustion_when_rpm_reaches_zero() -> void:
+	engine.rpm = 100.0
+	engine.combustion_running = true
+	engine.reaction_torque = -10000.0
+
+	engine.update(
+		car,
+		0.0,
+		0.1
+	)
+
+	assert_eq(
+		engine.rpm,
+		0.0
+	)
+
+	assert_false(
+		engine.combustion_running
+	)
+
+
+func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> void:
+	engine.rpm = parameters.engine.rpm_idle
+
+	var torque := engine.calculate_torque(
+		engine.rpm,
+		1.0,
+		false
+	)
+
+	assert_lt(
+		torque,
+		0.0
+	)
+
+
+func test_idle_control_increases_as_rpm_falls_below_idle() -> void:
+	var torque_at_700 := engine.calculate_torque(
+		700.0,
+		0.0,
+		true
+	)
+
+	var torque_at_400 := engine.calculate_torque(
+		400.0,
+		0.0,
+		true
+	)
+
+	assert_gt(
+		torque_at_400,
+		torque_at_700
+	)
+
+
+func test_engine_friction_increases_with_rpm() -> void:
+	var friction_at_idle := engine.calculate_friction_torque(
+		parameters.engine.rpm_idle
+	)
+
+	var friction_at_high_rpm := engine.calculate_friction_torque(
+		parameters.engine.max_rpm
+	)
+
+	assert_gt(
+		friction_at_high_rpm,
+		friction_at_idle
+	)
+
+
+func test_engine_friction_is_non_negative() -> void:
+	var friction := engine.calculate_friction_torque(
+		parameters.engine.max_rpm
+	)
+
+	assert_gte(
+		friction,
+		0.0
+	)
+
+
+func test_update_consumes_no_fuel_when_delta_is_zero() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+
+	var initial_fuel := engine.fuel_litres
+
+	engine.update(
+		car,
+		1.0,
+		0.0
+	)
+
+	assert_eq(
+		engine.fuel_litres,
+		initial_fuel
+	)
+
+
+func test_fuel_exhaustion_stops_engine_and_resets_rpm() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.fuel_litres = 0.000001
+
+	engine.update(
+		car,
+		1.0,
+		1.0
+	)
+
+	assert_eq(
+		engine.fuel_litres,
+		0.0
+	)
+
+	assert_eq(
+		engine.rpm,
+		0.0
+	)
+
+	assert_false(
+		engine.combustion_running
+	)
+
+
+func test_engine_load_is_zero_without_combustion_torque() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_torque = 0.0
+
+	assert_eq(
+		engine.calculate_engine_load(),
+		0.0
+	)
+
+
+func test_engine_load_is_clamped_to_one() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_torque = 10000.0
+
+	assert_eq(
+		engine.calculate_engine_load(),
+		1.0
+	)
+
+
+func test_engine_load_increases_with_combustion_torque() -> void:
+	engine.rpm = 3000.0
+
+	engine.combustion_torque = 50.0
+	var low_load := engine.calculate_engine_load()
+
+	engine.combustion_torque = 150.0
+	var high_load := engine.calculate_engine_load()
+
+	assert_gt(
+		high_load,
+		low_load
+	)
+
+
+func test_update_output_torque_is_zero_when_fuel_is_exhausted() -> void:
+	engine.rpm = parameters.engine.rpm_idle
+	engine.fuel_litres = 0.0
+	engine.combustion_running = true
+
+	engine.update(
+		car,
+		1.0,
+		0.0
+	)
+
+	assert_eq(
+		engine.output_torque,
+		0.0
+	)
+
+
+func test_update_sound_stops_when_rpm_is_zero() -> void:
+	parameters.engine.sound = AudioStreamGenerator.new()
+	engine.initialize(parameters, car, starter, audio_player)
+
+	engine.rpm = parameters.engine.rpm_idle
+	engine.update_sound()
+
+	assert_true(audio_player.playing)
+
+	engine.rpm = 0.0
+	engine.update_sound()
+
+	assert_false(audio_player.playing)

@@ -519,3 +519,146 @@ func test_drive_inertia_affects_undriven_wheel_synchronization():
 		expected,
 		0.000001
 	)
+
+func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
+	wheel.spin = 0.0
+
+	wheel.apply_torque(
+		100.0,
+		0.0,
+		0.0,
+		0.0,
+		0.1
+	)
+
+	var spin_at_0_1 := wheel.spin
+
+	wheel.spin = 0.0
+
+	wheel.apply_torque(
+		100.0,
+		0.0,
+		0.0,
+		0.0,
+		0.2
+	)
+
+	assert_almost_eq(
+		wheel.spin,
+		spin_at_0_1 * 2.0,
+		0.000001
+	)
+
+
+func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
+	wheel.spin = 5.0
+
+	wheel.apply_torque(
+		100.0,
+		0.0,
+		0.0,
+		5.0 * tire.radius,
+		0.1
+	)
+
+	assert_gt(
+		wheel.spin,
+		5.0
+	)
+
+
+func test_drive_torque_reaction_ratio_matches_spin_change() -> void:
+	wheel.spin = 0.0
+
+	var drive_torque := 100.0
+	var delta := 0.1
+
+	var result := wheel.apply_torque(
+		drive_torque,
+		0.0,
+		0.0,
+		0.0,
+		delta
+	)
+
+	var expected := (
+		wheel.spin * wheel.inertia /
+		(drive_torque * delta)
+	)
+
+	assert_almost_eq(
+		result,
+		expected,
+		0.000001
+	)
+
+
+func test_drive_inertia_reduces_wheel_acceleration() -> void:
+	var wheel_without_drive_inertia := WheelController.new()
+	wheel_without_drive_inertia.setup(tire, 15.0, 0.15)
+
+	var wheel_with_drive_inertia := WheelController.new()
+	wheel_with_drive_inertia.setup(tire, 15.0, 0.15)
+
+	var drive_torque := 100.0
+	var delta := 0.1
+	var drive_inertia := wheel.inertia
+
+	wheel_without_drive_inertia.apply_torque(
+		drive_torque,
+		0.0,
+		0.0,
+		0.0,
+		delta
+	)
+
+	wheel_with_drive_inertia.apply_torque(
+		drive_torque,
+		0.0,
+		drive_inertia,
+		0.0,
+		delta
+	)
+
+	assert_gt(
+		wheel_without_drive_inertia.spin,
+		wheel_with_drive_inertia.spin
+	)
+
+
+func test_wheel_force_reaction_torque_changes_spin() -> void:
+	wheel.spin = 10.0
+	wheel.force.y = -100.0
+
+	var initial_spin := wheel.spin
+
+	wheel.apply_torque(
+		0.0,
+		0.0,
+		0.0,
+		initial_spin * tire.radius,
+		0.1
+	)
+
+	assert_lt(
+		wheel.spin,
+		initial_spin
+	)
+
+
+func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
+	wheel.spin = 0.0
+	wheel.force.y = -50.0
+
+	wheel.apply_torque(
+		100.0,
+		0.0,
+		0.0,
+		0.0,
+		0.1
+	)
+
+	assert_gt(
+		wheel.spin,
+		0.0
+	)

@@ -69,7 +69,7 @@ func automatic_shifting(
 				shift_up()
 
 
-func set_selected_gear(gear):
+func set_gear(gear):
 	assert(params != null)
 
 	gear = clamp(
@@ -85,14 +85,14 @@ func shift_up():
 	if selected_gear < params.gear_ratios.size():
 		selected_gear += 1
 		last_shift_time = Time.get_ticks_msec()
-		set_selected_gear(selected_gear)
+		set_gear(selected_gear)
 
 
 func shift_down():
 	if selected_gear > -1:
 		selected_gear -= 1
 		last_shift_time = Time.get_ticks_msec()
-		set_selected_gear(selected_gear)
+		set_gear(selected_gear)
 
 
 func get_gearing() -> float:
