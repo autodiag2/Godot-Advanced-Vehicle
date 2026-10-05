@@ -8,6 +8,7 @@ var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
 var wheel_br: RaycastSuspension
 var 	engine: EngineController
+var parameters: CarParameters
 
 var clutch_reaction_torque: float = 0.0
 var wheel_drive_torque: float = 0.0
@@ -41,6 +42,8 @@ func initialize(
 	wheel_bl_arg: RaycastSuspension,
 	wheel_br_arg: RaycastSuspension
 ) -> void:
+	assert(parameters != null)
+	self.parameters = parameters
 	clutch.friction = parameters.clutch_friction
 	engine = engine_arg
 	wheel_fl = wheel_fl_arg
@@ -60,8 +63,7 @@ func initialize(
 func update_automatic_shifting(
 	throttle_input: float,
 	brake_input: float,
-	longitudinal_speed: float,
-	parameters: CarParameters
+	longitudinal_speed: float
 ) -> void:
 	var driven_wheel_speed := average_front_wheel_speed
 
@@ -140,7 +142,6 @@ func update_automatic_shifting(
 
 
 func update(
-	parameters: CarParameters,
 	clutch_input: float,
 	delta: float
 ) -> void:

@@ -140,8 +140,7 @@ func _physics_process(delta: float) -> void:
 	powertrain_controller.update_automatic_shifting(
 		input_controller.throttle,
 		input_controller.brake,
-		motion_controller.longitudinal_velocity,
-		parameters
+		motion_controller.longitudinal_velocity
 	)
 
 	suspension.apply_forces(
@@ -155,7 +154,6 @@ func _physics_process(delta: float) -> void:
 	#print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	powertrain_controller.update(
-		parameters,
 		input_controller.clutch,
 		delta
 	)
