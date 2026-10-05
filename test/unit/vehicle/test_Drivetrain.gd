@@ -28,7 +28,16 @@ class FakeWheel:
 
 
 	func get_reaction_torque() -> float:
-		return reaction_torque
+		var result := reaction_torque
+
+		var brake_direction : float = sign(spin)
+
+		if brake_direction == 0.0:
+			brake_direction = sign(result)
+
+		result -= brake_torque * brake_direction
+
+		return result
 
 
 	func get_brake_torque() -> float:
@@ -42,7 +51,6 @@ class FakeWheel:
 	) -> float:
 		reaction_torque = -torque
 		return 0.0
-
 
 var drivetrain: DriveTrain
 
@@ -184,7 +192,6 @@ func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop()
 		4.0
 	)
 
-
 func test_locked_differential_brakes_progressively() -> void:
 	drivetrain.parameters = _create_parameters()
 	drivetrain.gearbox.drive_inertia = 1.0
@@ -196,6 +203,8 @@ func test_locked_differential_brakes_progressively() -> void:
 	right.spin = 4.0
 	left.brake_torque = 1.0
 	right.brake_torque = 1.0
+	left.reaction_torque = -1.0
+	right.reaction_torque = -1.0
 
 	var spin : float = drivetrain._get_locked_spin(
 		[

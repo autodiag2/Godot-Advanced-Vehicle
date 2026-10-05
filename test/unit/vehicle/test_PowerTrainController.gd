@@ -119,7 +119,6 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -164,7 +163,6 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -199,7 +197,6 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -234,7 +231,6 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -267,7 +263,6 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -301,7 +296,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -311,7 +305,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	)
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -346,7 +339,6 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -410,7 +402,6 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -440,7 +431,6 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -470,7 +460,6 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	)
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
@@ -487,8 +476,6 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.drivetrain.reaction_torque = 100.0
-
 	powertrain.initialize(
 		parameters,
 		engine,
@@ -501,18 +488,16 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		parameters,
 		1.0,
 		0.01
 	)
 
 	assert_float_eq(
-		powertrain.drivetrain.reaction_torque,
+		powertrain.drivetrain.get_reaction_torque(),
 		0.0
 	)
 
 	_free_wheels(wheels)
-
 
 func test_average_wheel_speeds_are_live_getters() -> void:
 	var wheels := _create_wheels()
@@ -594,7 +579,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	engine.rpm = parameters.engine.rpm_idle
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -602,7 +586,6 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -635,7 +618,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	engine.output_torque = 100.0
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
@@ -643,7 +625,6 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	powertrain.drivetrain.set_selected_gear(0)
 
 	powertrain.update(
-		parameters,
 		0.0,
 		0.01
 	)
