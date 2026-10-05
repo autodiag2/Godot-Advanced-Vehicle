@@ -20,6 +20,7 @@ var force_vec := Vector3.ZERO
 var prev_pos := Vector3.ZERO
 
 var spring_curr_length := 0.2
+var max_brake_torque: float # single wheel value
 
 @onready var car = $'..'
 @onready var wheelmesh = $MeshInstance3D
@@ -35,7 +36,8 @@ func _ready() -> void:
 	assert(wheel != null)
 	assert(suspension != null)
 
-func set_params(params: WheelSuspensionParameters) -> void:
+func set_params(params: WheelSuspensionParameters, max_brake_torque_arg: float) -> void:
+	assert(0.0 <= max_brake_torque_arg)
 	wheel.setup(
 		params.tire_model,
 		params.wheel_mass,
@@ -49,6 +51,7 @@ func set_params(params: WheelSuspensionParameters) -> void:
 		params.rebound,
 		params.anti_roll
 	)
+	self.max_brake_torque = max_brake_torque_arg
 
 	spring_curr_length = params.spring_length
 
@@ -178,18 +181,24 @@ func apply_forces(opposite_comp, delta):
 
 	return 0.0
 
-func brake(clamping_force: float) -> void:
-	brake_disc.brake(clamping_force)
+func brake(clamping_factor: float) -> void:
+	assert(0.0 <= clamping_factor)
+	assert(clamping_factor <= 1.0)
+	brake_disc.brake(clamping_factor)
 
 func get_brake_torque() -> float:
-	return brake_disc.calculate_brake_torque()
+	var brake_direction: float = -sign(wheel.spin)
+	return brake_direction * brake_disc.get_braking_factor() * max_brake_torque
+
+func get_reaction_torque():
+	return get_brake_torque() + wheel.get_reaction_torque()
 
 func apply_torque(
 	torque,
 	drive_inertia,
 	delta
 ):
-	var brake_torque := brake_disc.calculate_brake_torque()
+	var brake_torque := get_brake_torque()
 	var net_torque := wheel.apply_torque(
 		torque,
 		brake_torque,
@@ -212,11 +221,6 @@ func set_spin(value) -> void:
 
 func get_spin():
 	return wheel.get_spin()
-
-
-func get_reaction_torque():
-	var brake_direction: float = -sign(wheel.spin)
-	return brake_disc.calculate_brake_torque() * brake_direction + wheel.get_reaction_torque()
 
 func steer(input, max_steer):
 	rotation.y = wheel.steer(

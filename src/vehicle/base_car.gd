@@ -44,19 +44,23 @@ func _ready() -> void:
 	)
 
 	wheel_fl.set_params(
-		parameters.wheel_params_fl.duplicate(true)
+		parameters.wheel_params_fl.duplicate(true),
+		parameters.max_handbrake_torque / 4 # TODO
 	)
 
 	wheel_fr.set_params(
-		parameters.wheel_params_fr.duplicate(true)
+		parameters.wheel_params_fr.duplicate(true),
+		parameters.max_handbrake_torque / 4 # TODO
 	)
 
 	wheel_bl.set_params(
-		parameters.wheel_params_bl.duplicate(true)
+		parameters.wheel_params_bl.duplicate(true),
+		parameters.max_handbrake_torque / 4 # TODO
 	)
 
 	wheel_br.set_params(
-		parameters.wheel_params_br.duplicate(true)
+		parameters.wheel_params_br.duplicate(true),
+		parameters.max_handbrake_torque / 4 # TODO
 	)
 
 	brake_controller.setup(

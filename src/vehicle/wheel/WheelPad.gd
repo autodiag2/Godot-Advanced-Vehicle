@@ -7,9 +7,11 @@ var usage: float = 0.0
 var max_usage_energy: float = 1000000.0
 
 
-func calculate_braking_force(
+func calculate_braking_factor(
 	clamping_force: float
 ) -> float:
+	assert(0.0 <= clamping_force)
+	assert(clamping_force <= 1.0)
 	return get_friction() * clamping_force
 
 

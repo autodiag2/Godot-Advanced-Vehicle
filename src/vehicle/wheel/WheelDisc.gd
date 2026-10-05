@@ -2,22 +2,23 @@ class_name WheelDisc
 extends RefCounted
 
 var effective_radius: float = 0.0
-var clamping_force: float = 0.0
+var clamping: float = 0.0 # [0;1]
 
 var inner_pad := WheelPad.new()
 var outer_pad := WheelPad.new()
 
-func brake(force: float) -> void:
-	assert(0.0 <= force)
-	clamping_force = force
+func brake(clamping_arg: float) -> void:
+	assert(0.0 <= clamping_arg)
+	assert(clamping_arg <= 1.0)
+	clamping = clamping_arg
 
-func calculate_brake_torque() -> float:
-	var braking_force := (
-		inner_pad.calculate_braking_force(clamping_force) +
-		outer_pad.calculate_braking_force(clamping_force)
-	)
+func get_braking_factor() -> float:
+	var braking_factor := (
+		inner_pad.calculate_braking_factor(clamping) +
+		outer_pad.calculate_braking_factor(clamping)
+	) / 2.0
 
-	return braking_force * effective_radius
+	return braking_factor #* effective_radius
 
 func update_usage(
 	brake_torque: float,

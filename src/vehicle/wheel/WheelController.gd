@@ -77,8 +77,7 @@ func apply_torque(
 	delta: float
 ) -> float:
 	assert(tire != null)
-	assert(brake_torque >= 0.0)
-	assert(drive_inertia >= 0.0)
+	assert(0.0 <= drive_inertia)
 
 	if delta <= 0.0:
 		return 0.0
@@ -93,8 +92,8 @@ func apply_torque(
 
 	if (
 		abs(spin) < 5.0 and
-		brake_torque > 0.0 and
-		brake_torque >= abs(net_torque)
+		abs(brake_torque) > 0.0 and
+		abs(brake_torque) >= abs(net_torque)
 	):
 		spin = 0.0
 	else:
@@ -107,12 +106,8 @@ func apply_torque(
 			var spin_error := target_spin - spin
 			net_torque += spin_error * total_inertia / delta
 
-		var brake_direction: float = sign(spin)
 
-		if brake_direction == 0.0:
-			brake_direction = sign(net_torque)
-
-		net_torque -= brake_torque * brake_direction
+		net_torque += brake_torque
 
 		var spin_delta := (
 			delta *
