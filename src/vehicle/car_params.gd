@@ -19,7 +19,7 @@ enum DRIVE_TYPE{
 @export var front_brake_bias := 0.6
 @export var steer_speed := 5.0
 @export var max_brake_force := 20000.0
-@export var max_handbrake_torque := 30000.0
+@export var max_handbrake_torque := 1800.0
 @export var max_handbrake_force := 2500.0
 @export var brake_effective_radius := 0.25
 

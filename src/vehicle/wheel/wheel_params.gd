@@ -9,4 +9,5 @@ extends Resource
 @export var wheel_mass := 20.0
 @export var anti_roll := 1.0
 @export var brake_effective_radius := 0.13
+@export var brake_torque := 1200.0 # N.m
 var ackermann := 0.15

@@ -33,24 +33,11 @@ func update(
 	assert(brake_input >= 0.0)
 	assert(brake_input <= 1.0)
 
-	var front_clamping_factor := (
-		brake_input *
-		parameters.front_brake_bias
-	)
+	front_left.brake(brake_input)
+	front_right.brake(brake_input)
 
-	var rear_clamping_factor := (
-		brake_input *
-		(
-			1.0 -
-			parameters.front_brake_bias
-		)
-	)
-
-	front_left.brake(front_clamping_factor)
-	front_right.brake(front_clamping_factor)
-
-	rear_left.brake(rear_clamping_factor)
-	rear_right.brake(rear_clamping_factor)
+	rear_left.brake(brake_input)
+	rear_right.brake(brake_input)
 
 	if handbrake_pressed:
 		rear_left.brake(1.0)
