@@ -18,7 +18,7 @@ func get_braking_factor() -> float:
 		outer_pad.calculate_braking_factor(clamping)
 	) / 2.0
 
-	return braking_factor #* effective_radius
+	return braking_factor
 
 func update_usage(
 	brake_torque: float,

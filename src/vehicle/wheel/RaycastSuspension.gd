@@ -187,7 +187,12 @@ func brake(clamping_factor: float) -> void:
 
 func get_brake_torque() -> float:
 	var brake_direction: float = -sign(wheel.spin)
-	return brake_direction * brake_disc.get_braking_factor() * parameters.brake_torque 
+	return (
+		brake_direction *
+		brake_disc.get_braking_factor() *
+		parameters.brake_force *
+		parameters.brake_effective_radius
+	)
 
 func get_reaction_torque():
 	return get_brake_torque() + wheel.get_reaction_torque()
