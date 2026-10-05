@@ -185,14 +185,13 @@ func get_brake_torque() -> float:
 	return brake_disc.calculate_brake_torque()
 
 func apply_torque(
-	drive_torque,
+	torque,
 	drive_inertia,
 	delta
 ):
 	var brake_torque := brake_disc.calculate_brake_torque()
-
-	var result := wheel.apply_torque(
-		drive_torque,
+	var net_torque := wheel.apply_torque(
+		torque,
 		brake_torque,
 		drive_inertia,
 		z_vel,
@@ -205,7 +204,7 @@ func apply_torque(
 		delta
 	)
 
-	return result
+	return net_torque
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)
