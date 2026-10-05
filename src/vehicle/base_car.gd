@@ -91,7 +91,7 @@ func start():
 	engine_starter_controller.start()
 
 func stop():
-	pass
+	engine_controller.stop()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ShiftUp"):

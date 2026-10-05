@@ -202,6 +202,50 @@ func test_initialize_stores_audio_player() -> void:
 		audio_player
 	)
 
+func test_stop_stops_engine() -> void:
+	engine.rpm = 2000.0
+	engine.output_torque = 100.0
+	engine.net_torque = 100.0
+	engine.limiter_torque = 10.0
+	engine.reaction_torque = 5.0
+	engine.combustion_torque = 80.0
+	engine.combustion_running = true
+
+	engine.stop()
+
+	assert_eq(
+		engine.rpm,
+		0.0
+	)
+
+	assert_eq(
+		engine.output_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.net_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.limiter_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.reaction_torque,
+		0.0
+	)
+
+	assert_eq(
+		engine.combustion_torque,
+		0.0
+	)
+
+	assert_false(
+		engine.combustion_running
+	)
 
 func test_rpm_is_derived_from_angular_velocity() -> void:
 	engine.angular_velocity = 100.0

@@ -504,6 +504,15 @@ func update_sound() -> void:
 		if engine_audio_player.playing:
 			engine_audio_player.stop()
 
+func stop() -> void:
+	combustion_running = false
+	angular_velocity = 0.0
+	output_torque = 0.0
+	net_torque = 0.0
+	limiter_torque = 0.0
+	reaction_torque = 0.0
+	combustion_torque = 0.0
+	stop_sound()
 
 func stop_sound() -> void:
 	assert(engine_audio_player != null)
