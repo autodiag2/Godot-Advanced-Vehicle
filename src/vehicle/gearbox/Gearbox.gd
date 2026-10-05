@@ -1,7 +1,7 @@
 class_name Gearbox
 extends RefCounted
 
-var drivetrain_params: DriveTrainParameters
+var parameters_drivetrain: DriveTrainParameters
 @export var params: GearboxParameters
 
 var _selected_gear: int = 0
@@ -22,9 +22,9 @@ var powertrain: PowertrainController
 
 func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController) -> void:
 	assert(parameters != null)
-	drivetrain_params = parameters
+	parameters_drivetrain = parameters
 	powertrain = powertrain_arg
-	params = drivetrain_params.gearbox
+	params = parameters_drivetrain.gearbox
 
 func automatic_shifting(
 	cur_torque,
@@ -105,13 +105,13 @@ func get_gearing() -> float:
 	if selected_gear > 0:
 		return (
 			params.gear_ratios[selected_gear - 1] *
-			drivetrain_params.final_drive
+			parameters_drivetrain.final_drive
 		)
 
 	if selected_gear == -1:
 		return (
 			-params.reverse_ratio *
-			drivetrain_params.final_drive
+			parameters_drivetrain.final_drive
 		)
 
 	return 0.0

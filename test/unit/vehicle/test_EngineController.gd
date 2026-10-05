@@ -30,25 +30,25 @@ func before_each() -> void:
 
 	parameters.fuel_tank_size = 50.0
 	parameters.fuel_percentage = 50.0
-	parameters.engine_moment = 0.2
-	parameters.max_engine_rpm = 8000.0
-	parameters.rpm_idle = 800.0
-	parameters.max_torque = 200.0
-	parameters.engine_brake = 20.0
+	parameters.engine.moment = 0.2
+	parameters.engine.max_rpm = 8000.0
+	parameters.engine.rpm_idle = 800.0
+	parameters.engine.max_torque = 200.0
+	parameters.engine.brake_torque = 20.0
 
-	parameters.torque_curve = Curve.new()
-	parameters.torque_curve.add_point(
+	parameters.engine.torque_curve = Curve.new()
+	parameters.engine.torque_curve.add_point(
 		Vector2(0.0, 1.0)
 	)
-	parameters.torque_curve.add_point(
+	parameters.engine.torque_curve.add_point(
 		Vector2(1.0, 1.0)
 	)
 
-	parameters.throttle_model = Curve.new()
-	parameters.throttle_model.add_point(
+	parameters.engine.throttle_model = Curve.new()
+	parameters.engine.throttle_model.add_point(
 		Vector2(0.0, 0.0)
 	)
-	parameters.throttle_model.add_point(
+	parameters.engine.throttle_model.add_point(
 		Vector2(1.0, 1.0)
 	)
 
@@ -72,7 +72,7 @@ func test_initialize_sets_fuel() -> void:
 	)
 
 func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load() -> void:
-	parameters.engine_bsfc_map = load(
+	parameters.engine.bsfc_map = load(
 		"res://assets/vehicle/sport_car/petrol_bsfc.tres"
 	)
 
@@ -86,7 +86,7 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 	engine.rpm = 3000.0
 	engine.combustion_running = true
 	engine.combustion_torque = (
-		parameters.max_torque *
+		parameters.engine.max_torque *
 		0.10
 	)
 	engine.output_torque = engine.combustion_torque
@@ -114,7 +114,7 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 	engine.rpm = 3000.0
 
 	engine.combustion_torque = (
-		parameters.max_torque *
+		parameters.engine.max_torque *
 		1.0
 	)
 	engine.output_torque = engine.combustion_torque
@@ -292,7 +292,7 @@ func test_idle_control_produces_positive_torque_below_idle() -> void:
 
 func test_idle_control_is_zero_at_idle() -> void:
 	var torque := engine.calculate_torque(
-		parameters.rpm_idle,
+		parameters.engine.rpm_idle,
 		0.0
 	)
 
@@ -339,7 +339,7 @@ func test_update_uses_reaction_torque() -> void:
 		(
 			190.0 *
 			0.1 /
-			parameters.engine_moment
+			parameters.engine.moment
 		)
 	)
 
@@ -377,7 +377,7 @@ func test_update_does_not_force_engine_to_idle() -> void:
 
 	assert_lt(
 		engine.rpm,
-		parameters.rpm_idle
+		parameters.engine.rpm_idle
 	)
 
 
@@ -393,7 +393,7 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 
 	assert_eq(
 		engine.rpm,
-		parameters.max_engine_rpm
+		parameters.engine.max_rpm
 	)
 
 
@@ -571,9 +571,9 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 
 
 func test_update_sound_starts_engine_sound() -> void:
-	parameters.engine_sound = AudioStreamGenerator.new()
+	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 	engine.update_sound()
 
 	assert_true(
@@ -581,7 +581,7 @@ func test_update_sound_starts_engine_sound() -> void:
 	)
 
 func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
-	parameters.engine_idle_fuel_rate = 0.8
+	parameters.engine.idle_fuel_rate = 0.8
 
 	engine.initialize(
 		parameters,
@@ -590,7 +590,7 @@ func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
 		audio_player
 	)
 
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 	engine.combustion_running = true
 	engine.output_torque = 0.0
 
@@ -606,12 +606,12 @@ func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
 
 	assert_almost_eq(
 		fuel_consumed,
-		parameters.engine_idle_fuel_rate,
+		parameters.engine.idle_fuel_rate,
 		0.000001
 	)
 
 func test_no_load_fuel_consumption_increases_with_rpm() -> void:
-	parameters.engine_idle_fuel_rate = 0.8
+	parameters.engine.idle_fuel_rate = 0.8
 
 	engine.initialize(
 		parameters,
@@ -662,7 +662,7 @@ func test_no_load_fuel_consumption_increases_with_rpm() -> void:
 	)
 
 func test_update_sound_sets_pitch_from_rpm() -> void:
-	parameters.engine_sound = AudioStreamGenerator.new()
+	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
 	engine.rpm = 2000.0
 
@@ -675,9 +675,9 @@ func test_update_sound_sets_pitch_from_rpm() -> void:
 
 
 func test_update_sound_plays_below_idle() -> void:
-	parameters.engine_sound = AudioStreamGenerator.new()
+	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 
 	engine.update_sound()
 
@@ -695,9 +695,9 @@ func test_update_sound_plays_below_idle() -> void:
 
 
 func test_update_sound_stops_at_maximum_rpm() -> void:
-	parameters.engine_sound = AudioStreamGenerator.new()
+	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.max_engine_rpm - 1.0
+	engine.rpm = parameters.engine.max_rpm - 1.0
 
 	engine.update_sound()
 
@@ -705,7 +705,7 @@ func test_update_sound_stops_at_maximum_rpm() -> void:
 		audio_player.playing
 	)
 
-	engine.rpm = parameters.max_engine_rpm
+	engine.rpm = parameters.engine.max_rpm
 
 	engine.update_sound()
 
@@ -715,9 +715,9 @@ func test_update_sound_stops_at_maximum_rpm() -> void:
 
 
 func test_stop_sound() -> void:
-	parameters.engine_sound = AudioStreamGenerator.new()
+	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 
 	engine.update_sound()
 
@@ -775,7 +775,7 @@ func test_starter_remains_active_below_idle() -> void:
 	)
 
 func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 	assert_gt(
 		engine.fuel_litres,
 		0.0
@@ -796,7 +796,7 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 	)
 	
 func test_engine_produces_no_combustion_torque_without_fuel() -> void:
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 	engine.fuel_litres = 0.0
 
 	engine.update(
@@ -811,7 +811,7 @@ func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	)
 
 func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 	engine.combustion_running = true
 	engine.fuel_litres = 0.0
 
@@ -825,13 +825,13 @@ func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
 		engine.combustion_running
 	)
 func test_bsfc_load_uses_rpm_dependent_maximum_torque() -> void:
-	parameters.engine_bsfc_map = load(
+	parameters.engine.bsfc_map = load(
 		"res://assets/vehicle/sport_car/petrol_bsfc.tres"
 	)
 
-	parameters.torque_curve = Curve.new()
-	parameters.torque_curve.add_point(Vector2(0.0, 0.5))
-	parameters.torque_curve.add_point(Vector2(1.0, 1.0))
+	parameters.engine.torque_curve = Curve.new()
+	parameters.engine.torque_curve.add_point(Vector2(0.0, 0.5))
+	parameters.engine.torque_curve.add_point(Vector2(1.0, 1.0))
 
 	engine.initialize(
 		parameters,
@@ -901,7 +901,7 @@ func test_fuel_cut_when_drivetrain_connected_and_throttle_closed() -> void:
 
 	engine.combustion_running = true
 	engine.drivetrain_connected = true
-	engine.rpm = parameters.rpm_idle * 2.0
+	engine.rpm = parameters.engine.rpm_idle * 2.0
 	engine.output_torque = 0.0
 	engine.combustion_torque = 0.0
 
@@ -929,7 +929,7 @@ func test_closed_throttle_neutral_does_not_use_fuel_cut() -> void:
 
 	engine.combustion_running = true
 	engine.drivetrain_connected = false
-	engine.rpm = parameters.rpm_idle * 2.0
+	engine.rpm = parameters.engine.rpm_idle * 2.0
 	engine.output_torque = 0.0
 	engine.combustion_torque = 0.0
 
@@ -947,7 +947,7 @@ func test_closed_throttle_neutral_does_not_use_fuel_cut() -> void:
 	)
 
 func test_idle_to_normal_fuel_consumption_is_continuous() -> void:
-	parameters.engine_idle_fuel_rate = 0.8
+	parameters.engine.idle_fuel_rate = 0.8
 
 	engine.initialize(
 		parameters,
@@ -961,11 +961,11 @@ func test_idle_to_normal_fuel_consumption_is_continuous() -> void:
 	engine.combustion_torque = 0.0
 
 	var blend_end := (
-		parameters.rpm_idle *
+		parameters.engine.rpm_idle *
 		(1.0 + EngineController.IDLE_BLEND_RPM_FACTOR)
 	)
 
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 
 	var fuel_before_idle := engine.fuel_litres
 

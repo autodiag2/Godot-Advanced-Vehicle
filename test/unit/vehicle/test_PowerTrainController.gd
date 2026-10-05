@@ -49,7 +49,7 @@ func test_powertrain_initializes_clutch_friction() -> void:
 
 func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
 	var parameters := _create_parameters()
-	parameters.engine_moment = 2.5
+	parameters.engine.moment = 2.5
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -143,8 +143,8 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 
 func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	var parameters := _create_parameters()
-	parameters.engine_moment = 2.0
-	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
+	parameters.engine.moment = 2.0
+	parameters.drivetrain.gearbox.gear_ratios = [3.0]
 
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
@@ -326,7 +326,7 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 
 func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	var parameters := _create_parameters()
-	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
+	parameters.drivetrain.gearbox.gear_ratios = [3.0]
 
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
@@ -362,22 +362,22 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 func _create_parameters() -> CarParameters:
 	var parameters := CarParameters.new()
 
-	parameters.engine_moment = 1.0
+	parameters.engine.moment = 1.0
 	parameters.clutch_friction = 250.0
-	parameters.max_engine_rpm = 6000.0
-	parameters.rpm_idle = 800.0
-	parameters.max_torque = 200.0
+	parameters.engine.max_rpm = 6000.0
+	parameters.engine.rpm_idle = 800.0
+	parameters.engine.max_torque = 200.0
 
-	parameters.drivetrain_params = DriveTrainParameters.new()
-	parameters.drivetrain_params.gearbox.gear_ratios = [3.0]
-	parameters.drivetrain_params.final_drive = 3.5
-	parameters.drivetrain_params.drivetype = (
+	parameters.drivetrain = DriveTrainParameters.new()
+	parameters.drivetrain.gearbox.gear_ratios = [3.0]
+	parameters.drivetrain.final_drive = 3.5
+	parameters.drivetrain.drivetype = (
 		DriveTrainParameters.DRIVE_TYPE.RWD
 	)
 
-	parameters.drivetrain_params.rear_diff = DiffParameters.new()
-	parameters.drivetrain_params.front_diff = DiffParameters.new()
-	parameters.drivetrain_params.center_diff = DiffParameters.new()
+	parameters.drivetrain.rear_diff = DiffParameters.new()
+	parameters.drivetrain.front_diff = DiffParameters.new()
+	parameters.drivetrain.center_diff = DiffParameters.new()
 
 	return parameters
 
@@ -578,7 +578,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	var engine := _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	parameters.rpm_idle = 800.0
+	parameters.engine.rpm_idle = 800.0
 
 	powertrain.initialize(
 		parameters,
@@ -591,7 +591,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 	powertrain.drivetrain.set_selected_gear(1)
 
-	engine.rpm = parameters.rpm_idle
+	engine.rpm = parameters.engine.rpm_idle
 
 	powertrain.update(
 		parameters,

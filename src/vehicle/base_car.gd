@@ -1,7 +1,7 @@
 class_name BaseCar
 extends RigidBody3D
 
-@export var car_params := CarParameters.new()
+@export var parameters := CarParameters.new()
 var joystick: Control
 const MPS_TO_KPH: float = 3.6
 
@@ -35,28 +35,28 @@ func getBrakePadsUsagePercent() -> Array:
 func _ready() -> void:
 	add_to_group("player_car")
 
-	car_params.wheel_params_fl.ackermann = (
-		car_params.ackermann
+	parameters.wheel_params_fl.ackermann = (
+		parameters.ackermann
 	)
 
-	car_params.wheel_params_fr.ackermann = (
-		-car_params.ackermann
+	parameters.wheel_params_fr.ackermann = (
+		-parameters.ackermann
 	)
 
 	wheel_fl.set_params(
-		car_params.wheel_params_fl.duplicate(true)
+		parameters.wheel_params_fl.duplicate(true)
 	)
 
 	wheel_fr.set_params(
-		car_params.wheel_params_fr.duplicate(true)
+		parameters.wheel_params_fr.duplicate(true)
 	)
 
 	wheel_bl.set_params(
-		car_params.wheel_params_bl.duplicate(true)
+		parameters.wheel_params_bl.duplicate(true)
 	)
 
 	wheel_br.set_params(
-		car_params.wheel_params_br.duplicate(true)
+		parameters.wheel_params_br.duplicate(true)
 	)
 
 	brake_controller.setup(
@@ -67,7 +67,7 @@ func _ready() -> void:
 	)
 
 	engine_controller.initialize(
-		car_params,
+		parameters,
 		self,
 		engine_starter_controller,
 		$EngineSound
@@ -75,7 +75,7 @@ func _ready() -> void:
 	engine_controller.add_listener(engine_starter_controller)
 
 	powertrain_controller.initialize(
-		car_params,
+		parameters,
 		engine_controller,
 		wheel_fl,
 		wheel_fr,
@@ -110,7 +110,7 @@ func _physics_process(delta: float) -> void:
 	brake_controller.update(
 		input_controller.brake,
 		input_controller.handbrake,
-		car_params,
+		parameters,
 		delta
 	)
 
@@ -121,14 +121,14 @@ func _physics_process(delta: float) -> void:
 
 	steering_controller.update(
 		input_controller.steering,
-		car_params.steer_speed,
+		parameters.steer_speed,
 		delta
 	)
 
 	steering_controller.apply_to_wheels(
 		wheel_fl,
 		wheel_fr,
-		car_params.max_steer
+		parameters.max_steer
 	)
 
 	engine_controller.update(
@@ -141,7 +141,7 @@ func _physics_process(delta: float) -> void:
 		input_controller.throttle,
 		input_controller.brake,
 		motion_controller.longitudinal_velocity,
-		car_params
+		parameters
 	)
 
 	suspension.apply_forces(
@@ -155,7 +155,7 @@ func _physics_process(delta: float) -> void:
 	#print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
 	powertrain_controller.update(
-		car_params,
+		parameters,
 		input_controller.clutch,
 		delta
 	)
@@ -168,7 +168,7 @@ func _physics_process(delta: float) -> void:
 
 	motion_controller.apply_aerodynamic_drag(
 		self,
-		car_params
+		parameters
 	)
 	#print("END wheel sping = " + str(wheel_bl.wheel.get_spin()))
 

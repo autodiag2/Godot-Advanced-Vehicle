@@ -47,7 +47,7 @@ func _process(_delta):
 	bridge.setSignal(
 		"SAEJ1979.fuel_tank_level_input",
 		car.engine_controller.fuel_litres /
-		car.car_params.fuel_tank_size
+		car.parameters.fuel_tank_size
 	)
 
 	bridge.setSignal(
@@ -58,6 +58,6 @@ func _process(_delta):
 	bridge.setSignal(
 		"SAEJ1979.actual_engine_percent_torque",
 		car.engine_controller.output_torque /
-		car.car_params.max_torque *
+		car.parameters.engine.max_torque *
 		100
 	)

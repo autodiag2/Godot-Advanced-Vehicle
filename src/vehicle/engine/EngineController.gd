@@ -78,14 +78,14 @@ func initialize(
 	assert(parameters_arg.fuel_tank_size >= 0.0)
 	assert(parameters_arg.fuel_percentage >= 0.0)
 	assert(parameters_arg.fuel_percentage <= 100.0)
-	assert(parameters_arg.engine_moment > 0.0)
-	assert(parameters_arg.max_engine_rpm > 0.0)
-	assert(parameters_arg.rpm_idle >= 0.0)
-	assert(parameters_arg.engine_bsfc_map != null)
+	assert(parameters_arg.engine.moment > 0.0)
+	assert(parameters_arg.engine.max_rpm > 0.0)
+	assert(parameters_arg.engine.rpm_idle >= 0.0)
+	assert(parameters_arg.engine.bsfc_map != null)
 
 	parameters = parameters_arg
-	engine_sound = parameters.engine_sound
-	max_engine_rpm = parameters.max_engine_rpm
+	engine_sound = parameters.engine.sound
+	max_engine_rpm = parameters.engine.max_rpm
 	fuel_litres = (
 		parameters.fuel_tank_size *
 		parameters.fuel_percentage *
@@ -144,7 +144,7 @@ func update(
 	if (
 		starter.get_torque() > 0.0 &&
 		fuel_litres > 0.0 &&
-		rpm >= parameters.rpm_idle
+		rpm >= parameters.engine.rpm_idle
 	):
 		combustion_running = true
 
@@ -158,7 +158,7 @@ func update(
 	)
 
 	if (
-		rpm >= parameters.max_engine_rpm &&
+		rpm >= parameters.engine.max_rpm &&
 		net_torque > 0.0
 	):
 		limiter_torque = -net_torque
@@ -169,11 +169,11 @@ func update(
 			angular_velocity +
 			delta *
 			net_torque /
-			parameters.engine_moment
+			parameters.engine.moment
 		)
 
 		var max_angular_velocity := (
-			parameters.max_engine_rpm /
+			parameters.engine.max_rpm /
 			RPM_PER_RADIAN_PER_SECOND
 		)
 
@@ -183,7 +183,7 @@ func update(
 					max_angular_velocity -
 					angular_velocity
 				) *
-				parameters.engine_moment /
+				parameters.engine.moment /
 				delta -
 				net_torque
 			)
@@ -233,24 +233,24 @@ func calculate_torque(
 
 	var rpm_factor: float = clamp(
 		engine_rpm /
-		parameters.max_engine_rpm,
+		parameters.engine.max_rpm,
 		0.0,
 		1.0
 	)
 
 	var torque_curve_factor: float = (
-		parameters.torque_curve.sample_baked(
+		parameters.engine.torque_curve.sample_baked(
 			rpm_factor
 		)
 	)
 
 	var maximum_torque: float = (
 		torque_curve_factor *
-		parameters.max_torque
+		parameters.engine.max_torque
 	)
 
 	var throttle_factor := (
-		parameters.throttle_model.sample_baked(
+		parameters.engine.throttle_model.sample_baked(
 			throttle_input
 		)
 	)
@@ -273,15 +273,15 @@ func calculate_torque(
 		combustion_enabled &&
 		throttle_input == 0.0 &&
 		engine_rpm > 0.0 &&
-		engine_rpm < parameters.rpm_idle
+		engine_rpm < parameters.engine.rpm_idle
 	):
 		var idle_error := (
-			parameters.rpm_idle -
+			parameters.engine.rpm_idle -
 			engine_rpm
-		) / parameters.rpm_idle
+		) / parameters.engine.rpm_idle
 
 		idle_torque = (
-			parameters.max_torque *
+			parameters.engine.max_torque *
 			IDLE_CONTROL_GAIN *
 			idle_error
 		)
@@ -298,7 +298,7 @@ func calculate_friction_torque(engine_rpm: float) -> float:
 
 	var rpm_factor := clampf(
 		engine_rpm /
-		parameters.max_engine_rpm,
+		parameters.engine.max_rpm,
 		0.0,
 		1.0
 	)
@@ -311,7 +311,7 @@ func calculate_friction_torque(engine_rpm: float) -> float:
 	)
 
 	return (
-		parameters.engine_brake *
+		parameters.engine.brake_torque *
 		friction_factor
 	)
 
@@ -329,14 +329,14 @@ func consume_fuel(
 
 	var fuel_consumed: float
 
-	var idle_blend_start := parameters.rpm_idle
+	var idle_blend_start := parameters.engine.rpm_idle
 	var idle_blend_end := (
-		parameters.rpm_idle *
+		parameters.engine.rpm_idle *
 		(1.0 + IDLE_BLEND_RPM_FACTOR)
 	)
 
 	var fuel_cut_rpm := (
-		parameters.rpm_idle *
+		parameters.engine.rpm_idle *
 		FUEL_CUT_RPM_FACTOR
 	)
 
@@ -358,7 +358,7 @@ func consume_fuel(
 		)
 
 		var idle_fuel_consumed := (
-			parameters.engine_idle_fuel_rate *
+			parameters.engine.idle_fuel_rate *
 			delta /
 			SECONDS_PER_HOUR
 		)
@@ -422,7 +422,7 @@ func calculate_normal_fuel_consumption(delta: float) -> float:
 
 	var engine_load := calculate_engine_load()
 
-	var bsfc: float = parameters.engine_bsfc_map.sample(
+	var bsfc: float = parameters.engine.bsfc_map.sample(
 		rpm,
 		maxf(
 			engine_load,
@@ -458,15 +458,15 @@ func calculate_normal_fuel_consumption(delta: float) -> float:
 
 func calculate_engine_load() -> float:
 	var maximum_torque := (
-		parameters.torque_curve.sample_baked(
+		parameters.engine.torque_curve.sample_baked(
 			clampf(
 				rpm /
-				parameters.max_engine_rpm,
+				parameters.engine.max_rpm,
 				0.0,
 				1.0
 			)
 		) *
-		parameters.max_torque
+		parameters.engine.max_torque
 	)
 
 	if maximum_torque <= 0.0:

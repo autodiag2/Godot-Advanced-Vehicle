@@ -88,7 +88,7 @@ func apply_torque(
 	assert(total_inertia > 0.0)
 
 	var previous_spin := spin
-	var net_torque := force.y * tire.radius
+	var net_torque := get_reaction_torque()
 	net_torque += drive_torque
 
 	if (

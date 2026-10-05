@@ -27,20 +27,10 @@ enum DRIVE_TYPE{
 @export var fuel_percentage := 100.0 # % of full tank
 
 ######### Engine variables #########
-@export var max_torque := 250.0
-@export var max_engine_rpm := 8000.0
-@export var rpm_idle := 900.0
-@export var torque_curve := Curve.new()
-@export var throttle_model := Curve.new()
-@export var engine_brake := 10.0
-@export var engine_moment := 0.25
-@export var engine_bsfc_map: EngineBSFCMap = preload("res://assets/vehicle/sport_car/petrol_bsfc.tres") # g/kWh
-@export var engine_idle_fuel_rate := 0.8 # L/h
-@export var engine_sound: AudioStream
+@export var engine: EngineParameters = EngineParameters.new()
 @export var clutch_friction := 500.0
 
-######### Drivetrain variables #########
-@export var drivetrain_params: DriveTrainParameters = DriveTrainParameters.new()
+@export var drivetrain: DriveTrainParameters = DriveTrainParameters.new()
 
 ######### Aero #########
 @export var cd = 0.3

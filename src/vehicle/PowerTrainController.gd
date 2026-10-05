@@ -48,12 +48,12 @@ func initialize(
 	wheel_bl = wheel_bl_arg
 	wheel_br = wheel_br_arg
 	drivetrain.setup(
-		parameters.drivetrain_params,
+		parameters.drivetrain,
 		self
 	)
 
 	drivetrain.set_input_inertia(
-		parameters.engine_moment
+		parameters.engine.moment
 	)
 
 
@@ -66,14 +66,14 @@ func update_automatic_shifting(
 	var driven_wheel_speed := average_front_wheel_speed
 
 	if (
-		parameters.drivetrain_params.drivetype ==
-		parameters.drivetrain_params.DRIVE_TYPE.RWD
+		parameters.drivetrain.drivetype ==
+		parameters.drivetrain.DRIVE_TYPE.RWD
 	):
 		driven_wheel_speed = average_rear_wheel_speed
 
 	elif (
-		parameters.drivetrain_params.drivetype ==
-		parameters.drivetrain_params.DRIVE_TYPE.AWD
+		parameters.drivetrain.drivetype ==
+		parameters.drivetrain.DRIVE_TYPE.AWD
 	):
 		driven_wheel_speed = (
 			average_front_wheel_speed +
@@ -89,13 +89,13 @@ func update_automatic_shifting(
 	if (
 		next_gear > 0 &&
 		next_gear <=
-		parameters.drivetrain_params.gearbox.gear_ratios.size()
+		parameters.drivetrain.gearbox.gear_ratios.size()
 	):
 		next_gear_rpm = (
-			parameters.drivetrain_params.gearbox.gear_ratios[
+			parameters.drivetrain.gearbox.gear_ratios[
 				next_gear - 1
 			] *
-			parameters.drivetrain_params.final_drive *
+			parameters.drivetrain.final_drive *
 			absf(driven_wheel_speed) *
 			EngineController.RPM_PER_RADIAN_PER_SECOND
 		)
@@ -103,13 +103,13 @@ func update_automatic_shifting(
 	if (
 		previous_gear > 0 &&
 		previous_gear <=
-		parameters.drivetrain_params.gearbox.gear_ratios.size()
+		parameters.drivetrain.gearbox.gear_ratios.size()
 	):
 		previous_gear_rpm = (
-			parameters.drivetrain_params.gearbox.gear_ratios[
+			parameters.drivetrain.gearbox.gear_ratios[
 				previous_gear - 1
 			] *
-			parameters.drivetrain_params.final_drive *
+			parameters.drivetrain.final_drive *
 			absf(driven_wheel_speed) *
 			EngineController.RPM_PER_RADIAN_PER_SECOND
 		)
@@ -133,7 +133,7 @@ func update_automatic_shifting(
 		previous_gear_torque,
 		next_gear_torque,
 		engine.rpm,
-		parameters.max_engine_rpm,
+		parameters.engine.max_rpm,
 		brake_input,
 		longitudinal_speed
 	)
@@ -162,8 +162,8 @@ func update(
 	var gearbox_shaft_speed := 0.0
 
 	if (
-		parameters.drivetrain_params.drivetype ==
-		parameters.drivetrain_params.DRIVE_TYPE.RWD
+		parameters.drivetrain.drivetype ==
+		parameters.drivetrain.DRIVE_TYPE.RWD
 	):
 		gearbox_shaft_speed = (
 			average_rear_wheel_speed *
@@ -171,8 +171,8 @@ func update(
 		)
 
 	elif (
-		parameters.drivetrain_params.drivetype ==
-		parameters.drivetrain_params.DRIVE_TYPE.FWD
+		parameters.drivetrain.drivetype ==
+		parameters.drivetrain.DRIVE_TYPE.FWD
 	):
 		gearbox_shaft_speed = (
 			average_front_wheel_speed *
@@ -180,8 +180,8 @@ func update(
 		)
 
 	elif (
-		parameters.drivetrain_params.drivetype ==
-		parameters.drivetrain_params.DRIVE_TYPE.AWD
+		parameters.drivetrain.drivetype ==
+		parameters.drivetrain.DRIVE_TYPE.AWD
 	):
 		gearbox_shaft_speed = (
 			(
