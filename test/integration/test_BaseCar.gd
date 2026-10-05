@@ -3,6 +3,10 @@ extends GutTest
 const WORLDSIM_SCENE = preload("res://assets/WorldSim.tscn")
 const VEHICLE_SCENE = preload("res://assets/vehicle/sport_car/vehicle.tscn")
 
+class FakeCarInputController extends CarInputController:
+
+	func update(input_joystick: Control) -> void:
+		pass
 
 func _wait_for_vehicle_to_fall(car: BaseCar) -> void:
 	for i in range(120):
@@ -17,20 +21,6 @@ func _wait_for_vehicle_to_fall(car: BaseCar) -> void:
 			return
 
 
-func _create_ground() -> StaticBody3D:
-	var ground := StaticBody3D.new()
-
-	var collision := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = Vector3(100.0, 0.1, 100.0)
-	collision.shape = shape
-
-	ground.add_child(collision)
-	add_child(ground)
-
-	return ground
-
-
 func _create_world_sim() -> WorldSim:
 	var world_sim := WORLDSIM_SCENE.instantiate() as WorldSim
 	add_child(world_sim)
@@ -40,18 +30,74 @@ func _create_world_sim() -> WorldSim:
 
 	var car := world_sim.current_vehicle as BaseCar
 	assert_not_null(car)
-
+	var inputController = FakeCarInputController.new()
+	car.input_controller = inputController
 	car.global_position = Vector3(0.0, 1.0, 0.0)
 	car.linear_velocity = Vector3.ZERO
 	car.angular_velocity = Vector3.ZERO
 
 	await _wait_for_vehicle_to_fall(car)
 
-	for i in range(30):
-		await get_tree().physics_frame
-
+	_wait_physics_seconds(0.5)
+	car.start()
+	_wait_physics_seconds(0.2)
 	return world_sim
 
+func _wait_physics_seconds(seconds: float) -> void:
+	assert(seconds >= 0.0)
+
+	var physics_ticks_per_second := Engine.physics_ticks_per_second
+	var frame_count := ceili(
+		seconds *
+		physics_ticks_per_second
+	)
+
+	for i in range(frame_count):
+		await get_tree().physics_frame
+
+func test_car_accelerates_with_throttle() -> void:
+
+	var world_sim := await _create_world_sim()
+	var car := world_sim.current_vehicle as BaseCar
+	assert_not_null(car)
+
+	assert_true(
+		car.wheel_fl.is_colliding(),
+		"Front-left wheel must be in contact with the ground"
+	)
+	assert_true(
+		car.wheel_fr.is_colliding(),
+		"Front-right wheel must be in contact with the ground"
+	)
+	assert_true(
+		car.wheel_bl.is_colliding(),
+		"Rear-left wheel must be in contact with the ground"
+	)
+	assert_true(
+		car.wheel_br.is_colliding(),
+		"Rear-right wheel must be in contact with the ground"
+	)
+
+	var initial_velocity := car.linear_velocity
+	car.shift_up()
+	await _wait_physics_seconds(2)
+	car.input_controller.throttle = 1.0
+	await _wait_physics_seconds(4)
+
+	assert_gt(
+		-car.linear_velocity.z,
+		0.0,
+		"Throttle input must accelerate the car forward"
+	)
+
+	assert_gt(
+		-car.linear_velocity.z,
+		-initial_velocity.z,
+		"Throttle input must increase forward velocity"
+	)
+
+	world_sim.queue_free()
+	gut.p("test_car_accelerates_with_throttle DONE")
 
 func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void:
 	var world_sim := await _create_world_sim()
@@ -89,7 +135,6 @@ func test_near_zero_planar_velocity_does_not_create_lateral_tire_force() -> void
 
 
 func test_car_at_rest_does_not_start_wheels_spinning() -> void:
-	_create_ground()
 
 	var world_sim := await _create_world_sim()
 	var car := world_sim.current_vehicle as BaseCar
