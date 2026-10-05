@@ -34,8 +34,17 @@ var _diff_split := 0.5
 var avg_rear_spin := 0.0
 var avg_front_spin := 0.0
 
+var wheel_fl: RaycastSuspension
+var wheel_fr: RaycastSuspension
+var wheel_bl: RaycastSuspension
+var wheel_br: RaycastSuspension
+
 func setup(parameters_arg: DriveTrainParameters, powertrain: PowertrainController):
 	parameters = parameters_arg
+	self.wheel_fl = powertrain.wheel_fl
+	self.wheel_fr = powertrain.wheel_fr
+	self.wheel_bl = powertrain.wheel_bl
+	self.wheel_br = powertrain.wheel_br
 	gearbox.setup(parameters_arg, powertrain)
 
 func automatic_shifting(
@@ -66,9 +75,8 @@ func get_gearing() -> float:
 func set_input_inertia(value):
 	gearbox.set_input_inertia(value)
 
-func get_reaction_torque(wheels: Array) -> float:
+func get_reaction_torque() -> float:
 	assert(parameters != null)
-	assert(wheels.size() == 4)
 
 	var gearing := gearbox.get_gearing()
 
@@ -77,22 +85,22 @@ func get_reaction_torque(wheels: Array) -> float:
 
 	if parameters.drivetype == DRIVE_TYPE.RWD:
 		return (
-			wheels[0].get_reaction_torque() +
-			wheels[1].get_reaction_torque()
+			wheel_bl.get_reaction_torque() +
+			wheel_br.get_reaction_torque()
 		) / gearing
 
 	if parameters.drivetype == DRIVE_TYPE.FWD:
 		return (
-			wheels[2].get_reaction_torque() +
-			wheels[3].get_reaction_torque()
+			wheel_fl.get_reaction_torque() +
+			wheel_fr.get_reaction_torque()
 		) / gearing
 
 	if parameters.drivetype == DRIVE_TYPE.AWD:
 		return (
-			wheels[0].get_reaction_torque() +
-			wheels[1].get_reaction_torque() +
-			wheels[2].get_reaction_torque() +
-			wheels[3].get_reaction_torque()
+			wheel_bl.get_reaction_torque() +
+			wheel_br.get_reaction_torque() +
+			wheel_fl.get_reaction_torque() +
+			wheel_fr.get_reaction_torque()
 		) / gearing
 
 	return 0.0
@@ -289,34 +297,32 @@ func differential(
 # return the net torque applied
 func apply_torque(
 	torque: float,
-	wheels: Array,
 	clutch_input: float,
 	delta: float
 ) -> float:
 	assert(parameters != null)
-	assert(wheels.size() == 4)
 	assert(clutch_input >= 0.0)
 	assert(clutch_input <= 1.0)
 	assert(delta >= 0.0)
 
 	var rear_wheels = [
-		wheels[0],
-		wheels[1]
+		wheel_bl,
+		wheel_br
 	]
 
 	var front_wheels = [
-		wheels[2],
-		wheels[3]
+		wheel_fl,
+		wheel_fr
 	]
 
 	avg_rear_spin = (
-		wheels[0].get_spin() +
-		wheels[1].get_spin()
+		wheel_bl.get_spin() +
+		wheel_br.get_spin()
 	) * 0.5
 
 	avg_front_spin = (
-		wheels[2].get_spin() +
-		wheels[3].get_spin()
+		wheel_fl.get_spin() +
+		wheel_fr.get_spin()
 	) * 0.5
 
 	gearbox.drive_inertia = gearbox.get_drive_inertia(
@@ -336,13 +342,13 @@ func apply_torque(
 			delta
 		)
 
-		front_wheels[0].apply_torque(
+		wheel_fl.apply_torque(
 			0.0,
 			0.0,
 			delta
 		)
 
-		front_wheels[1].apply_torque(
+		wheel_fr.apply_torque(
 			0.0,
 			0.0,
 			delta
@@ -357,13 +363,13 @@ func apply_torque(
 			delta
 		)
 
-		rear_wheels[0].apply_torque(
+		wheel_bl.apply_torque(
 			0.0,
 			0.0,
 			delta
 		)
 
-		rear_wheels[1].apply_torque(
+		wheel_br.apply_torque(
 			0.0,
 			0.0,
 			delta
@@ -372,6 +378,7 @@ func apply_torque(
 	elif parameters.drivetype == DRIVE_TYPE.AWD:
 		match parameters.center_diff.diff_type:
 			DIFF_TYPE.LOCKED:
+				var wheels = [wheel_bl, wheel_br, wheel_fl, wheel_fr]
 				var spin := _get_locked_spin(
 					wheels,
 					drive_torque,

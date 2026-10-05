@@ -43,6 +43,10 @@ func initialize(
 ) -> void:
 	clutch.friction = parameters.clutch_friction
 	engine = engine_arg
+	wheel_fl = wheel_fl_arg
+	wheel_fr = wheel_fr_arg
+	wheel_bl = wheel_bl_arg
+	wheel_br = wheel_br_arg
 	drivetrain.setup(
 		parameters.drivetrain_params,
 		self
@@ -51,10 +55,6 @@ func initialize(
 	drivetrain.set_input_inertia(
 		parameters.engine_moment
 	)
-	wheel_fl = wheel_fl_arg
-	wheel_fr = wheel_fr_arg
-	wheel_bl = wheel_bl_arg
-	wheel_br = wheel_br_arg
 
 
 func update_automatic_shifting(
@@ -153,12 +153,6 @@ func update(
 
 		drivetrain.apply_torque(
 			wheel_drive_torque,
-			[
-				wheel_bl,
-				wheel_br,
-				wheel_fl,
-				wheel_fr
-			],
 			clutch_input,
 			delta
 		)
@@ -199,12 +193,7 @@ func update(
 		)
 
 	var reaction_torque: float = (
-		drivetrain.get_reaction_torque([
-			wheel_bl,
-			wheel_br,
-			wheel_fl,
-			wheel_fr
-		])
+		drivetrain.get_reaction_torque()
 	)
 	var clutch_slip_torque: float = (
 		0.8 *
@@ -235,12 +224,6 @@ func update(
 
 	drivetrain.apply_torque(
 		wheel_drive_torque,
-		[
-			wheel_bl,
-			wheel_br,
-			wheel_fl,
-			wheel_fr
-		],
 		clutch_input,
 		delta
 	)
