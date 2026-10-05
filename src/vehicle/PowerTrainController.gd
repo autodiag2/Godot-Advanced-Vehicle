@@ -150,9 +150,8 @@ func update(
 		clutch.locked = false
 		wheel_drive_torque = 0.0
 		clutch_reaction_torque = 0.0
-		drivetrain.reaction_torque = 0.0
 
-		drivetrain.drivetrain(
+		drivetrain.apply_torque(
 			wheel_drive_torque,
 			[
 				wheel_bl,
@@ -200,9 +199,13 @@ func update(
 		)
 
 	var reaction_torque: float = (
-		drivetrain.reaction_torque
+		drivetrain.get_reaction_torque([
+			wheel_bl,
+			wheel_br,
+			wheel_fl,
+			wheel_fr
+		])
 	)
-
 	var clutch_slip_torque: float = (
 		0.8 *
 		clutch.friction *
@@ -230,7 +233,7 @@ func update(
 
 	clutch_reaction_torque = reaction_torques.y
 
-	drivetrain.drivetrain(
+	drivetrain.apply_torque(
 		wheel_drive_torque,
 		[
 			wheel_bl,
