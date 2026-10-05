@@ -115,11 +115,9 @@ func _get_locked_spin(
 
 	var net_torque := drive_torque
 	var total_inertia := gearbox.drive_inertia
-	var brake_torque := 0.0
 
 	for wheel in wheels:
 		net_torque += wheel.get_reaction_torque()
-		brake_torque += wheel.get_brake_torque()
 		total_inertia += wheel.wheel.inertia
 
 	if total_inertia <= 0.0:
@@ -131,16 +129,6 @@ func _get_locked_spin(
 		average_spin += wheel.get_spin()
 
 	average_spin /= wheels.size()
-
-	var brake_direction: float = sign(average_spin)
-
-	if brake_direction == 0.0:
-		brake_direction = sign(net_torque)
-
-	net_torque -= (
-		brake_torque *
-		brake_direction
-	)
 
 	return (
 		average_spin +
@@ -391,9 +379,7 @@ func apply_torque(
 				var total_reaction_torque := 0.0
 
 				for wheel in wheels:
-					total_reaction_torque += (
-						wheel.get_reaction_torque()
-					)
+					total_reaction_torque += wheel.get_reaction_torque()
 
 				reaction_torque = -total_reaction_torque
 

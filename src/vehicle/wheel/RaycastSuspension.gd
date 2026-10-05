@@ -216,8 +216,8 @@ func get_spin():
 
 
 func get_reaction_torque():
-	return wheel.get_reaction_torque()
-
+	var brake_direction: float = -sign(wheel.spin)
+	return brake_disc.calculate_brake_torque() * brake_direction + wheel.get_reaction_torque()
 
 func steer(input, max_steer):
 	rotation.y = wheel.steer(
