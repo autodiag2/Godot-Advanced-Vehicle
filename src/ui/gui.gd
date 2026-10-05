@@ -25,7 +25,7 @@ func _process(delta: float) -> void:
 	fuellabel.text = "Fuel = %3.2f" % vehicle.engine_controller.fuel_litres
 	
 	var usage : Array = vehicle.getBrakePadsUsagePercent()
-	#BreakPadsUsageLabel.text = (
-	#	"BreakPads usage (FL,FR,BL,BR) = %.2f%%, %.2f%%, %.2f%%, %.2f%%"
-	#	% usage
-	#)
+	BreakPadsUsageLabel.text = (
+		"BP FL FR BL BR = %.2f%% %.2f%% %.2f%% %.2f%%"
+		% usage
+	)

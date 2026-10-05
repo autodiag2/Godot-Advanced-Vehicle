@@ -32,8 +32,8 @@ layout_mode = 1
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_top = -141.0
-offset_right = 200.0
+offset_top = -146.0
+offset_right = 376.0
 grow_vertical = 0
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Essentials" unique_id=927646150]
@@ -41,6 +41,7 @@ layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 3.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -59,6 +60,10 @@ text = "Rpm"
 [node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1690262574]
 layout_mode = 2
 text = "Fuel"
+
+[node name="BreakPadsUsageLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=792692353]
+layout_mode = 2
+text = "BP Usage"
 
 [node name="TireInfoApp" parent="." unique_id=448416227 instance=ExtResource("2_6tyms")]
 layout_mode = 0
