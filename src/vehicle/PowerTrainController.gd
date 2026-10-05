@@ -32,7 +32,7 @@ var average_rear_wheel_speed: float:
 		)
 
 func onGearboxGearChange(gear: int) -> void:
-	engine.set_drivetrain_connected(gear == 0 )
+	engine.set_drivetrain_connected(gear != 0 )
 
 func initialize(
 	parameters: CarParameters,
