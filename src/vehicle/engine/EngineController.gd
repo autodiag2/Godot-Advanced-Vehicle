@@ -501,7 +501,7 @@ func update_sound() -> void:
 
 	if (
 		rpm > 0.0 &&
-		rpm < max_rpm
+		rpm <= max_rpm
 	):
 		if audio_player.stream != engine_sound:
 			audio_player.set_stream(
