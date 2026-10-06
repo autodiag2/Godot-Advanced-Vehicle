@@ -3,7 +3,7 @@ extends GutTest
 
 var powertrain: PowertrainController
 var engine: EngineController = EngineController.new()
-
+var car: RigidBody3D = RigidBody3D.new()
 
 func before_each() -> void:
 	powertrain = PowertrainController.new()
@@ -13,6 +13,8 @@ func before_each() -> void:
 func after_each() -> void:
 	powertrain = null
 
+func after_all():
+	car.queue_free()
 
 func assert_float_eq(
 	one: float,
@@ -119,11 +121,12 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	)
 
 	engine.angular_velocity = 100.0
-	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_float_eq(
@@ -163,11 +166,12 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	powertrain.drivetrain.set_gear(1)
 
 	engine.angular_velocity = 100.0
-	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_gt(
@@ -197,11 +201,12 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	powertrain.drivetrain.set_gear(1)
 
 	engine.angular_velocity = 100.0
-	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_gt(
@@ -233,9 +238,11 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_lte(
@@ -265,9 +272,11 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_false(
@@ -298,18 +307,22 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_false(
 		powertrain.clutch.locked
 	)
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_gt(
@@ -341,9 +354,11 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_float_eq(
@@ -378,12 +393,15 @@ func _create_parameters() -> CarParameters:
 
 
 func _create_engine(
-	parameters: CarParameters
+	parameters_arg: CarParameters
 ) -> EngineController:
 	var engine := EngineController.new()
 
+	engine.parameters = parameters_arg.engine
+	engine.car_parameters = parameters_arg
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
+	engine.starter = EngineStarterController.new()
 
 	return engine
 
@@ -404,9 +422,11 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 		wheels[3]
 	)
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_float_eq(
@@ -433,9 +453,11 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 		wheels[3]
 	)
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_float_eq(
@@ -462,9 +484,11 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 		wheels[3]
 	)
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_false(
@@ -490,9 +514,11 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 
 	powertrain.drivetrain.set_gear(0)
 
-	powertrain.update(
+	powertrain.apply(
 		1.0,
-		0.01
+		1.0,
+		0.01,
+		car
 	)
 
 	assert_float_eq(
@@ -580,16 +606,20 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 	engine.rpm = parameters.engine.rpm_idle
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	powertrain.drivetrain.set_gear(0)
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_gt(
@@ -619,16 +649,20 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	powertrain.drivetrain.set_gear(0)
 
-	powertrain.update(
+	powertrain.apply(
+		1.0,
 		0.0,
-		0.01
+		0.01,
+		car
 	)
 
 	assert_float_eq(

@@ -1,13 +1,14 @@
 class_name PowertrainController
 extends RefCounted
 
-var drivetrain := DriveTrain.new()
+var 	engine: EngineController
 var clutch := Clutch.new()
+var drivetrain := DriveTrain.new()
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
 var wheel_br: RaycastSuspension
-var 	engine: EngineController
+
 var parameters: CarParameters
 
 var clutch_reaction_torque: float = 0.0
@@ -35,15 +36,15 @@ func onGearboxGearChange(gear: int) -> void:
 	engine.set_drivetrain_connected(gear != 0 )
 
 func initialize(
-	parameters: CarParameters,
+	parameters_arg: CarParameters,
 	engine_arg: EngineController,
 	wheel_fl_arg: RaycastSuspension,
 	wheel_fr_arg: RaycastSuspension,
 	wheel_bl_arg: RaycastSuspension,
 	wheel_br_arg: RaycastSuspension
 ) -> void:
-	assert(parameters != null)
-	self.parameters = parameters
+	assert(parameters_arg != null)
+	parameters = parameters_arg
 	clutch.friction = parameters.clutch_friction
 	engine = engine_arg
 	wheel_fl = wheel_fl_arg
@@ -146,10 +147,23 @@ func update_automatic_shifting(
 	)
 
 
-func update(
+func apply(
+	throttle_input: float,
 	clutch_input: float,
-	delta: float
+	delta: float,
+	car: RigidBody3D
 ) -> void:
+	assert(0.0 <= throttle_input)
+	assert(throttle_input <= 1.0)
+	assert(0.0 <= clutch_input)
+	assert(clutch_input <= 1.0)
+	assert(0.0 <= delta)
+	
+	var engine_net_torque := engine.apply(
+		car,
+		throttle_input,
+		delta
+	)
 	var gearing := drivetrain.get_gearing()
 
 	if gearing == 0.0:
@@ -213,7 +227,7 @@ func update(
 		clutch.get_reaction_torques(
 			engine.angular_velocity,
 			gearbox_shaft_speed,
-			engine.output_torque,
+			engine_net_torque,
 			reaction_torque,
 			clutch_slip_torque,
 			clutch_kick

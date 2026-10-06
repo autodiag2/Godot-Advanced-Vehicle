@@ -135,12 +135,6 @@ func _physics_process(delta: float) -> void:
 		parameters.max_steer
 	)
 
-	engine_controller.update(
-		self,
-		input_controller.throttle,
-		delta
-	)
-
 	powertrain_controller.update_automatic_shifting(
 		input_controller.throttle,
 		input_controller.brake,
@@ -157,9 +151,11 @@ func _physics_process(delta: float) -> void:
 
 	#print("MIDDLE wheel spin = " + str(wheel_bl.wheel.get_spin()))
 
-	powertrain_controller.update(
+	powertrain_controller.apply(
+		input_controller.throttle,
 		input_controller.clutch,
-		delta
+		delta,
+		self
 	)
 	#print("MIDDLE2 wheel spin = " + str(wheel_bl.wheel.get_spin()))
 

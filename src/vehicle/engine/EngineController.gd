@@ -112,11 +112,11 @@ func initialize(
 func set_drivetrain_connected(connected: bool) -> void:
 	drivetrain_connected = connected
 
-func update(
+func apply(
 	car: RigidBody3D,
 	throttle_input: float,
 	delta: float
-) -> void:
+) -> float:
 	assert(car != null)
 	assert(angular_velocity >= 0.0)
 	assert(throttle_input >= 0.0)
@@ -220,6 +220,8 @@ func update(
 		throttle_input,
 		delta
 	)
+	
+	return net_torque
 
 
 func calculate_torque(

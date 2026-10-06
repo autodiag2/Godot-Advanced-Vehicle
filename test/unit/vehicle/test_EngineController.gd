@@ -312,7 +312,7 @@ func test_update_accelerates_engine() -> void:
 
 	var initial_angular_velocity := engine.angular_velocity
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -330,7 +330,7 @@ func test_update_uses_reaction_torque() -> void:
 
 	var initial_angular_velocity := engine.angular_velocity
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -351,7 +351,7 @@ func test_update_can_stall_engine() -> void:
 	engine.rpm = 1000.0
 	engine.reaction_torque = -10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.1
@@ -372,7 +372,7 @@ func test_update_does_not_force_engine_to_idle() -> void:
 	engine.rpm = 400.0
 	engine.reaction_torque = -10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.01
@@ -388,7 +388,7 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -404,7 +404,7 @@ func test_limiter_generates_opposing_torque() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -420,7 +420,7 @@ func test_limiter_keeps_rotational_state_consistent() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = 10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -438,7 +438,7 @@ func test_limiter_does_not_modify_output_torque() -> void:
 	engine.reaction_torque = 10000.0
 	engine.combustion_running = true
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -454,7 +454,7 @@ func test_update_zero_delta_does_not_change_angular_velocity() -> void:
 
 	var initial_angular_velocity := engine.angular_velocity
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.0
@@ -735,7 +735,7 @@ func test_stop_sound() -> void:
 func test_engine_does_not_start_from_zero_rpm_without_starter() -> void:
 	engine.rpm = 0.0
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -750,7 +750,7 @@ func test_starter_increases_engine_rpm() -> void:
 	engine.rpm = 0.0
 	starter.start()
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.1
@@ -765,7 +765,7 @@ func test_starter_remains_active_below_idle() -> void:
 	engine.rpm = 0.0
 	starter.start()
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.001
@@ -786,7 +786,7 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 		engine.starter,
 		starter
 	)
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.001
@@ -800,7 +800,7 @@ func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	engine.rpm = parameters.engine.rpm_idle
 	engine.fuel_litres = 0.0
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.0
@@ -816,7 +816,7 @@ func test_running_engine_stalls_when_fuel_is_exhausted() -> void:
 	engine.combustion_running = true
 	engine.fuel_litres = 0.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		1.0
@@ -986,7 +986,7 @@ func test_update_applies_positive_reaction_torque() -> void:
 
 	var initial_angular_velocity := engine.angular_velocity
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -1005,7 +1005,7 @@ func test_update_applies_negative_reaction_torque() -> void:
 
 	var initial_angular_velocity := engine.angular_velocity
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.1
@@ -1021,7 +1021,7 @@ func test_update_does_not_make_engine_spin_negative() -> void:
 	engine.rpm = 100.0
 	engine.reaction_torque = -10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.1
@@ -1037,7 +1037,7 @@ func test_update_limits_angular_velocity_to_zero_when_torque_is_negative() -> vo
 	engine.rpm = 1.0
 	engine.reaction_torque = -10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.1
@@ -1053,7 +1053,7 @@ func test_combustion_becomes_running_when_starter_reaches_idle() -> void:
 	engine.rpm = parameters.engine.rpm_idle
 	starter.start()
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.001
@@ -1068,7 +1068,7 @@ func test_combustion_does_not_start_below_idle_from_starter() -> void:
 	engine.rpm = parameters.engine.rpm_idle * 0.5
 	starter.start()
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.001
@@ -1084,7 +1084,7 @@ func test_running_engine_stops_combustion_when_rpm_reaches_zero() -> void:
 	engine.combustion_running = true
 	engine.reaction_torque = -10000.0
 
-	engine.update(
+	engine.apply(
 		car,
 		0.0,
 		0.1
@@ -1166,7 +1166,7 @@ func test_update_consumes_no_fuel_when_delta_is_zero() -> void:
 
 	var initial_fuel := engine.fuel_litres
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.0
@@ -1183,7 +1183,7 @@ func test_fuel_exhaustion_stops_engine_and_resets_rpm() -> void:
 	engine.combustion_running = true
 	engine.fuel_litres = 0.000001
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		1.0
@@ -1242,7 +1242,7 @@ func test_update_output_torque_is_zero_when_fuel_is_exhausted() -> void:
 	engine.fuel_litres = 0.0
 	engine.combustion_running = true
 
-	engine.update(
+	engine.apply(
 		car,
 		1.0,
 		0.0
