@@ -27,7 +27,6 @@ var output_torque: float = 0.0
 var net_torque: float = 0.0
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
-var combustion_torque: float = 0.0
 var fuel_litres: float = 0.0
 var combustion_running: bool = false
 var drivetrain_connected: bool = false
@@ -96,7 +95,6 @@ func initialize(
 	audio_player = audio_player_arg
 	angular_velocity = 0.0
 	output_torque = 0.0
-	combustion_torque = 0.0
 	starter = starter_arg
 	net_torque = 0.0
 	limiter_torque = 0.0
@@ -233,37 +231,7 @@ func calculate_torque(
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 
-	var rpm_factor: float = clamp(
-		engine_rpm /
-		parameters.max_rpm,
-		0.0,
-		1.0
-	)
-
-	var torque_curve_factor: float = (
-		parameters.torque_curve.sample_baked(
-			rpm_factor
-		)
-	)
-
-	var maximum_torque: float = (
-		torque_curve_factor *
-		parameters.max_torque
-	)
-
-	var throttle_factor := (
-		parameters.throttle_model.sample_baked(
-			throttle_input
-		)
-	)
-
-	combustion_torque = 0.0
-
-	if combustion_enabled:
-		combustion_torque = (
-			maximum_torque *
-			throttle_factor
-		)
+	var combustion_torque := calculate_combusion_torque(throttle_input, engine_rpm)
 
 	var engine_friction_torque := calculate_friction_torque(
 		engine_rpm
@@ -356,6 +324,7 @@ func consume_fuel(
 		rpm <= idle_blend_end
 	):
 		var normal_fuel_consumed := calculate_normal_fuel_consumption(
+			throttle_input,
 			delta
 		)
 
@@ -384,6 +353,7 @@ func consume_fuel(
 		)
 	else:
 		fuel_consumed = calculate_normal_fuel_consumption(
+			throttle_input,
 			delta
 		)
 
@@ -413,8 +383,10 @@ func consume_fuel(
 		update_sound()
 
 
-func calculate_normal_fuel_consumption(delta: float) -> float:
-	assert(delta >= 0.0)
+func calculate_normal_fuel_consumption(throttle_input: float, delta: float) -> float:
+	assert(0.0 <= delta)
+	assert(0.0 <= throttle_input)
+	assert(throttle_input <= 1.0)
 
 	var mechanical_power_kw: float = (
 		max(output_torque, 0.0) *
@@ -422,7 +394,7 @@ func calculate_normal_fuel_consumption(delta: float) -> float:
 		WATTS_PER_KILOWATT
 	)
 
-	var engine_load := calculate_engine_load()
+	var engine_load := calculate_engine_load(throttle_input)
 
 	var bsfc: float = parameters.bsfc_map.sample(
 		rpm,
@@ -458,7 +430,42 @@ func calculate_normal_fuel_consumption(delta: float) -> float:
 		)
 	)
 
-func calculate_engine_load() -> float:
+func calculate_combusion_torque(throttle_input: float, engine_rpm: float = rpm) -> float:
+	assert(0.0 <= throttle_input)
+	assert(throttle_input <= 1.0)
+	
+	if not combustion_running:
+		return 0.0
+
+	var rpm_factor: float = clamp(
+		engine_rpm /
+		parameters.max_rpm,
+		0.0,
+		1.0
+	)
+
+	var torque_curve_factor: float = (
+		parameters.torque_curve.sample_baked(
+			rpm_factor
+		)
+	)
+
+	var maximum_torque: float = (
+		torque_curve_factor *
+		parameters.max_torque
+	)
+	
+	var throttle_factor := (
+		parameters.throttle_model.sample_baked(
+			throttle_input
+		)
+	)
+		
+	return maximum_torque * throttle_factor
+
+func calculate_engine_load(throttle_input: float) -> float:
+	assert(0.0 <= throttle_input)
+	assert(throttle_input <= 1.0)
 	var maximum_torque := (
 		parameters.torque_curve.sample_baked(
 			clampf(
@@ -470,10 +477,13 @@ func calculate_engine_load() -> float:
 		) *
 		parameters.max_torque
 	)
-
-	if maximum_torque <= 0.0:
+	
+	assert(0.0 <= maximum_torque)
+	
+	if maximum_torque == 0.0:
 		return 0.0
 
+	var combustion_torque := calculate_combusion_torque(throttle_input)
 	return clampf(
 		combustion_torque /
 		maximum_torque,
@@ -511,7 +521,6 @@ func stop() -> void:
 	net_torque = 0.0
 	limiter_torque = 0.0
 	reaction_torque = 0.0
-	combustion_torque = 0.0
 	stop_sound()
 
 func stop_sound() -> void:
