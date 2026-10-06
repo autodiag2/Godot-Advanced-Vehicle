@@ -198,7 +198,7 @@ func test_initialize_resets_rotational_state() -> void:
 
 func test_initialize_stores_audio_player() -> void:
 	assert_eq(
-		engine.engine_audio_player,
+		engine.audio_player,
 		audio_player
 	)
 
@@ -279,8 +279,8 @@ func test_rpm_and_angular_velocity_are_consistent() -> void:
 
 func test_calculate_torque_at_full_throttle() -> void:
 	var torque := engine.calculate_torque(
-		4000.0,
-		1.0
+		1.0,
+		4000.0
 	)
 
 	assert_float_eq(
@@ -290,8 +290,8 @@ func test_calculate_torque_at_full_throttle() -> void:
 
 func test_calculate_torque_at_zero_throttle() -> void:
 	var torque := engine.calculate_torque(
-		4000.0,
-		0.0
+		0.0,
+		4000.0
 	)
 
 	assert_float_eq(
@@ -301,8 +301,8 @@ func test_calculate_torque_at_zero_throttle() -> void:
 
 func test_calculate_torque_at_half_throttle() -> void:
 	var torque := engine.calculate_torque(
-		4000.0,
-		0.5
+		0.5,
+		4000.0
 	)
 
 	assert_float_eq(
@@ -324,8 +324,8 @@ func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
 
 func test_idle_control_produces_positive_torque_below_idle() -> void:
 	var torque := engine.calculate_torque(
-		400.0,
-		0.0
+		0.0,
+		400.0
 	)
 
 	assert_gt(
@@ -336,8 +336,8 @@ func test_idle_control_produces_positive_torque_below_idle() -> void:
 
 func test_idle_control_is_zero_at_idle() -> void:
 	var torque := engine.calculate_torque(
-		parameters.engine.rpm_idle,
-		0.0
+		0.0,
+		parameters.engine.rpm_idle
 	)
 
 	assert_eq(
@@ -1184,8 +1184,8 @@ func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> voi
 	engine.rpm = parameters.engine.rpm_idle
 
 	var torque := engine.calculate_torque(
-		engine.rpm,
 		1.0,
+		engine.rpm,
 		false
 	)
 
@@ -1197,14 +1197,14 @@ func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> voi
 
 func test_idle_control_increases_as_rpm_falls_below_idle() -> void:
 	var torque_at_700 := engine.calculate_torque(
-		700.0,
 		0.0,
+		700.0,
 		true
 	)
 
 	var torque_at_400 := engine.calculate_torque(
-		400.0,
 		0.0,
+		400.0,
 		true
 	)
 

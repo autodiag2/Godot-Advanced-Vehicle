@@ -33,7 +33,7 @@ var combustion_running: bool = false
 var drivetrain_connected: bool = false
 var car_parameters: CarParameters
 var parameters: EngineParameters
-var engine_audio_player: AudioStreamPlayer
+var audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
 var was_running: bool = false
 
@@ -50,7 +50,7 @@ var rpm: float:
 			RPM_PER_RADIAN_PER_SECOND
 		)
 
-var max_engine_rpm: float = 8000.0
+var max_rpm: float = 8000.0
 
 
 func add_listener(listener: Listener) -> void:
@@ -70,11 +70,11 @@ func initialize(
 	parameters_arg: CarParameters,
 	car: RigidBody3D,
 	starter_arg: EngineStarterController,
-	audio_player: AudioStreamPlayer
+	audio_player_arg: AudioStreamPlayer
 ) -> void:
 	assert(parameters_arg != null)
 	assert(car != null)
-	assert(audio_player != null)
+	assert(audio_player_arg != null)
 	assert(starter_arg != null)
 	assert(parameters_arg.fuel_tank_size >= 0.0)
 	assert(parameters_arg.fuel_percentage >= 0.0)
@@ -87,13 +87,13 @@ func initialize(
 	parameters = parameters_arg.engine
 	car_parameters = parameters_arg
 	engine_sound = parameters.sound
-	max_engine_rpm = parameters.max_rpm
+	max_rpm = parameters.max_rpm
 	fuel_litres = (
 		car_parameters.fuel_tank_size *
 		car_parameters.fuel_percentage *
 		0.01
 	)
-	engine_audio_player = audio_player
+	audio_player = audio_player_arg
 	angular_velocity = 0.0
 	output_torque = 0.0
 	combustion_torque = 0.0
@@ -128,18 +128,18 @@ func update(
 	var was_running_before_update: bool = angular_velocity > 0.0
 
 	output_torque = calculate_torque(
-		rpm,
 		throttle_input,
+		rpm,
 		combustion_running || starter.get_torque() > 0.0
 	)
 
 	if fuel_litres <= 0.0:
+		combustion_running = false
 		output_torque = calculate_torque(
-			rpm,
 			0.0,
+			rpm,
 			false
 		)
-		combustion_running = false
 
 	limiter_torque = 0.0
 
@@ -225,8 +225,8 @@ func update(
 
 
 func calculate_torque(
-	engine_rpm: float,
 	throttle_input: float,
+	engine_rpm: float = rpm,
 	combustion_enabled: bool = true
 ) -> float:
 	assert(engine_rpm >= 0.0)
@@ -482,27 +482,27 @@ func calculate_engine_load() -> float:
 	)
 
 func update_sound() -> void:
-	assert(engine_audio_player != null)
+	assert(audio_player != null)
 	assert(angular_velocity >= 0.0)
 
 	var pitch_scale: float = rpm / 1000.0
 
 	if (
 		rpm > 0.0 &&
-		rpm < max_engine_rpm
+		rpm < max_rpm
 	):
-		if engine_audio_player.stream != engine_sound:
-			engine_audio_player.set_stream(
+		if audio_player.stream != engine_sound:
+			audio_player.set_stream(
 				engine_sound
 			)
 
-		if !engine_audio_player.playing:
-			engine_audio_player.play()
+		if !audio_player.playing:
+			audio_player.play()
 
-		engine_audio_player.pitch_scale = pitch_scale
+		audio_player.pitch_scale = pitch_scale
 	else:
-		if engine_audio_player.playing:
-			engine_audio_player.stop()
+		if audio_player.playing:
+			audio_player.stop()
 
 func stop() -> void:
 	combustion_running = false
@@ -515,6 +515,6 @@ func stop() -> void:
 	stop_sound()
 
 func stop_sound() -> void:
-	assert(engine_audio_player != null)
+	assert(audio_player != null)
 
-	engine_audio_player.stop()
+	audio_player.stop()
