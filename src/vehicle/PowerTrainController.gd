@@ -55,7 +55,7 @@ func initialize(
 	wheel_bl.set_params(parameters.wheel_params_bl)
 	wheel_br = wheel_br_arg
 	wheel_br.set_params(parameters.wheel_params_br)
-	
+
 	drivetrain.setup(
 		parameters.drivetrain,
 		self
@@ -158,11 +158,12 @@ func apply(
 	assert(0.0 <= clutch_input)
 	assert(clutch_input <= 1.0)
 	assert(0.0 <= delta)
-	
+
 	var engine_net_torque := engine.apply(
 		throttle_input,
 		delta
 	)
+
 	var gearing := drivetrain.get_gearing()
 
 	if gearing == 0.0:
@@ -214,6 +215,7 @@ func apply(
 	var reaction_torque: float = (
 		drivetrain.get_reaction_torque()
 	)
+
 	var clutch_slip_torque: float = (
 		0.8 *
 		clutch.friction *

@@ -17,6 +17,15 @@ var _diff_clutch := Clutch.new()
 var _diff_split := 0.5
 
 
+func get_reaction_torque(wheels: Array) -> float:
+	assert(wheels.size() == 2)
+
+	return (
+		wheels[0].get_reaction_torque() +
+		wheels[1].get_reaction_torque()
+	)
+
+
 func _get_locked_spin(
 	wheels: Array,
 	drive_torque: float,
@@ -51,7 +60,7 @@ func _get_locked_spin(
 	)
 
 
-func apply(
+func apply_torque(
 	torque: float,
 	wheels: Array,
 	diff: DiffParameters,
@@ -140,11 +149,6 @@ func apply(
 				)
 			)
 
-			return -(
-				tr1 +
-				tr2
-			)
-
 		DIFF_STATE.SLIPPING:
 			_diff_clutch.friction = diff.diff_preload
 
@@ -174,11 +178,6 @@ func apply(
 				delta
 			)
 
-			return -(
-				tr1 +
-				tr2
-			)
-
 		DIFF_STATE.LOCKED:
 			_diff_clutch.locked = true
 
@@ -192,9 +191,4 @@ func apply(
 			wheels[0].set_spin(spin)
 			wheels[1].set_spin(spin)
 
-			return -(
-				tr1 +
-				tr2
-			)
-
-	return 0.0
+	return torque - get_reaction_torque(wheels)
