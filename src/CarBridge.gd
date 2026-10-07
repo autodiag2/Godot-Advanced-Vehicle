@@ -10,7 +10,7 @@ func _ready():
 	)
 
 	if wrapper == null:
-		print("JavaClassWrapper not found")
+		push_warning("JavaClassWrapper not found")
 		return
 
 	bridge = wrapper.wrap(
@@ -18,7 +18,7 @@ func _ready():
 	)
 
 	if bridge == null:
-		print("Failed to wrap Kotlin CarBridge")
+		push_warning("Failed to wrap Kotlin CarBridge")
 		return
 
 

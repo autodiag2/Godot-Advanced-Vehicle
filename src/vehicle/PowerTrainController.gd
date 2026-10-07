@@ -87,7 +87,6 @@ func update_automatic_shifting(
 			average_front_wheel_speed +
 			average_rear_wheel_speed
 		) * 0.5
-
 	var next_gear_rpm := 0.0
 	var previous_gear_rpm := 0.0
 

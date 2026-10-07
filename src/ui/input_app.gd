@@ -31,5 +31,3 @@ func _process(delta: float) -> void:
 	$Panel/VBoxContainer/BrakeInput.value = brake_input * 100
 	$Panel/VBoxContainer/ClutchInput.value = Input.get_action_strength("Clutch") * 100
 	$Panel/VBoxContainer/SteeringInput.value = steering_input * 100
-	
-	#print((Input.get_action_strength("SteerRight") - Input.get_action_strength("SteerLeft")) * 100)

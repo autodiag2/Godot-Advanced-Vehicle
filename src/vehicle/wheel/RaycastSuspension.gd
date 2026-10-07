@@ -19,6 +19,7 @@ var z_vel := 0.0
 var force_vec := Vector3.ZERO
 
 var prev_pos := Vector3.ZERO
+var prev_pos_inited := false
 
 var spring_curr_length := 0.2
 
@@ -27,7 +28,6 @@ var spring_curr_length := 0.2
 
 
 func _ready() -> void:
-	prev_pos = global_transform.origin
 	dynamics.setup(
 		wheel,
 		suspension
@@ -111,6 +111,10 @@ func _physics_process(delta: float) -> void:
 func apply_forces(opposite_comp, delta):
 	force_vec = Vector3.ZERO
 
+	if not prev_pos_inited:
+		prev_pos = global_transform.origin
+		prev_pos_inited = true
+		
 	local_vel = (
 		global_transform.origin -
 		prev_pos

@@ -30,7 +30,6 @@ func update(
 		local_velocity.x
 	)
 
-	print("local_velocity=", local_velocity, " longitudinal_velocity=", longitudinal_velocity, " lateral_velocity=", lateral_velocity)
 
 func apply_aerodynamic_drag(
 	car: RigidBody3D,

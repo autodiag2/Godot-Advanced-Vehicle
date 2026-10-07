@@ -60,7 +60,6 @@ func update_force(
 ) -> Vector3:
 	assert(tire != null)
 	
-	print("slip = ", slip.x, " y=", slip.y)
 	force = tire.update_forces(
 		slip,
 		normal_load,

@@ -39,11 +39,11 @@ func _get_locked_spin(
 	assert(wheels.size() > 0)
 	assert(delta >= 0.0)
 
-	var net_torque := drive_torque
+	var net_torque := 0.0
 	var total_inertia := drive_inertia
 
 	for wheel in wheels:
-		net_torque -= wheel.apply_torque(drive_torque, drive_inertia, delta, true)
+		net_torque += wheel.apply_torque(drive_torque, drive_inertia, delta, true)
 		total_inertia += wheel.wheel.inertia
 
 	if total_inertia <= 0.0:
