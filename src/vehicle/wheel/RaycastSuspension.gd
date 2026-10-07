@@ -19,7 +19,6 @@ var z_vel := 0.0
 var force_vec := Vector3.ZERO
 
 var prev_pos := Vector3.ZERO
-var prev_pos_inited := false
 
 var spring_curr_length := 0.2
 
@@ -100,13 +99,11 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
+func spawn():
+	prev_pos = global_transform.origin
 
 func apply_forces(opposite_comp, delta):
 	force_vec = Vector3.ZERO
-
-	if not prev_pos_inited:
-		prev_pos = global_transform.origin
-		prev_pos_inited = true
 		
 	local_vel = (
 		global_transform.origin -

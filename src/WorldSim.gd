@@ -161,6 +161,7 @@ func _position_vehicle_on_world() -> void:
 	current_vehicle.linear_velocity = Vector3.ZERO
 	current_vehicle.angular_velocity = Vector3.ZERO
 	current_vehicle.sleeping = false
+	current_vehicle.spawn()
 
 
 func show_setup_screen() -> void:

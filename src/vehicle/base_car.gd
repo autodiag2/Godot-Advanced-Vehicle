@@ -21,6 +21,10 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_bl = $Wheel_bl as RaycastSuspension
 @onready var wheel_br = $Wheel_br as RaycastSuspension
 
+func spawn():
+	for wheel in [wheel_bl,wheel_br, wheel_fl, wheel_fr]:
+		wheel.spawn()
+
 func set_joystick(value: Control) -> void:
 	joystick = value
 

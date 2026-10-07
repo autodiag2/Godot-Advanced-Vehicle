@@ -14,10 +14,6 @@ func update(
 	car: Node3D,
 	delta: float
 ) -> void:
-	var local_velocity : Vector3 = (
-		car.global_transform.basis.inverse() *
-		car.linear_velocity
-	)
 	previous_position = (
 		car.global_transform.origin
 	)
