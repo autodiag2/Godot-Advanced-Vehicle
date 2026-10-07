@@ -27,37 +27,37 @@ func _process(_delta):
 	if bridge == null:
 		return
 
-	var car = get_tree().get_first_node_in_group(
+	var vehicle := get_tree().get_first_node_in_group(
 		"player_car"
-	)
+	) as BaseCar
 
-	if car == null:
+	if vehicle == null:
 		return
 
 	bridge.setSignal(
 		"SAEJ1979.engine_speed",
-		car.engine_controller.rpm
+		vehicle.engine.rpm
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.vehicle_speed",
-		car.getSpeedKmH()
+		vehicle.getSpeedKmH()
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.fuel_tank_level_input",
-		car.engine_controller.fuel_litres /
-		car.parameters.fuel_tank_size
+		vehicle.engine.fuel_tank.fuel_litres /
+		vehicle.parameters.fuel_tank_size
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.relative_accelerator_pedal_position",
-		car.input_controller.throttle
+		vehicle.input_controller.throttle
 	)
 
 	bridge.setSignal(
 		"SAEJ1979.actual_engine_percent_torque",
-		car.engine_controller.output_torque /
-		car.parameters.engine.max_torque *
+		vehicle.engine.output_torque /
+		vehicle.parameters.engine.max_torque *
 		100
 	)

@@ -155,7 +155,7 @@ func _position_vehicle_on_world() -> void:
 		VEHICLE_SPAWN,
 		true,
 		false
-	) as Node3D
+	) as Node
 
 	assert(vehicle_spawn != null, "World must contain a " + VEHICLE_SPAWN + " Node3D")
 

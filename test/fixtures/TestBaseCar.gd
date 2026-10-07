@@ -9,60 +9,63 @@ class FakeCarInputController extends CarInputController:
 		pass
 
 var world_sim : WorldSim
-var car : BaseCar
+var vehicle : BaseCar
 
 func before_each() -> void:
 	world_sim = await _create_world_sim()
-	car = world_sim.current_vehicle as BaseCar
-	assert_not_null(car)
+	vehicle = world_sim.current_vehicle as BaseCar
+	assert_not_null(vehicle)
 
 func after_each() -> void:
 	world_sim.queue_free()
 
-func _wait_for_vehicle_to_fall(car: BaseCar) -> void:
+@warning_ignore("shadowed_variable")
+func _wait_for_vehicle_to_fall(vehicle: BaseCar) -> void:
 	for i in range(1000):
 		await get_tree().physics_frame
 
 		if (
-			car.wheel_fl.is_colliding() &&
-			car.wheel_fr.is_colliding() &&
-			car.wheel_bl.is_colliding() &&
-			car.wheel_br.is_colliding()
+			vehicle.wheel_fl.is_colliding() &&
+			vehicle.wheel_fr.is_colliding() &&
+			vehicle.wheel_bl.is_colliding() &&
+			vehicle.wheel_br.is_colliding()
 		):
 			return
 
 
 func _create_world_sim() -> WorldSim:
+	@warning_ignore("shadowed_variable")
 	var world_sim := WORLDSIM_SCENE.instantiate() as WorldSim
 	add_child(world_sim)
 	await get_tree().process_frame
 	world_sim.load_vehicle(VEHICLE_SCENE)
 	await get_tree().physics_frame
 
-	var car := world_sim.current_vehicle as BaseCar
-	assert_not_null(car)
+	@warning_ignore("shadowed_variable")
+	var vehicle := world_sim.current_vehicle as BaseCar
+	assert_not_null(vehicle)
 	var inputController = FakeCarInputController.new()
-	car.input_controller = inputController
-	car.global_position = Vector3(0.0, 1.0, 0.0)
-	car.linear_velocity = Vector3.ZERO
-	car.angular_velocity = Vector3.ZERO
+	vehicle.input_controller = inputController
+	vehicle.global_position = Vector3(0.0, 1.0, 0.0)
+	vehicle.linear_velocity = Vector3.ZERO
+	vehicle.angular_velocity = Vector3.ZERO
 
-	await _wait_for_vehicle_to_fall(car)
+	await _wait_for_vehicle_to_fall(vehicle)
 
 	assert_true(
-		car.wheel_fl.is_colliding(),
+		vehicle.wheel_fl.is_colliding(),
 		"Front-left wheel must be in contact with the ground"
 	)
 	assert_true(
-		car.wheel_fr.is_colliding(),
+		vehicle.wheel_fr.is_colliding(),
 		"Front-right wheel must be in contact with the ground"
 	)
 	assert_true(
-		car.wheel_bl.is_colliding(),
+		vehicle.wheel_bl.is_colliding(),
 		"Rear-left wheel must be in contact with the ground"
 	)
 	assert_true(
-		car.wheel_br.is_colliding(),
+		vehicle.wheel_br.is_colliding(),
 		"Rear-right wheel must be in contact with the ground"
 	)
 	return world_sim

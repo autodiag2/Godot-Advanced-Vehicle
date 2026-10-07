@@ -10,7 +10,7 @@ const MPS_TO_KPH: float = 3.6
 var input_controller := CarInputController.new()
 var steering_controller := SteeringController.new()
 var brake_controller := BrakeController.new()
-var engine_controller := EngineController.new()
+var engine := EngineController.new()
 var engine_starter_controller := EngineStarterController.new()
 var powertrain_controller := PowertrainController.new()
 var suspension := SuspensionSystemController.new()
@@ -69,7 +69,7 @@ func set_parameters(parameters_arg: CarParameters):
 		wheel_br
 	)
 
-	engine_controller.initialize(
+	engine.initialize(
 		parameters,
 		self,
 		engine_starter_controller,
@@ -78,7 +78,7 @@ func set_parameters(parameters_arg: CarParameters):
 
 	powertrain_controller.initialize(
 		parameters,
-		engine_controller,
+		engine,
 		wheel_fl,
 		wheel_fr,
 		wheel_bl,
@@ -87,7 +87,7 @@ func set_parameters(parameters_arg: CarParameters):
 
 func _ready() -> void:
 	add_to_group("player_car")
-	engine_controller.add_listener(engine_starter_controller)
+	engine.add_listener(engine_starter_controller)
 
 	motion_controller.initialize(
 		self
@@ -96,10 +96,10 @@ func _ready() -> void:
 	set_parameters(parameters)
 
 func start():
-	engine_controller.start()
+	engine.start()
 
 func stop():
-	engine_controller.stop()
+	engine.stop()
 
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ShiftUp"):
@@ -159,7 +159,7 @@ func _physics_process(delta: float) -> void:
 		self
 	)
 
-	engine_controller.reaction_torque = (
+	engine.reaction_torque = (
 		powertrain_controller.clutch_reaction_torque
 	)
 
