@@ -31,7 +31,7 @@ func _process(delta: float) -> void:
 		if wheel.wheel.tire.temperature < wheel.wheel.tire.opt_temperature:
 			colors.append(lerp(Color.AQUA, Color.GREEN, wheel.wheel.tire.temperature / wheel.wheel.tire.opt_temperature))
 		else:
-			var amount: float = (wheel.wheel.tire.temperature - wheel.wheel.tire.opt_temperature) / (wheel.wheel.tire.max_temperature - wheel.tire.opt_temperature)
+			var amount: float = (wheel.wheel.tire.temperature - wheel.wheel.tire.opt_temperature) / (wheel.wheel.tire.max_temperature - wheel.wheel.tire.opt_temperature)
 			colors.append(lerp(Color.GREEN, Color.FIREBRICK, amount))
 			
 		

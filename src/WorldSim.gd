@@ -111,7 +111,9 @@ func load_vehicle(vehicle: Variant) -> void:
 
 	var parameters_path := scene.resource_path.get_base_dir() + "/parameters.tres"
 	var car_parameters := load(parameters_path) as CarParameters
-	assert(car_parameters != null, "Vehicle must contain parameters.tres")
+	if ( car_parameters == null ):
+		push_warning("Vehicle should contains parameters.tres")
+		car_parameters = CarParameters.new()
 
 	if current_vehicle != null:
 		current_vehicle.queue_free()
