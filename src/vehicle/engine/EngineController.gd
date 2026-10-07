@@ -1,5 +1,4 @@
-class_name EngineController
-extends RefCounted
+class_name EngineController extends Controller
 
 const PETROL_KG_PER_LITRE: float = 0.7489
 const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
