@@ -202,6 +202,7 @@ func apply_torque(
 	drive_inertia,
 	delta
 ):
+	print("APPLY TO WHEEL : ", torque, " N.m")
 	var brake_torque := get_brake_torque()
 	if 0.0 < brake_torque :
 		assert(sign(brake_torque) != sign(torque))

@@ -68,7 +68,6 @@ func update_force(
 
 	return force
 
-
 func apply_torque(
 	drive_torque: float,
 	brake_torque: float,
@@ -86,9 +85,7 @@ func apply_torque(
 
 	assert(total_inertia > 0.0)
 
-	var previous_spin := spin
-	var net_torque := get_reaction_torque()
-	net_torque += drive_torque
+	var net_torque := drive_torque - get_reaction_torque()
 
 	if (
 		abs(spin) < 5.0 and
@@ -105,7 +102,6 @@ func apply_torque(
 
 			var spin_error := target_spin - spin
 			net_torque += spin_error * total_inertia / delta
-
 
 		net_torque += brake_torque
 
@@ -125,14 +121,7 @@ func apply_torque(
 		else:
 			spin = next_spin
 
-	if is_zero_approx(drive_torque):
-		return 0.0
-
-	return (
-		(spin - previous_spin) *
-		total_inertia /
-		(drive_torque * delta)
-	)
+	return net_torque
 
 
 func get_reaction_torque() -> float:

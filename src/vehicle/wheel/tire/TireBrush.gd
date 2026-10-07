@@ -5,7 +5,7 @@ extends TireModel
 @export var contact_patch := 0.2
 
 
-func update_forces(slip: Vector2, normal_load: float, surface_mu: float = 1.0) -> Vector3:
+func update_forces(slip: WheelDynamicsController.Slip, normal_load: float, surface_mu: float = 1.0) -> Vector3:
 	var stiffness = 1000000 + 8000000 * stiffness
 	var cornering_stiffness = 0.5 * stiffness * pow(contact_patch, 2)
 	

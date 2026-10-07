@@ -382,19 +382,27 @@ func test_negative_delta_does_not_modify_spin():
 	assert_eq(wheel.spin, 10.0)
 	assert_eq(result, 0.0)
 
-
-func test_zero_drive_torque_returns_zero_reaction_ratio():
+func test_zero_drive_torque_returns_net_torque() -> void:
 	wheel.spin = 10.0
 
 	var result := wheel.apply_torque(
 		0.0,
 		0.0,
 		0.0,
-		10.0,
+		0.0,
 		0.1
 	)
 
-	assert_eq(result, 0.0)
+	var expected := (
+		wheel.spin -
+		10.0
+	) * wheel.inertia / 0.1
+
+	assert_almost_eq(
+		result,
+		expected,
+		0.000001
+	)
 
 
 func test_low_speed_slip_is_continuous():
@@ -567,7 +575,7 @@ func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
 	)
 
 
-func test_drive_torque_reaction_ratio_matches_spin_change() -> void:
+func test_drive_torque_returns_net_torque_from_spin_change() -> void:
 	wheel.spin = 0.0
 
 	var drive_torque := 100.0
@@ -582,8 +590,9 @@ func test_drive_torque_reaction_ratio_matches_spin_change() -> void:
 	)
 
 	var expected := (
-		wheel.spin * wheel.inertia /
-		(drive_torque * delta)
+		wheel.spin *
+		wheel.inertia /
+		delta
 	)
 
 	assert_almost_eq(
@@ -591,7 +600,6 @@ func test_drive_torque_reaction_ratio_matches_spin_change() -> void:
 		expected,
 		0.000001
 	)
-
 
 func test_drive_inertia_reduces_wheel_acceleration() -> void:
 	var wheel_without_drive_inertia := WheelController.new()
@@ -636,7 +644,7 @@ func test_wheel_force_reaction_torque_changes_spin() -> void:
 		0.0,
 		0.0,
 		0.0,
-		initial_spin * tire.radius,
+		0.0,
 		0.1
 	)
 
