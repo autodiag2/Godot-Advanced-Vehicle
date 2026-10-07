@@ -35,14 +35,12 @@ func get_reaction_torque(
 		wheels[0].apply_torque(
 			torque,
 			drive_inertia,
-			0.0,
 			delta,
 			true
 		) +
 		wheels[1].apply_torque(
 			torque,
 			drive_inertia,
-			0.0,
 			delta,
 			true
 		)
@@ -91,9 +89,6 @@ func apply_torque(
 
 	var delta_torque := tr1 - tr2
 
-	var t1 := torque * 0.5
-	var t2 := torque * 0.5
-
 	var ratio = parameters.power_ratio
 
 	if torque * sign(gearing) < 0:
@@ -117,8 +112,8 @@ func apply_torque(
 			if not dryRun:
 				_diff_clutch.locked = true
 
-			t2 *= _diff_split
-			t1 *= (1.0 - _diff_split)
+			var t1 := torque * _diff_split
+			var t2 := torque * (1.0 - _diff_split)
 
 			var reaction_torque_1: float = wheels[0].apply_torque(
 				t1,
@@ -163,8 +158,8 @@ func apply_torque(
 				)
 			)
 
-			t1 += diff_torques.x
-			t2 += diff_torques.y
+			var t1 := torque * 0.5 + diff_torques.x
+			var t2 := torque * 0.5 + diff_torques.y
 
 			var reaction_torque_1: float = wheels[0].apply_torque(
 				t1,
@@ -199,22 +194,22 @@ func apply_torque(
 
 			# Common angular acceleration of the locked system.
 			var angular_acceleration := (
-				torque +
-				tr1 +
+				torque -
+				tr1 -
 				tr2
 			) / total_inertia
 
 			# Drive torque required at each wheel so that:
 			# wheel net torque = wheel inertia * angular acceleration.
-			t1 = (
+			var t1 := (
 				wheel_inertia_1 *
-				angular_acceleration -
+				angular_acceleration +
 				tr1
 			)
 
-			t2 = (
+			var t2 := (
 				wheel_inertia_2 *
-				angular_acceleration -
+				angular_acceleration +
 				tr2
 			)
 

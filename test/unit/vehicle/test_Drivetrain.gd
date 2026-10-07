@@ -141,22 +141,6 @@ func test_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	)
 
 
-func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop() -> void:
-	pending("TODO")
-
-	
-func test_locked_differential_brakes_progressively() -> void:
-	pending("TODO")
-
-
-func test_locked_differential_preserves_zero_speed_without_torque() -> void:
-	pending("TODO")
-
-
-func test_locked_differential_accelerates_from_zero_when_drive_torque_exists() -> void:
-	pending("TODO")
-
-
 func test_neutral_does_not_apply_drive_torque_to_wheels() -> void:
 
 
