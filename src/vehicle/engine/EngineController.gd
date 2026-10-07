@@ -22,7 +22,6 @@ var listeners: Array[Listener] = []
 var starter: EngineStarterController
 var angular_velocity: float = 0.0 # rad/s
 var output_torque: float = 0.0
-var net_torque: float = 0.0
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var combustion_running: bool = false
@@ -59,6 +58,8 @@ func remove_listener(listener: Listener) -> void:
 
 	listeners.erase(listener)
 
+func _init():
+	controller_debug_print_enabled = true
 
 func initialize(
 	parameters_arg: CarParameters,
@@ -83,7 +84,6 @@ func initialize(
 	angular_velocity = 0.0
 	output_torque = 0.0
 	starter = starter_arg
-	net_torque = 0.0
 	limiter_torque = 0.0
 	reaction_torque = 0.0
 	was_running = false
@@ -131,7 +131,7 @@ func apply(
 		for listener in listeners:
 			listener.onCombustionSelfSustaining(self)
 
-	net_torque = (
+	var net_torque := (
 		output_torque +
 		starter.get_torque() +
 		reaction_torque
@@ -485,7 +485,6 @@ func stop() -> void:
 	combustion_running = false
 	angular_velocity = 0.0
 	output_torque = 0.0
-	net_torque = 0.0
 	limiter_torque = 0.0
 	reaction_torque = 0.0
 	stop_sound()

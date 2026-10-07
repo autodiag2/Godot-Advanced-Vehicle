@@ -117,7 +117,6 @@ func test_initialize_adds_fuel_mass() -> void:
 func test_initialize_resets_rotational_state() -> void:
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
-	engine.net_torque = 100.0
 	engine.limiter_torque = 100.0
 	engine.reaction_torque = 100.0
 
@@ -139,11 +138,6 @@ func test_initialize_resets_rotational_state() -> void:
 	)
 
 	assert_eq(
-		engine.net_torque,
-		0.0
-	)
-
-	assert_eq(
 		engine.limiter_torque,
 		0.0
 	)
@@ -152,7 +146,6 @@ func test_initialize_resets_rotational_state() -> void:
 		engine.reaction_torque,
 		0.0
 	)
-
 
 func test_initialize_stores_audio_player() -> void:
 	assert_eq(
@@ -163,7 +156,6 @@ func test_initialize_stores_audio_player() -> void:
 func test_stop_stops_engine() -> void:
 	engine.rpm = 2000.0
 	engine.output_torque = 100.0
-	engine.net_torque = 100.0
 	engine.limiter_torque = 10.0
 	engine.reaction_torque = 5.0
 	engine.combustion_running = true
@@ -177,11 +169,6 @@ func test_stop_stops_engine() -> void:
 
 	assert_eq(
 		engine.output_torque,
-		0.0
-	)
-
-	assert_eq(
-		engine.net_torque,
 		0.0
 	)
 
