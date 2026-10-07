@@ -330,3 +330,41 @@ func test_all_wheels_remain_in_contact_during_braking() -> void:
 	assert_true(car.wheel_fr.is_colliding(), "Front-right wheel must remain in contact")
 	assert_true(car.wheel_bl.is_colliding(), "Rear-left wheel must remain in contact")
 	assert_true(car.wheel_br.is_colliding(), "Rear-right wheel must remain in contact")
+
+func test_car_does_not_immediately_reach_max_rpm_in_first_gear() -> void:
+	await _wait_physics_seconds(0.5)
+	car.start()
+	await _wait_physics_seconds(0.2)
+
+	car.shift_up()
+	car.input_controller.throttle = 1.0
+
+	await _wait_physics_seconds(4.0)
+
+	assert_gt(
+		-car.linear_velocity.z,
+		0.0,
+		"Car must be moving under full throttle in first gear"
+	)
+
+	assert_lt(
+		car.engine_controller.rpm,
+		car.parameters.engine.max_rpm,
+		"Engine must not reach maximum RPM under normal acceleration"
+	)
+
+func test_car_reaches_20_kmh_in_first_gear() -> void:
+	await _wait_physics_seconds(0.5)
+	car.start()
+	await _wait_physics_seconds(0.2)
+
+	car.shift_up()
+	car.input_controller.throttle = 1.0
+
+	await _wait_physics_seconds(4.0)
+
+	assert_gt(
+		car.getSpeedKmH(),
+		20,
+		"Car must exceed 20 km/h in first gear under full throttle"
+	)

@@ -169,10 +169,7 @@ func _physics_process(delta: float) -> void:
 	)
 
 func getSpeedKmH() -> int:
-	return int(motion_controller.longitudinal_velocity *
-		MPS_TO_KPH
-	)
-
+	return int(-linear_velocity.z * MPS_TO_KPH)
 
 func shift_up() -> void:
 	powertrain_controller.drivetrain.gearbox.shift_up()
