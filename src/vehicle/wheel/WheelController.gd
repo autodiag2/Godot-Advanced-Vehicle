@@ -15,6 +15,10 @@ var force := Vector3.ZERO
 
 var speed_threshold := 0.1
 
+var view: WheelView
+
+func set_view(view_arg: WheelView):
+	self.view = view_arg
 
 func setup(
 	tire_arg: TireModel,
@@ -65,6 +69,7 @@ func update_force(
 		normal_load,
 		surface_mu
 	)
+	print("forces=", force)
 
 	return force
 
@@ -86,16 +91,20 @@ func apply_torque(
 	assert(total_inertia > 0.0)
 
 	var reaction_torque := force.y * tire.radius
-	var net_torque := drive_torque - reaction_torque
 
-	if is_zero_approx(drive_torque):
-		var target_spin := 0.0
+	# Torque required to bring the current spin to zero during this timestep.
+	var current_torque := (
+		-spin *
+		total_inertia /
+		delta
+	)
 
-		if abs(z_vel) >= speed_threshold:
-			target_spin = z_vel / tire.radius
-
-		var spin_error := target_spin - spin
-		net_torque += spin_error * total_inertia / delta
+	var total_torque := current_torque + drive_torque
+	var net_torque := 0.0
+	if absf(total_torque) <= absf(reaction_torque):
+		net_torque = 0.0
+	else:
+		net_torque = total_torque - reaction_torque
 
 	var spin_delta := (
 		delta *
@@ -105,21 +114,21 @@ func apply_torque(
 
 	var next_spin := spin + spin_delta
 
+	print(
+		"current_torque=", current_torque,
+		" drive_torque=", drive_torque,
+		" reaction_torque=", reaction_torque,
+		" net_torque=", net_torque
+	)
 	if not dryRun:
-		if (
-			spin != 0.0 and
-			sign(next_spin) != sign(spin)
-		):
-			spin = 0.0
-		else:
-			spin = next_spin
+		set_spin(next_spin)
+
 
 	return net_torque
 
 
 func set_spin(value: float) -> void:
 	spin = value
-
 
 func get_spin() -> float:
 	return spin

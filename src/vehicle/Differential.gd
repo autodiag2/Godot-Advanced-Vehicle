@@ -62,7 +62,6 @@ func _get_locked_spin(
 		net_torque /
 		total_inertia
 	)
-
 func apply_torque(
 	torque: float,
 	wheels: Array,
@@ -76,13 +75,21 @@ func apply_torque(
 
 	var diff_state = DIFF_STATE.LOCKED
 
-	var tr1: float = (
-		wheels[0].apply_torque(torque, drive_inertia, delta, true)
+	# Query the wheel's external torque with no drive torque.
+	var tr1: float = wheels[0].apply_torque(
+		0.0,
+		0.0,
+		delta,
+		true
 	)
 
-	var tr2: float = (
-		wheels[1].apply_torque(torque, drive_inertia, delta, true)
+	var tr2: float = wheels[1].apply_torque(
+		0.0,
+		0.0,
+		delta,
+		true
 	)
+	print("tr1=", tr1)
 
 	var abs_tr1 := absf(tr1)
 	var abs_tr2 := absf(tr2)
@@ -192,16 +199,53 @@ func apply_torque(
 		DIFF_STATE.LOCKED:
 			_diff_clutch.locked = true
 
-			var spin := _get_locked_spin(
-				wheels,
-				torque,
-				drive_inertia,
-				delta
+			var wheel_inertia_1: float = wheels[0].wheel.inertia
+			var wheel_inertia_2: float = wheels[1].wheel.inertia
+
+			var total_inertia := (
+				drive_inertia +
+				wheel_inertia_1 +
+				wheel_inertia_2
 			)
 
-			wheels[0].set_spin(spin)
-			wheels[1].set_spin(spin)
+			if total_inertia <= 0.0:
+				return 0.0
 
-			return torque - get_reaction_torque(torque, wheels, drive_inertia, delta)
+			# Common angular acceleration of the locked system.
+			var angular_acceleration := (
+				torque +
+				tr1 +
+				tr2
+			) / total_inertia
+
+			# Drive torque required at each wheel so that:
+			# wheel net torque = wheel inertia * angular acceleration.
+			t1 = (
+				wheel_inertia_1 *
+				angular_acceleration -
+				tr1
+			)
+
+			t2 = (
+				wheel_inertia_2 *
+				angular_acceleration -
+				tr2
+			)
+
+			var applied_torque_1: float = wheels[0].apply_torque(
+				t1,
+				0.0,
+				delta,
+				dryRun
+			)
+
+			var applied_torque_2: float = wheels[1].apply_torque(
+				t2,
+				0.0,
+				delta,
+				dryRun
+			)
+
+			return applied_torque_1 + applied_torque_2
 
 	return 0.0

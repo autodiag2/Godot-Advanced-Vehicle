@@ -35,6 +35,7 @@ func _ready() -> void:
 	assert(dynamics != null)
 	assert(wheel != null)
 	assert(suspension != null)
+	wheel.set_view(wheelmesh as WheelView)
 
 func set_params(params: WheelSuspensionParameters) -> void:
 	self.parameters = params
@@ -63,16 +64,8 @@ func set_params(params: WheelSuspensionParameters) -> void:
 
 
 func _process(delta: float) -> void:
-	wheelmesh.rotate_x(
-		wrapf(
-			-wheel.spin * delta,
-			0,
-			TAU
-		)
-	)
-
+	wheelmesh.rotate_x(-wheel.spin * delta)
 	wheelmesh.position.y = -spring_curr_length
-
 
 func _physics_process(delta: float) -> void:
 	if is_colliding():
@@ -226,7 +219,6 @@ func apply_torque(
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)
-
 
 func get_spin():
 	return wheel.get_spin()
