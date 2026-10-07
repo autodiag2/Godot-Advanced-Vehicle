@@ -101,6 +101,7 @@ func _physics_process(delta: float) -> void:
 
 func spawn():
 	prev_pos = global_transform.origin
+	wheel.set_spin(0.0)
 
 func apply_forces(opposite_comp, delta):
 	force_vec = Vector3.ZERO

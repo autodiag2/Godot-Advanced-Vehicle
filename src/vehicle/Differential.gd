@@ -182,7 +182,7 @@ func apply_torque(
 
 		DIFF_STATE.LOCKED:
 			_diff_clutch.locked = true
-
+	
 			var wheel_inertia_1: float = wheels[0].wheel.inertia
 			var wheel_inertia_2: float = wheels[1].wheel.inertia
 

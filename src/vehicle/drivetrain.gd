@@ -162,7 +162,6 @@ func apply_torque(
 	var gearing := gearbox.get_gearing()
 	var drive_torque := torque * gearing
 	if parameters.drivetype == DRIVE_TYPE.RWD:
-	
 		var reaction_torque := rear_differential.apply_torque(
 			drive_torque,
 			rear_wheels,

@@ -46,21 +46,33 @@ func setup(
 func update_slip(
 	longitudinal_vel: float,
 	lateral_slip: float
-) -> void:
+) -> Vector2:
 	assert(speed_threshold > 0.0)
+
+	var wheel_velocity := spin * tire.radius
 
 	slip.x = lateral_slip
 
-	var slip_speed := maxf(
-		abs(longitudinal_vel),
-		speed_threshold
-	)
+	if (
+		absf(longitudinal_vel) < speed_threshold and
+		absf(wheel_velocity) < speed_threshold
+	):
+		slip.y = 0.0
+	else:
+		var slip_speed := maxf(
+			absf(longitudinal_vel),
+			speed_threshold
+		)
 
-	slip.y = (
-		longitudinal_vel -
-		spin * tire.radius
-	) / slip_speed
+		slip.y = (
+			longitudinal_vel -
+			wheel_velocity
+		) / slip_speed
 
+	debug_print("longitudinal_vel=", longitudinal_vel, " lateral_slip=", lateral_slip)
+	debug_print("slip.y=", slip.y)
+
+	return slip
 
 func update_force(
 	normal_load: float,
@@ -68,12 +80,14 @@ func update_force(
 ) -> Vector3:
 	assert(tire != null)
 	
+	debug_print("slip=", slip)
+
 	force = tire.update_forces(
 		slip,
 		normal_load,
 		surface_mu
 	)
-	debug_print(force)
+	debug_print("force=", force)
 
 	return force
 
@@ -95,7 +109,8 @@ func apply_torque(
 	assert(total_inertia > 0.0)
 
 	var reaction_torque := force.y * tire.radius
-
+	debug_print("reaction_torque=", reaction_torque)
+	
 	var net_torque := drive_torque - reaction_torque
 
 	var stopping_torque := (

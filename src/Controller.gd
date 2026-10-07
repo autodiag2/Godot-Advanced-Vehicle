@@ -5,4 +5,4 @@ func debug_print(...args) -> void:
 		var s := ""
 		for arg in args:
 			s += " " + str(arg)
-		print_debug(s)
+		print(s)

@@ -68,13 +68,13 @@ script = ExtResource("8_o1b1q")
 tire_model = SubResource("Resource_rt8ka")
 metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
 
-[sub_resource type="Resource" id="Resource_v3fvn"]
+[sub_resource type="Resource" id="Resource_ebxlq"]
 script = ExtResource("9_12dcd")
 metadata/_custom_type_script = "uid://770j2as8psxx"
 
 [sub_resource type="Resource" id="Resource_58mb6"]
 script = ExtResource("8_o1b1q")
-tire_model = SubResource("Resource_v3fvn")
+tire_model = SubResource("Resource_ebxlq")
 metadata/_custom_type_script = "uid://dbjj4t3ukrgvy"
 
 [sub_resource type="Resource" id="Resource_vfaha"]

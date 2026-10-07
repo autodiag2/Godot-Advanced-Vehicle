@@ -1,4 +1,4 @@
-class_name WheelDynamicsController
+class_name WheelDynamicsController extends Controller
 
 var wheel: WheelController
 var suspension: SuspensionController
@@ -13,6 +13,9 @@ var rolling_resistance := 0.0
 
 var force := Vector3.ZERO
 
+func debug_print(...args) -> void:
+	args.push_front("WDYNAMICS")
+	super.debug_print(args)
 
 func setup(
 	wheel_param: WheelController,
@@ -35,6 +38,7 @@ func update(
 	longitudinal_velocity = -local_velocity.z
 	lateral_velocity = local_velocity.x
 
+	debug_print("longitudinal_velocity=", longitudinal_velocity)
 	var planar_velocity := Vector2(
 		local_velocity.x,
 		local_velocity.z
