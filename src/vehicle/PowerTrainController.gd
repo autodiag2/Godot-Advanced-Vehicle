@@ -160,7 +160,6 @@ func apply(
 	assert(0.0 <= delta)
 	
 	var engine_net_torque := engine.apply(
-		car,
 		throttle_input,
 		delta
 	)

@@ -19,15 +19,13 @@ class Listener:
 	func onStall(engine: EngineController) -> void:
 		pass
 
-
 var listeners: Array[Listener] = []
 var starter: EngineStarterController
-var angular_velocity: float = 0.0
+var angular_velocity: float = 0.0 # rad/s
 var output_torque: float = 0.0
 var net_torque: float = 0.0
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
-var fuel_litres: float = 0.0
 var combustion_running: bool = false
 var drivetrain_connected: bool = false
 var car_parameters: CarParameters
@@ -35,6 +33,7 @@ var parameters: EngineParameters
 var audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
 var was_running: bool = false
+var fuel_tank: FuelTank = FuelTank.new()
 
 var rpm: float:
 	get:
@@ -43,14 +42,11 @@ var rpm: float:
 			RPM_PER_RADIAN_PER_SECOND
 		)
 	set(value):
-		assert(value >= 0.0)
+		assert(0.0 <= value)
 		angular_velocity = (
 			value /
 			RPM_PER_RADIAN_PER_SECOND
 		)
-
-var max_rpm: float = 8000.0
-
 
 func add_listener(listener: Listener) -> void:
 	assert(listener != null)
@@ -75,9 +71,6 @@ func initialize(
 	assert(car != null)
 	assert(audio_player_arg != null)
 	assert(starter_arg != null)
-	assert(parameters_arg.fuel_tank_size >= 0.0)
-	assert(parameters_arg.fuel_percentage >= 0.0)
-	assert(parameters_arg.fuel_percentage <= 100.0)
 	assert(parameters_arg.engine.moment > 0.0)
 	assert(parameters_arg.engine.max_rpm > 0.0)
 	assert(parameters_arg.engine.rpm_idle >= 0.0)
@@ -86,12 +79,7 @@ func initialize(
 	parameters = parameters_arg.engine
 	car_parameters = parameters_arg
 	engine_sound = parameters.sound
-	max_rpm = parameters.max_rpm
-	fuel_litres = (
-		car_parameters.fuel_tank_size *
-		car_parameters.fuel_percentage *
-		0.01
-	)
+	
 	audio_player = audio_player_arg
 	angular_velocity = 0.0
 	output_torque = 0.0
@@ -102,22 +90,15 @@ func initialize(
 	was_running = false
 	combustion_running = false
 	drivetrain_connected = false
-
-	car.mass += (
-		fuel_litres *
-		PETROL_KG_PER_LITRE
-	)
-
+	fuel_tank.initialise(parameters_arg, car)
 
 func set_drivetrain_connected(connected: bool) -> void:
 	drivetrain_connected = connected
 
 func apply(
-	car: RigidBody3D,
 	throttle_input: float,
 	delta: float
 ) -> float:
-	assert(car != null)
 	assert(angular_velocity >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
@@ -131,7 +112,7 @@ func apply(
 		combustion_running || starter.get_torque() > 0.0
 	)
 
-	if fuel_litres <= 0.0:
+	if fuel_tank.fuel_litres <= 0.0:
 		combustion_running = false
 		output_torque = calculate_torque(
 			0.0,
@@ -143,7 +124,7 @@ func apply(
 
 	if (
 		starter.get_torque() > 0.0 &&
-		fuel_litres > 0.0 &&
+		fuel_tank.fuel_litres > 0.0 &&
 		rpm >= parameters.rpm_idle
 	):
 		combustion_running = true
@@ -216,7 +197,6 @@ func apply(
 	was_running = angular_velocity > 0.0
 
 	consume_fuel(
-		car,
 		throttle_input,
 		delta
 	)
@@ -289,11 +269,9 @@ func calculate_friction_torque(engine_rpm: float) -> float:
 
 
 func consume_fuel(
-	car: RigidBody3D,
 	throttle_input: float,
 	delta: float
 ) -> void:
-	assert(car != null)
 	assert(delta >= 0.0)
 
 	if !combustion_running:
@@ -359,24 +337,9 @@ func consume_fuel(
 			delta
 		)
 
-	fuel_consumed = min(
-		fuel_consumed,
-		fuel_litres
-	)
+	fuel_tank.consume(fuel_consumed)
 
-	fuel_consumed = max(
-		fuel_consumed,
-		0.0
-	)
-
-	fuel_litres -= fuel_consumed
-	car.mass -= (
-		fuel_consumed *
-		PETROL_KG_PER_LITRE
-	)
-
-	if fuel_litres <= 0.0:
-		fuel_litres = 0.0
+	if fuel_tank.fuel_litres == 0.0:
 		output_torque = 0.0
 		rpm = 0.0
 		combustion_running = false
@@ -501,7 +464,7 @@ func update_sound() -> void:
 
 	if (
 		rpm > 0.0 &&
-		rpm <= max_rpm
+		rpm <= parameters.max_rpm
 	):
 		if audio_player.stream != engine_sound:
 			audio_player.set_stream(

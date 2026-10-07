@@ -22,7 +22,7 @@ func _process(delta: float) -> void:
 	
 	gearlabel.text = "gear = %d" % vehicle.powertrain_controller.drivetrain.gearbox.selected_gear
 	rpmlabel.text = "RPM = %d" % int(vehicle.engine_controller.rpm)
-	fuellabel.text = "Fuel = %3.2f" % vehicle.engine_controller.fuel_litres
+	fuellabel.text = "Fuel = %3.2f" % vehicle.engine_controller.fuel_tank.fuel_litres
 	
 	var usage : Array = vehicle.getBrakePadsUsagePercent()
 	BreakPadsUsageLabel.text = (
