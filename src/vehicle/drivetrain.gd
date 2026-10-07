@@ -41,7 +41,9 @@ func setup(
 		parameters_arg,
 		powertrain
 	)
-
+	rear_differential.initialise(parameters.rear_diff)
+	front_differential.initialise(parameters.front_diff)
+	center_differential.initialise(parameters.center_diff)
 
 func automatic_shifting(
 	cur_torque,
@@ -147,7 +149,6 @@ func apply_torque(
 		var net_torque := rear_differential.apply_torque(
 			drive_torque,
 			rear_wheels,
-			parameters.rear_diff,
 			gearbox.drive_inertia,
 			gearing,
 			delta
@@ -172,7 +173,6 @@ func apply_torque(
 		var net_torque := front_differential.apply_torque(
 			drive_torque,
 			front_wheels,
-			parameters.front_diff,
 			gearbox.drive_inertia,
 			gearing,
 			delta
@@ -236,7 +236,6 @@ func apply_torque(
 				var rear_net_torque := rear_differential.apply_torque(
 					rear_drive,
 					rear_wheels,
-					parameters.rear_diff,
 					gearbox.drive_inertia,
 					gearing,
 					delta
@@ -245,7 +244,6 @@ func apply_torque(
 				var front_net_torque := front_differential.apply_torque(
 					front_drive,
 					front_wheels,
-					parameters.front_diff,
 					gearbox.drive_inertia,
 					gearing,
 					delta
@@ -263,7 +261,6 @@ func apply_torque(
 				var rear_net_torque := rear_differential.apply_torque(
 					rear_drive,
 					rear_wheels,
-					parameters.rear_diff,
 					gearbox.drive_inertia,
 					gearing,
 					delta
@@ -272,7 +269,6 @@ func apply_torque(
 				var front_net_torque := front_differential.apply_torque(
 					front_drive,
 					front_wheels,
-					parameters.front_diff,
 					gearbox.drive_inertia,
 					gearing,
 					delta

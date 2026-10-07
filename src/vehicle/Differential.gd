@@ -15,7 +15,11 @@ enum DIFF_STATE {
 
 var _diff_clutch := Clutch.new()
 var _diff_split := 0.5
+var parameters := DiffParameters.new()
 
+func initialise(parameters_arg: DiffParameters):
+	assert(parameters_arg != null)
+	parameters = parameters_arg
 
 func get_reaction_torque(wheels: Array) -> float:
 	assert(wheels.size() == 2)
@@ -63,13 +67,11 @@ func _get_locked_spin(
 func apply_torque(
 	torque: float,
 	wheels: Array,
-	diff: DiffParameters,
 	drive_inertia: float,
 	gearing: float,
 	delta: float
 ) -> float:
 	assert(wheels.size() == 2)
-	assert(diff != null)
 	assert(delta >= 0.0)
 
 	var diff_state = DIFF_STATE.LOCKED
@@ -99,20 +101,20 @@ func apply_torque(
 	var t1 := torque * 0.5
 	var t2 := torque * 0.5
 
-	var ratio = diff.power_ratio
+	var ratio = parameters.power_ratio
 
 	if torque * sign(gearing) < 0:
-		ratio = diff.coast_ratio
+		ratio = parameters.coast_ratio
 
-	if diff.diff_type == DIFF_TYPE.OPEN_DIFF:
+	if parameters.diff_type == DIFF_TYPE.OPEN_DIFF:
 		diff_state = DIFF_STATE.OPEN
 
-	elif diff.diff_type == DIFF_TYPE.LOCKED:
+	elif parameters.diff_type == DIFF_TYPE.LOCKED:
 		diff_state = DIFF_STATE.LOCKED
 
 	else:
 		if (
-			absf(delta_torque) > diff.diff_preload &&
+			absf(delta_torque) > parameters.diff_preload &&
 			bias >= ratio
 		):
 			diff_state = DIFF_STATE.SLIPPING
@@ -150,7 +152,7 @@ func apply_torque(
 			)
 
 		DIFF_STATE.SLIPPING:
-			_diff_clutch.friction = diff.diff_preload
+			_diff_clutch.friction = parameters.diff_preload
 
 			var diff_torques: Vector2 = (
 				_diff_clutch.get_reaction_torques(
@@ -158,7 +160,7 @@ func apply_torque(
 					wheels[1].get_spin(),
 					tr1,
 					tr2,
-					diff.diff_preload * ratio,
+					parameters.diff_preload * ratio,
 					0.0
 				)
 			)

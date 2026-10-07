@@ -1,6 +1,6 @@
 [gd_resource type="Resource" script_class="CarParameters" format=3 uid="uid://c5fohh17me33f"]
 
-[ext_resource type="Script" uid="uid://beoy7rb7kinu4" path="res://src/vehicle/diff_params.gd" id="1_ebxlq"]
+[ext_resource type="Script" uid="uid://beoy7rb7kinu4" path="res://src/vehicle/Differential_params.gd" id="1_ebxlq"]
 [ext_resource type="Script" uid="uid://cumcs3yp4no2v" path="res://src/vehicle/gearbox/GearboxParameters.gd" id="2_ftcts"]
 [ext_resource type="Script" uid="uid://cq401wgg5c803" path="res://src/vehicle/drivetrain_params.gd" id="3_pt33x"]
 [ext_resource type="Resource" uid="uid://dgywvijqfg0j8" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="4_educo"]
