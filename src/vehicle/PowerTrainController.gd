@@ -213,7 +213,7 @@ func apply(
 		)
 
 	var reaction_torque: float = (
-		drivetrain.get_reaction_torque()
+		drivetrain.apply_torque(engine_net_torque, clutch_input, delta, true)
 	)
 
 	var clutch_slip_torque: float = (

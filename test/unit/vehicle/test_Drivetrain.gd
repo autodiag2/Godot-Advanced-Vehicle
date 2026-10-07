@@ -247,24 +247,6 @@ func test_locked_differential_accelerates_from_zero_when_drive_torque_exists() -
 	)
 
 
-func test_lsd_reaction_uses_signed_torque_difference() -> void:
-	var left := FakeWheel.new()
-	var right := FakeWheel.new()
-
-	left.reaction_torque = 100.0
-	right.reaction_torque = -50.0
-
-	var delta_torque := (
-		left.get_reaction_torque() -
-		right.get_reaction_torque()
-	)
-
-	assert_float_eq(
-		delta_torque,
-		150.0
-	)
-
-
 func test_neutral_does_not_apply_drive_torque_to_wheels() -> void:
 
 

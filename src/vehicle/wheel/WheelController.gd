@@ -60,6 +60,7 @@ func update_force(
 ) -> Vector3:
 	assert(tire != null)
 	
+	print("slip = ", slip.x, " y=", slip.y)
 	force = tire.update_forces(
 		slip,
 		normal_load,
@@ -70,10 +71,10 @@ func update_force(
 
 func apply_torque(
 	drive_torque: float,
-	brake_torque: float,
 	drive_inertia: float,
 	z_vel: float,
-	delta: float
+	delta: float,
+	dryRun: bool = false
 ) -> float:
 	assert(tire != null)
 	assert(0.0 <= drive_inertia)
@@ -85,34 +86,27 @@ func apply_torque(
 
 	assert(total_inertia > 0.0)
 
-	var net_torque := drive_torque - get_reaction_torque()
+	var reaction_torque := force.y * tire.radius
+	var net_torque := drive_torque - reaction_torque
 
-	if (
-		abs(spin) < 5.0 and
-		abs(brake_torque) > 0.0 and
-		abs(brake_torque) >= abs(net_torque)
-	):
-		spin = 0.0
-	else:
-		if is_zero_approx(drive_torque):
-			var target_spin := 0.0
+	if is_zero_approx(drive_torque):
+		var target_spin := 0.0
 
-			if abs(z_vel) >= speed_threshold:
-				target_spin = z_vel / tire.radius
+		if abs(z_vel) >= speed_threshold:
+			target_spin = z_vel / tire.radius
 
-			var spin_error := target_spin - spin
-			net_torque += spin_error * total_inertia / delta
+		var spin_error := target_spin - spin
+		net_torque += spin_error * total_inertia / delta
 
-		net_torque += brake_torque
+	var spin_delta := (
+		delta *
+		net_torque /
+		total_inertia
+	)
 
-		var spin_delta := (
-			delta *
-			net_torque /
-			total_inertia
-		)
+	var next_spin := spin + spin_delta
 
-		var next_spin := spin + spin_delta
-
+	if not dryRun:
 		if (
 			spin != 0.0 and
 			sign(next_spin) != sign(spin)
@@ -122,10 +116,6 @@ func apply_torque(
 			spin = next_spin
 
 	return net_torque
-
-
-func get_reaction_torque() -> float:
-	return force.y * tire.radius
 
 
 func set_spin(value: float) -> void:

@@ -17,20 +17,6 @@ func get_spin() -> float:
 func set_spin(value: float) -> void:
 	spin = value
 
-
-func get_reaction_torque() -> float:
-	var result := reaction_torque
-
-	var brake_direction : float = sign(spin)
-
-	if brake_direction == 0.0:
-		brake_direction = sign(result)
-
-	result -= brake_torque * brake_direction
-
-	return result
-
-
 func get_brake_torque() -> float:
 	return brake_torque
 
@@ -38,7 +24,8 @@ func get_brake_torque() -> float:
 func apply_torque(
 	torque: float,
 	inertia: float,
-	delta: float
+	delta: float,
+	dryRun: bool = false
 ) -> float:
 	reaction_torque = -torque
 	return 0.0

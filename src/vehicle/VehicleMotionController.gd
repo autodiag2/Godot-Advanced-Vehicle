@@ -4,7 +4,7 @@ extends RefCounted
 var local_velocity := Vector3.ZERO
 var longitudinal_velocity: float = 0.0
 var lateral_velocity: float = 0.0
-
+var zero_threshold := 0.001
 var previous_position := Vector3.ZERO
 
 func initialize(car: Node3D) -> void:
@@ -14,15 +14,10 @@ func update(
 	car: Node3D,
 	delta: float
 ) -> void:
-	local_velocity = (
-		(
-			car.global_transform.origin -
-			previous_position
-		) /
-		delta *
-		car.global_transform.basis
+	var local_velocity : Vector3 = (
+		car.global_transform.basis.inverse() *
+		car.linear_velocity
 	)
-
 	previous_position = (
 		car.global_transform.origin
 	)
@@ -34,6 +29,8 @@ func update(
 	lateral_velocity = (
 		local_velocity.x
 	)
+
+	print("local_velocity=", local_velocity, " longitudinal_velocity=", longitudinal_velocity, " lateral_velocity=", lateral_velocity)
 
 func apply_aerodynamic_drag(
 	car: RigidBody3D,

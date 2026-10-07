@@ -21,12 +21,12 @@ func initialise(parameters_arg: DiffParameters):
 	assert(parameters_arg != null)
 	parameters = parameters_arg
 
-func get_reaction_torque(wheels: Array) -> float:
+func get_reaction_torque(torque: float, wheels: Array, drive_intertia: float, delta: float) -> float:
 	assert(wheels.size() == 2)
 
 	return (
-		wheels[0].get_reaction_torque() +
-		wheels[1].get_reaction_torque()
+		wheels[0].apply_torque(torque, drive_intertia, delta, true) +
+		wheels[1].apply_torque(torque, drive_intertia, delta, true)
 	)
 
 
@@ -43,7 +43,7 @@ func _get_locked_spin(
 	var total_inertia := drive_inertia
 
 	for wheel in wheels:
-		net_torque += wheel.get_reaction_torque()
+		net_torque -= wheel.apply_torque(drive_torque, drive_inertia, delta, true)
 		total_inertia += wheel.wheel.inertia
 
 	if total_inertia <= 0.0:
@@ -63,13 +63,13 @@ func _get_locked_spin(
 		total_inertia
 	)
 
-
 func apply_torque(
 	torque: float,
 	wheels: Array,
 	drive_inertia: float,
 	gearing: float,
-	delta: float
+	delta: float,
+	dryRun: bool = false
 ) -> float:
 	assert(wheels.size() == 2)
 	assert(delta >= 0.0)
@@ -77,11 +77,11 @@ func apply_torque(
 	var diff_state = DIFF_STATE.LOCKED
 
 	var tr1: float = (
-		wheels[0].get_reaction_torque()
+		wheels[0].apply_torque(torque, drive_inertia, delta, true)
 	)
 
 	var tr2: float = (
-		wheels[1].get_reaction_torque()
+		wheels[1].apply_torque(torque, drive_inertia, delta, true)
 	)
 
 	var abs_tr1 := absf(tr1)
@@ -121,7 +121,8 @@ func apply_torque(
 
 	match diff_state:
 		DIFF_STATE.OPEN:
-			_diff_clutch.locked = true
+			if not dryRun:
+				_diff_clutch.locked = true
 
 			t2 *= _diff_split
 			t1 *= (1.0 - _diff_split)
@@ -129,13 +130,15 @@ func apply_torque(
 			var applied_torque_1: float = wheels[0].apply_torque(
 				t1,
 				drive_inertia,
-				delta
+				delta,
+				dryRun
 			)
 
 			var applied_torque_2: float = wheels[1].apply_torque(
 				t2,
 				drive_inertia,
-				delta
+				delta,
+				dryRun
 			)
 
 			var diff_sum := (
@@ -150,6 +153,8 @@ func apply_torque(
 					1.0
 				)
 			)
+
+			return applied_torque_1 + applied_torque_2
 
 		DIFF_STATE.SLIPPING:
 			_diff_clutch.friction = parameters.diff_preload
@@ -168,17 +173,21 @@ func apply_torque(
 			t1 += diff_torques.x
 			t2 += diff_torques.y
 
-			wheels[0].apply_torque(
+			var applied_torque_1: float = wheels[0].apply_torque(
 				t1,
 				drive_inertia,
-				delta
+				delta,
+				dryRun
 			)
 
-			wheels[1].apply_torque(
+			var applied_torque_2: float = wheels[1].apply_torque(
 				t2,
 				drive_inertia,
-				delta
+				delta,
+				dryRun
 			)
+
+			return applied_torque_1 + applied_torque_2
 
 		DIFF_STATE.LOCKED:
 			_diff_clutch.locked = true
@@ -193,4 +202,6 @@ func apply_torque(
 			wheels[0].set_spin(spin)
 			wheels[1].set_spin(spin)
 
-	return torque - get_reaction_torque(wheels)
+			return torque - get_reaction_torque(torque, wheels, drive_inertia, delta)
+
+	return 0.0

@@ -108,12 +108,23 @@ func test_set_and_get_spin():
 	assert_eq(wheel.get_spin(), 12.0)
 
 
-func test_reaction_torque():
+func test_reaction_torque_reduces_net_torque():
 	wheel.force.y = 100.0
 
-	assert_eq(
-		wheel.get_reaction_torque(),
-		100.0 * tire.radius
+	var drive_torque := 1000.0
+	var reaction_torque := 100.0 * tire.radius
+
+	var result := wheel.apply_torque(
+		drive_torque,
+		0.0,
+		0.0,
+		0.1
+	)
+
+	assert_almost_eq(
+		result,
+		drive_torque - reaction_torque,
+		0.000001
 	)
 
 
@@ -214,151 +225,11 @@ func test_setup_resets_dynamic_state():
 	assert_eq(wheel.force, Vector3.ZERO)
 
 
-func test_brake_acts_on_stationary_wheel():
-	wheel.spin = 0.0
-	wheel.force = Vector3.ZERO
-
-	wheel.apply_torque(
-		100.0,
-		-50.0,
-		0.0,
-		0.0,
-		0.1
-	)
-
-	assert_gt(
-		wheel.spin,
-		0.0
-	)
-
-	var wheel_without_brake := WheelController.new()
-	wheel_without_brake.setup(
-		tire,
-		15.0,
-		0.15
-	)
-
-	wheel_without_brake.apply_torque(
-		100.0,
-		0.0,
-		0.0,
-		0.0,
-		0.1
-	)
-
-	assert_gt(
-		wheel_without_brake.spin,
-		wheel.spin
-	)
-
-
-func test_brake_locks_stationary_wheel_when_brake_exceeds_drive_torque():
-	wheel.spin = 0.0
-
-	wheel.apply_torque(
-		100.0,
-		100.0,
-		0.0,
-		0.0,
-		0.1
-	)
-
-	assert_eq(wheel.spin, 0.0)
-
-
-func test_brake_opposes_positive_spin():
-	wheel.spin = 10.0
-
-	var z_vel := wheel.spin * tire.radius
-
-	wheel.apply_torque(
-		0.0,
-		-10.0,
-		0.0,
-		z_vel,
-		0.1
-	)
-
-	assert_lt(
-		wheel.spin,
-		10.0
-	)
-
-
-func test_brake_opposes_negative_spin():
-	wheel.spin = -10.0
-
-	var z_vel := wheel.spin * tire.radius
-
-	wheel.apply_torque(
-		0.0,
-		10.0,
-		0.0,
-		z_vel,
-		0.1
-	)
-
-	assert_gt(
-		wheel.spin,
-		-10.0
-	)
-
-
-func test_brake_uses_net_torque_when_wheel_is_stationary():
-	wheel.spin = 0.0
-
-	wheel.apply_torque(
-		-100.0,
-		50.0,
-		0.0,
-		0.0,
-		0.1
-	)
-
-	assert_lt(
-		wheel.spin,
-		0.0
-	)
-
-
-func test_strong_brake_does_not_reverse_positive_spin():
-	wheel.spin = 10.0
-
-	var z_vel := wheel.spin * tire.radius
-
-	wheel.apply_torque(
-		0.0,
-		-10000.0,
-		0.0,
-		z_vel,
-		0.1
-	)
-
-	assert_eq(wheel.spin, 0.0)
-
-
-func test_strong_brake_does_not_reverse_negative_spin():
-	wheel.spin = -10.0
-
-	var z_vel := wheel.spin * tire.radius
-
-	wheel.apply_torque(
-		0.0,
-		10000.0,
-		0.0,
-		z_vel,
-		0.1
-	)
-
-	assert_eq(wheel.spin, 0.0)
-
-
 func test_zero_delta_does_not_modify_spin():
 	wheel.spin = 10.0
 
 	var result := wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		10.0,
 		0.0
@@ -374,7 +245,6 @@ func test_negative_delta_does_not_modify_spin():
 	var result := wheel.apply_torque(
 		100.0,
 		0.0,
-		0.0,
 		10.0,
 		-0.1
 	)
@@ -382,11 +252,13 @@ func test_negative_delta_does_not_modify_spin():
 	assert_eq(wheel.spin, 10.0)
 	assert_eq(result, 0.0)
 
-func test_zero_drive_torque_returns_net_torque() -> void:
+
+func test_zero_drive_torque_returns_net_torque():
 	wheel.spin = 10.0
 
+	var initial_spin := wheel.spin
+
 	var result := wheel.apply_torque(
-		0.0,
 		0.0,
 		0.0,
 		0.0,
@@ -394,9 +266,10 @@ func test_zero_drive_torque_returns_net_torque() -> void:
 	)
 
 	var expected := (
-		wheel.spin -
-		10.0
-	) * wheel.inertia / 0.1
+		(wheel.spin - initial_spin) *
+		(wheel.inertia) /
+		0.1
+	)
 
 	assert_almost_eq(
 		result,
@@ -503,6 +376,7 @@ func test_low_speed_slip_uses_speed_threshold():
 		0.000001
 	)
 
+
 func test_drive_inertia_affects_undriven_wheel_synchronization():
 	wheel.spin = 0.0
 
@@ -510,17 +384,12 @@ func test_drive_inertia_affects_undriven_wheel_synchronization():
 
 	wheel.apply_torque(
 		0.0,
-		0.0,
 		drive_inertia,
 		1.0 * tire.radius,
 		0.1
 	)
 
-	var expected_target := 1.0
-	var expected := (
-		expected_target -
-		0.0
-	)
+	var expected := 1.0
 
 	assert_almost_eq(
 		wheel.spin,
@@ -528,12 +397,12 @@ func test_drive_inertia_affects_undriven_wheel_synchronization():
 		0.000001
 	)
 
+
 func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
 	wheel.spin = 0.0
 
 	wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		0.0,
 		0.1
@@ -545,7 +414,6 @@ func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
 
 	wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		0.0,
 		0.2
@@ -563,7 +431,6 @@ func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
 
 	wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		5.0 * tire.radius,
 		0.1
@@ -585,7 +452,6 @@ func test_drive_torque_returns_net_torque_from_spin_change() -> void:
 		drive_torque,
 		0.0,
 		0.0,
-		0.0,
 		delta
 	)
 
@@ -600,6 +466,7 @@ func test_drive_torque_returns_net_torque_from_spin_change() -> void:
 		expected,
 		0.000001
 	)
+
 
 func test_drive_inertia_reduces_wheel_acceleration() -> void:
 	var wheel_without_drive_inertia := WheelController.new()
@@ -616,13 +483,11 @@ func test_drive_inertia_reduces_wheel_acceleration() -> void:
 		drive_torque,
 		0.0,
 		0.0,
-		0.0,
 		delta
 	)
 
 	wheel_with_drive_inertia.apply_torque(
 		drive_torque,
-		0.0,
 		drive_inertia,
 		0.0,
 		delta
@@ -636,12 +501,11 @@ func test_drive_inertia_reduces_wheel_acceleration() -> void:
 
 func test_wheel_force_reaction_torque_changes_spin() -> void:
 	wheel.spin = 10.0
-	wheel.force.y = -100.0
+	wheel.force.y = 100.0
 
 	var initial_spin := wheel.spin
 
 	wheel.apply_torque(
-		0.0,
 		0.0,
 		0.0,
 		0.0,
@@ -656,11 +520,10 @@ func test_wheel_force_reaction_torque_changes_spin() -> void:
 
 func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
 	wheel.spin = 0.0
-	wheel.force.y = -50.0
+	wheel.force.y = 50.0
 
 	wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		0.0,
 		0.1
@@ -669,4 +532,27 @@ func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
 	assert_gt(
 		wheel.spin,
 		0.0
+	)
+
+
+func test_dry_run_does_not_modify_spin() -> void:
+	wheel.spin = 10.0
+
+	var result := wheel.apply_torque(
+		100.0,
+		0.0,
+		0.0,
+		0.1,
+		true
+	)
+
+	assert_eq(
+		wheel.spin,
+		10.0
+	)
+
+	assert_almost_eq(
+		result,
+		100.0,
+		0.000001
 	)

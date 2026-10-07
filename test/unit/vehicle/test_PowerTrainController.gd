@@ -522,7 +522,7 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	)
 
 	assert_float_eq(
-		powertrain.drivetrain.get_reaction_torque(),
+		powertrain.drivetrain.apply_torque(1000.0, 0.0, 0.1,true),
 		0.0
 	)
 

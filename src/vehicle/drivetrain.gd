@@ -77,7 +77,7 @@ func set_input_inertia(value):
 	gearbox.set_input_inertia(value)
 
 
-func get_reaction_torque() -> float:
+func get_reaction_torque(torque: float, drive_inertia: float, delta: float) -> float:
 	assert(parameters != null)
 
 	var gearing := gearbox.get_gearing()
@@ -88,29 +88,43 @@ func get_reaction_torque() -> float:
 	if parameters.drivetype == DRIVE_TYPE.RWD:
 		return (
 			rear_differential.get_reaction_torque(
+				torque,
 				[
 					wheel_bl,
 					wheel_br
-				]
+				],
+				drive_inertia,
+				delta
 			)
 		) / gearing
 
 	if parameters.drivetype == DRIVE_TYPE.FWD:
 		return (
 			front_differential.get_reaction_torque(
+				torque,
 				[
 					wheel_fl,
 					wheel_fr
-				]
+				],
+				drive_inertia,
+				delta
 			)
 		) / gearing
 
 	if parameters.drivetype == DRIVE_TYPE.AWD:
 		return (
-			wheel_bl.get_reaction_torque() +
-			wheel_br.get_reaction_torque() +
-			wheel_fl.get_reaction_torque() +
-			wheel_fr.get_reaction_torque()
+			wheel_bl.apply_torque(
+				torque,drive_inertia,delta, true
+			) +
+			wheel_br.apply_torque(
+				torque,drive_inertia,delta, true
+			) +
+			wheel_fl.apply_torque(
+				torque,drive_inertia,delta, true
+			) +
+			wheel_fr.apply_torque(
+				torque,drive_inertia,delta, true
+			)
 		) / gearing
 
 	return 0.0
@@ -120,7 +134,8 @@ func get_reaction_torque() -> float:
 func apply_torque(
 	torque: float,
 	clutch_input: float,
-	delta: float
+	delta: float,
+	dryRun: bool = false
 ) -> float:
 	assert(parameters != null)
 	assert(clutch_input >= 0.0)
@@ -151,19 +166,22 @@ func apply_torque(
 			rear_wheels,
 			gearbox.drive_inertia,
 			gearing,
-			delta
+			delta,
+			dryRun
 		)
 
 		wheel_fl.apply_torque(
 			0.0,
 			0.0,
-			delta
+			delta,
+			dryRun
 		)
 
 		wheel_fr.apply_torque(
 			0.0,
 			0.0,
-			delta
+			delta,
+			dryRun
 		)
 
 		return net_torque
@@ -175,19 +193,22 @@ func apply_torque(
 			front_wheels,
 			gearbox.drive_inertia,
 			gearing,
-			delta
+			delta,
+			dryRun
 		)
 
 		wheel_bl.apply_torque(
 			0.0,
 			0.0,
-			delta
+			delta,
+			dryRun
 		)
 
 		wheel_br.apply_torque(
 			0.0,
 			0.0,
-			delta
+			delta,
+			dryRun
 		)
 
 		return net_torque
@@ -215,7 +236,14 @@ func apply_torque(
 				var total_reaction_torque := 0.0
 
 				for wheel in wheels:
-					total_reaction_torque += wheel.get_reaction_torque()
+					total_reaction_torque += (
+						wheel.apply_torque(
+							drive_torque,
+							gearbox.drive_inertia,
+							delta,
+							true
+						)
+					)
 
 				return drive_torque - total_reaction_torque
 
@@ -238,7 +266,8 @@ func apply_torque(
 					rear_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta
+					delta,
+					dryRun
 				)
 
 				var front_net_torque := front_differential.apply_torque(
@@ -246,7 +275,8 @@ func apply_torque(
 					front_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta
+					delta,
+					dryRun
 				)
 
 				return (
@@ -263,7 +293,8 @@ func apply_torque(
 					rear_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta
+					delta,
+					dryRun
 				)
 
 				var front_net_torque := front_differential.apply_torque(
@@ -271,7 +302,8 @@ func apply_torque(
 					front_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta
+					delta,
+					dryRun
 				)
 
 				return (

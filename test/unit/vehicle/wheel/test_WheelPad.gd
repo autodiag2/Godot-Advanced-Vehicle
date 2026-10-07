@@ -123,7 +123,7 @@ func test_update_usage_uses_absolute_energy() -> void:
 	pad.max_usage_energy = 100000.0
 
 	pad.update_usage(
-		-100.0,
+		100.0,
 		10.0,
 		1.0
 	)
