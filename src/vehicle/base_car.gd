@@ -96,7 +96,7 @@ func _ready() -> void:
 	set_parameters(parameters)
 
 func start():
-	engine_starter_controller.start()
+	engine_controller.start()
 
 func stop():
 	engine_controller.stop()

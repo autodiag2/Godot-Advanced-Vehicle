@@ -49,7 +49,7 @@ func before_each() -> void:
 	)
 	drivetrain.setup(parameters, powertrain)
 
-func after_each():
+func after_each() -> void:
 	powertrain.wheel_bl.queue_free()
 	powertrain.wheel_br.queue_free()
 	powertrain.wheel_fl.queue_free()
@@ -128,6 +128,25 @@ func test_partially_engaged_clutch_only_scales_engine_inertia() -> void:
 		197.0
 	)
 
+func test_full_throttle_does_not_immediately_reach_max_rpm() -> void:
+	powertrain.engine.start()
+	drivetrain.gearbox.set_gear(1)
+	
+	var max_rpm : float = powertrain.engine.parameters.max_rpm
+
+	powertrain.apply(
+		1.0,
+		0.0,
+		0.016,
+		car_view
+	)
+
+	assert_true(powertrain.engine.rpm != 0.0)
+	assert_lt(
+		powertrain.engine.rpm,
+		max_rpm,
+		"Full throttle must not immediately reach max RPM"
+	)
 
 func test_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	drivetrain.gearbox.set_input_inertia(2.0)

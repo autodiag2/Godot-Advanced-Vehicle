@@ -479,6 +479,9 @@ func update_sound() -> void:
 		if audio_player.playing:
 			audio_player.stop()
 
+func start() -> void:
+	starter.start()
+
 func stop() -> void:
 	combustion_running = false
 	angular_velocity = 0.0
