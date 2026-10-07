@@ -1229,3 +1229,47 @@ func test_update_sound_stops_when_rpm_is_zero() -> void:
 	engine.update_sound()
 
 	assert_false(audio_player.playing)
+
+func test_engine_inertia_affects_angular_acceleration() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.reaction_torque = 0.0
+
+	var initial_angular_velocity := engine.angular_velocity
+
+	engine.apply(
+		1.0,
+		0.1
+	)
+
+	var acceleration := (
+		engine.angular_velocity -
+		initial_angular_velocity
+	) / 0.1
+
+	parameters.engine.moment *= 2.0
+	engine.rpm = 3000.0
+	engine.reaction_torque = 0.0
+
+	initial_angular_velocity = engine.angular_velocity
+
+	engine.apply(
+		1.0,
+		0.1
+	)
+
+	var doubled_inertia_acceleration := (
+		engine.angular_velocity -
+		initial_angular_velocity
+	) / 0.1
+
+	assert_gt(
+		acceleration,
+		doubled_inertia_acceleration
+	)
+
+	assert_almost_eq(
+		acceleration,
+		doubled_inertia_acceleration * 2.0,
+		acceleration * 0.05
+	)

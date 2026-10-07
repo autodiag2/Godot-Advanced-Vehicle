@@ -17,6 +17,9 @@ var speed_threshold := 0.1
 
 var view: WheelView
 
+func _init() -> void:
+	controller_debug_print_enabled = false
+
 func set_view(view_arg: WheelView):
 	self.view = view_arg
 

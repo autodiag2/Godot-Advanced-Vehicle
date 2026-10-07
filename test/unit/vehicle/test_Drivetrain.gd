@@ -11,7 +11,10 @@ var drivetrain: DriveTrain
 var powertrain: PowertrainController
 var car_view: RigidBody3D
 var engine_audio: AudioStreamPlayer
-
+var wheel_bl : RaycastSuspension
+var wheel_br : RaycastSuspension
+var wheel_fl : RaycastSuspension
+var wheel_fr : RaycastSuspension
 func before_each() -> void:
 	drivetrain = DriveTrain.new()
 	var car_params := CarParameters.new()
@@ -33,13 +36,13 @@ func before_each() -> void:
 	var engine := EngineController.new()
 	engine.initialize(car_params, car_view, engine_starter, engine_audio)
 	powertrain = PowertrainController.new()
-	var wheel_fl := RaycastSuspension.new()
+	wheel_fl = RaycastSuspension.new()
 	wheel_fl.set_params(car_params.wheel_params_fl)
-	var wheel_fr := RaycastSuspension.new()
+	wheel_fr = RaycastSuspension.new()
 	wheel_fr.set_params(car_params.wheel_params_fr)
-	var wheel_bl := RaycastSuspension.new()
+	wheel_bl = RaycastSuspension.new()
 	wheel_bl.set_params(car_params.wheel_params_bl)
-	var wheel_br := RaycastSuspension.new()
+	wheel_br = RaycastSuspension.new()
 	wheel_br.set_params(car_params.wheel_params_br)
 	powertrain.initialize(car_params, engine, 
 		wheel_fl, 
@@ -50,12 +53,12 @@ func before_each() -> void:
 	drivetrain.setup(parameters, powertrain)
 
 func after_each() -> void:
-	powertrain.wheel_bl.queue_free()
-	powertrain.wheel_br.queue_free()
-	powertrain.wheel_fl.queue_free()
-	powertrain.wheel_fr.queue_free()
-	car_view.queue_free()
-	engine_audio.queue_free()
+	wheel_bl.free()
+	wheel_br.free()
+	wheel_fl.free()
+	wheel_fr.free()
+	car_view.free()
+	engine_audio.free()
 
 func test_neutral_has_zero_gearing() -> void:
 	drivetrain.gearbox.set_gear(0)
