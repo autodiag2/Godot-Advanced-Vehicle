@@ -1,12 +1,13 @@
 class_name FakeWheel
-var spin: float = 0.0
-var brake_torque: float = 0.0
+
+var spin := 0.0
+var reaction_torque := 0.0
 
 var wheel := FakeWheelData.new()
 
 
 class FakeWheelData:
-	var inertia: float = 1.0
+	var inertia := 1.0
 
 
 func get_spin() -> float:
@@ -16,14 +17,23 @@ func get_spin() -> float:
 func set_spin(value: float) -> void:
 	spin = value
 
-func get_brake_torque() -> float:
-	return brake_torque
-
 
 func apply_torque(
 	torque: float,
-	inertia: float,
+	drive_inertia: float,
 	delta: float,
 	dryRun: bool = false
 ) -> float:
-	return torque - brake_torque
+	var total_inertia := wheel.inertia + drive_inertia
+
+	var net_torque := torque - reaction_torque
+
+	var next_spin := (
+		spin +
+		delta * net_torque / total_inertia
+	)
+
+	if not dryRun:
+		spin = next_spin
+
+	return reaction_torque
