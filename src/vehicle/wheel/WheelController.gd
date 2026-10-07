@@ -92,12 +92,6 @@ func apply_torque(
 	var reaction_torque := force.y * tire.radius
 
 	# Torque required to bring the current spin to zero during this timestep.
-	var current_torque := (
-		-spin *
-		total_inertia /
-		delta
-	)
-	var total_apply_torque := current_torque + drive_torque
 	var net_torque := drive_torque - reaction_torque
 
 	var spin_delta := (
@@ -107,18 +101,10 @@ func apply_torque(
 	)
 
 	var next_spin := spin + spin_delta
-
-	print(
-		"current_torque=", current_torque,
-		" drive_torque=", drive_torque,
-		" reaction_torque=", reaction_torque,
-		" net_torque=", net_torque
-	)
 	if not dryRun:
 		set_spin(next_spin)
 
-
-	return net_torque
+	return reaction_torque
 
 
 func set_spin(value: float) -> void:

@@ -179,12 +179,16 @@ func brake(clamping_factor: float) -> void:
 	assert(clamping_factor <= 1.0)
 	brake_disc.brake(clamping_factor)
 
-func calculate_braked_torque_amount(torque: float) -> float:
-	var brake_torque := (
+# Always positive
+func get_brake_torque() -> float:
+	return (
 		brake_disc.get_braking_factor() *
 		parameters.brake_force *
 		parameters.brake_effective_radius
 	)
+
+func calculate_braked_torque_amount(torque: float) -> float:
+	var brake_torque := get_brake_torque()
 	var reduced_torque := absf(torque) - brake_torque
 	return maxf(reduced_torque, 0.0)
 
@@ -195,10 +199,15 @@ func apply_torque(
 	delta,
 	dryRun: bool = false
 ):
-	var reduced_torque_abs := calculate_braked_torque_amount(torque)
-	var torque_sign := signf(torque)
-	var net_torque := wheel.apply_torque(
-		reduced_torque_abs * torque_sign,
+	var brake_torque := get_brake_torque()
+
+	var signed_brake_torque : float = (
+		-sign(wheel.spin) *
+		brake_torque
+	)
+
+	var wheel_reaction_torque := wheel.apply_torque(
+		torque + signed_brake_torque,
 		drive_inertia,
 		z_vel,
 		delta,
@@ -207,12 +216,12 @@ func apply_torque(
 
 	if not dryRun:
 		brake_disc.update_usage(
-			reduced_torque_abs,
+			torque,
 			wheel.spin,
 			delta
 		)
 
-	return net_torque
+	return wheel_reaction_torque
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)

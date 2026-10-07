@@ -28,7 +28,6 @@ func update_usage(
 	spin: float,
 	delta: float
 ) -> void:
-	assert(0.0 <= brake_torque)
 	if delta <= 0.0:
 		return
 
