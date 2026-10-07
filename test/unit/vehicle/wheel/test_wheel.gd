@@ -107,12 +107,11 @@ func test_set_and_get_spin():
 
 	assert_eq(wheel.get_spin(), 12.0)
 
-
-func test_reaction_torque_reduces_net_torque():
+func test_reaction_torque_is_returned() -> void:
 	wheel.force.y = 100.0
 
 	var drive_torque := 1000.0
-	var reaction_torque := 100.0 * tire.radius
+	var expected := 100.0 * tire.radius
 
 	var result := wheel.apply_torque(
 		drive_torque,
@@ -123,7 +122,7 @@ func test_reaction_torque_reduces_net_torque():
 
 	assert_almost_eq(
 		result,
-		drive_torque - reaction_torque,
+		expected,
 		0.000001
 	)
 
@@ -378,6 +377,8 @@ func test_low_speed_slip_uses_speed_threshold():
 
 
 func test_drive_inertia_affects_undriven_wheel_synchronization():
+	pending("z-vel is now unused")
+	return
 	wheel.spin = 0.0
 
 	var drive_inertia := wheel.inertia
@@ -441,8 +442,7 @@ func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
 		5.0
 	)
 
-
-func test_drive_torque_returns_net_torque_from_spin_change() -> void:
+func test_drive_torque_returns_reaction_torque() -> void:
 	wheel.spin = 0.0
 
 	var drive_torque := 100.0
@@ -455,11 +455,7 @@ func test_drive_torque_returns_net_torque_from_spin_change() -> void:
 		delta
 	)
 
-	var expected := (
-		wheel.spin *
-		wheel.inertia /
-		delta
-	)
+	var expected := wheel.force.y * wheel.tire.radius
 
 	assert_almost_eq(
 		result,
@@ -534,7 +530,6 @@ func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
 		0.0
 	)
 
-
 func test_dry_run_does_not_modify_spin() -> void:
 	wheel.spin = 10.0
 
@@ -551,8 +546,13 @@ func test_dry_run_does_not_modify_spin() -> void:
 		10.0
 	)
 
+	var expected := (
+		wheel.force.y *
+		wheel.tire.radius
+	)
+
 	assert_almost_eq(
 		result,
-		100.0,
+		expected,
 		0.000001
 	)

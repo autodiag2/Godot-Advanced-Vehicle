@@ -201,13 +201,37 @@ func apply_torque(
 ):
 	var brake_torque := get_brake_torque()
 
+	var total_inertia : float = (
+		wheel.inertia +
+		drive_inertia
+	)
+
+	var max_brake_torque := 0.0
+
+	if delta > 0.0:
+		max_brake_torque = (
+			abs(wheel.spin) *
+			total_inertia /
+			delta
+		)
+
+	brake_torque = minf(
+		brake_torque,
+		max_brake_torque
+	)
+
 	var signed_brake_torque : float = (
 		-sign(wheel.spin) *
 		brake_torque
 	)
 
+	var corrected_torque : float = (
+		torque +
+		signed_brake_torque
+	)
+
 	var wheel_reaction_torque := wheel.apply_torque(
-		torque + signed_brake_torque,
+		corrected_torque,
 		drive_inertia,
 		z_vel,
 		delta,
