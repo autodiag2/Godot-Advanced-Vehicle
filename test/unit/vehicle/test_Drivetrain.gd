@@ -164,8 +164,6 @@ func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop()
 	)
 
 func test_locked_differential_brakes_progressively() -> void:
-	drivetrain.gearbox.drive_inertia = 1.0
-
 	var left := FakeWheel.new()
 	var right := FakeWheel.new()
 
@@ -173,10 +171,8 @@ func test_locked_differential_brakes_progressively() -> void:
 	right.spin = 4.0
 	left.brake_torque = 1.0
 	right.brake_torque = 1.0
-	left.reaction_torque = -1.0
-	right.reaction_torque = -1.0
 
-	var spin : float = drivetrain.rear_differential._get_locked_spin(
+	var spin: float = drivetrain.rear_differential._get_locked_spin(
 		[
 			left,
 			right

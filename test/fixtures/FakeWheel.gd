@@ -1,6 +1,5 @@
 class_name FakeWheel
 var spin: float = 0.0
-var reaction_torque: float = 0.0
 var brake_torque: float = 0.0
 
 var wheel := FakeWheelData.new()
@@ -27,5 +26,4 @@ func apply_torque(
 	delta: float,
 	dryRun: bool = false
 ) -> float:
-	reaction_torque = -torque
-	return 0.0
+	return torque - brake_torque
