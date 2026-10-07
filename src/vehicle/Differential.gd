@@ -1,5 +1,5 @@
 class_name Differential
-extends RefCounted
+extends Controller
 
 enum DIFF_TYPE {
 	LIMITED_SLIP,
@@ -22,6 +22,9 @@ func initialise(parameters_arg: DiffParameters):
 	assert(parameters_arg != null)
 	parameters = parameters_arg
 
+func debug_print(...args) -> void:
+	args.push_front("DIFFERENTIAL")
+	super.debug_print(args)
 
 func get_reaction_torque(
 	torque: float,
@@ -226,6 +229,7 @@ func apply_torque(
 				delta,
 				dryRun
 			)
+			debug_print("LOCKED apply t1=", t1, "/", reaction_torque_1, " t2=", t2, "/", reaction_torque_2)
 
 			return reaction_torque_1 + reaction_torque_2
 

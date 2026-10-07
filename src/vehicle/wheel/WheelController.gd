@@ -1,4 +1,4 @@
-class_name WheelController
+class_name WheelController extends Controller
 
 var tire: TireModel
 
@@ -19,6 +19,10 @@ var view: WheelView
 
 func set_view(view_arg: WheelView):
 	self.view = view_arg
+
+func debug_print(...args) -> void:
+	args.push_front("WHEEL")
+	super.debug_print(args)
 
 func setup(
 	tire_arg: TireModel,
@@ -69,6 +73,7 @@ func update_force(
 		normal_load,
 		surface_mu
 	)
+	debug_print(force)
 
 	return force
 
@@ -122,6 +127,7 @@ func apply_torque(
 
 func set_spin(value: float) -> void:
 	spin = value
+	#assert(spin == 0.0)
 
 func get_spin() -> float:
 	return spin

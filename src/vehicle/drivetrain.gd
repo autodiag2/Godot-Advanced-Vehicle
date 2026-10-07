@@ -1,5 +1,5 @@
 class_name DriveTrain
-extends RefCounted
+extends Controller
 
 const AV_2_RPM: float = 60.0 / TAU
 
@@ -129,6 +129,9 @@ func get_reaction_torque(torque: float, drive_inertia: float, delta: float) -> f
 
 	return 0.0
 
+func debug_print(...args) -> void:
+	args.push_front("DRIVETRAIN")
+	super.debug_print(args)
 
 # Return net torque
 func apply_torque(
@@ -159,7 +162,7 @@ func apply_torque(
 	var gearing := gearbox.get_gearing()
 	var drive_torque := torque * gearing
 	if parameters.drivetype == DRIVE_TYPE.RWD:
-
+	
 		var reaction_torque := rear_differential.apply_torque(
 			drive_torque,
 			rear_wheels,
@@ -168,6 +171,7 @@ func apply_torque(
 			delta,
 			dryRun
 		)
+		debug_print("RWD", "drive_torque=", drive_torque, " reaction_torque=", reaction_torque)
 
 		wheel_fl.apply_torque(
 			0.0,
