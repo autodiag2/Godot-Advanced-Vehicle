@@ -150,100 +150,42 @@ func apply(
 	throttle_input: float,
 	clutch_input: float,
 	delta: float,
-	car: RigidBody3D
-) -> void:
+	car: RigidBody3D,
+	dryRun: bool = false
+):
 	assert(0.0 <= throttle_input)
 	assert(throttle_input <= 1.0)
 	assert(0.0 <= clutch_input)
 	assert(clutch_input <= 1.0)
 	assert(0.0 <= delta)
 
-	var engine_net_torque := engine.apply(
+	var engine_torque := engine.calculate_torque(
+		throttle_input
+	)
+	var engine_av := engine.angular_velocity
+	var engine_inertia := parameters.engine.moment
+
+	#print("engine_torque=", engine_torque, " engine_av=", engine_av, " engine_inertia=", engine_inertia)
+	var powertrain_torque := drivetrain.calculate_torque(delta)
+	var powertrain_av := drivetrain.get_av()
+	var powertrain_inertia := drivetrain.calculate_inertia()
+	#print("powertrain_torque=", powertrain_torque, " powertrain_av=", powertrain_av, " powertrain_inertia=", powertrain_inertia)
+	var reaction_torques := clutch.get_reaction_torques(
+		engine_av,
+		powertrain_av,
+		engine_torque,
+		powertrain_torque,
+		engine_inertia,
+		powertrain_inertia,
+		clutch_input
+	)
+	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
+	#print("clutch reaction(Tc)=", absf(reaction_torques.x))
+
+	engine.apply(
 		throttle_input,
-		delta
+		delta,
+		reaction_torques.y
 	)
-
-	var gearing := drivetrain.get_gearing()
-
-	if gearing == 0.0:
-		clutch.locked = false
-		wheel_drive_torque = 0.0
-		clutch_reaction_torque = 0.0
-
-		drivetrain.apply_torque(
-			wheel_drive_torque,
-			clutch_input,
-			delta
-		)
-
-		return
-
-	var gearbox_shaft_speed := 0.0
-
-	if (
-		parameters.drivetrain.drivetype ==
-		parameters.drivetrain.DRIVE_TYPE.RWD
-	):
-		gearbox_shaft_speed = (
-			average_rear_wheel_speed *
-			gearing
-		)
-
-	elif (
-		parameters.drivetrain.drivetype ==
-		parameters.drivetrain.DRIVE_TYPE.FWD
-	):
-		gearbox_shaft_speed = (
-			average_front_wheel_speed *
-			gearing
-		)
-
-	elif (
-		parameters.drivetrain.drivetype ==
-		parameters.drivetrain.DRIVE_TYPE.AWD
-	):
-		gearbox_shaft_speed = (
-			(
-				average_front_wheel_speed +
-				average_rear_wheel_speed
-			) *
-			0.5 *
-			gearing
-		)
-
-	var reaction_torque: float = (
-		drivetrain.apply_torque(engine_net_torque, clutch_input, delta, true)
-	)
-
-	var clutch_slip_torque: float = (
-		0.8 *
-		clutch.friction *
-		(1.0 - clutch_input)
-	)
-
-	var clutch_kick := 0.0
-
-	var reaction_torques: Vector2 = (
-		clutch.get_reaction_torques(
-			engine.angular_velocity,
-			gearbox_shaft_speed,
-			engine_net_torque,
-			reaction_torque,
-			clutch_slip_torque,
-			clutch_kick
-		)
-	)
-
-	if clutch_input >= 1.0:
-		clutch.locked = false
-		reaction_torques = Vector2.ZERO
-
-	wheel_drive_torque = reaction_torques.x
-
-	clutch_reaction_torque = reaction_torques.y
-
-	drivetrain.apply_torque(
-		wheel_drive_torque,
-		clutch_input,
-		delta
-	)
+	
+	drivetrain.apply_torque(reaction_torques.x, delta)

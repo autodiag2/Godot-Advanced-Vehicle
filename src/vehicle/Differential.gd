@@ -149,17 +149,19 @@ func apply_torque(
 
 		DIFF_STATE.SLIPPING:
 			_diff_clutch.friction = parameters.diff_preload
-
-			var diff_torques: Vector2 = (
-				_diff_clutch.get_reaction_torques(
-					wheels[0].get_spin(),
-					wheels[1].get_spin(),
-					tr1,
-					tr2,
-					parameters.diff_preload * ratio,
-					0.0
-				)
-			)
+			
+			var diff_torques: Vector2 = Vector2.ZERO
+			# TODO
+			#var diff_torques: Vector2 = (
+			#	_diff_clutch.get_reaction_torques(
+			#		wheels[0].get_spin(),
+			#		wheels[1].get_spin(),
+			#		tr1,
+			#		tr2,
+			#		parameters.diff_preload * ratio,
+			#		0.0
+			#	)
+			#)
 
 			var t1 := torque * 0.5 + diff_torques.x
 			var t2 := torque * 0.5 + diff_torques.y
@@ -181,7 +183,7 @@ func apply_torque(
 			return reaction_torque_1 + reaction_torque_2
 
 		DIFF_STATE.LOCKED:
-			_diff_clutch.locked = true
+			#_diff_clutch.locked = true
 	
 			var wheel_inertia_1: float = wheels[0].wheel.inertia
 			var wheel_inertia_2: float = wheels[1].wheel.inertia

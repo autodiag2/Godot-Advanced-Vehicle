@@ -12,16 +12,18 @@ const IDLE_BLEND_RPM_FACTOR: float = 0.10
 const FRICTION_IDLE_FACTOR: float = 0.20
 
 class Listener:
+	@warning_ignore("unused_parameter")
 	func onCombustionSelfSustaining(engine: EngineController) -> void:
 		pass
 
+	@warning_ignore("unused_parameter")
 	func onStall(engine: EngineController) -> void:
 		pass
 
 var listeners: Array[Listener] = []
 var starter: EngineStarterController
 var angular_velocity: float = 0.0 # rad/s
-var output_torque: float = 0.0
+var output_torque: float = 0.0 # N.m positive
 var limiter_torque: float = 0.0
 var reaction_torque: float = 0.0
 var combustion_running: bool = false
@@ -94,15 +96,17 @@ func initialize(
 func set_drivetrain_connected(connected: bool) -> void:
 	drivetrain_connected = connected
 
+@warning_ignore("shadowed_variable")
 func apply(
 	throttle_input: float,
-	delta: float
+	delta: float,
+	reaction_torque: float = self.reaction_torque
 ) -> float:
 	assert(angular_velocity >= 0.0)
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
-
+	
 	var was_running_before_update: bool = angular_velocity > 0.0
 
 	output_torque = calculate_torque(
@@ -133,7 +137,7 @@ func apply(
 
 	var net_torque := (
 		output_torque +
-		starter.get_torque() +
+		starter.get_torque() -
 		reaction_torque
 	)
 

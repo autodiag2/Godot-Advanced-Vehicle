@@ -20,6 +20,24 @@ var front_differential := Differential.new()
 var rear_differential := Differential.new()
 var center_differential := Differential.new()
 
+var average_front_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_fl.wheel.spin +
+				wheel_fr.wheel.spin
+			) * 0.5
+		)
+
+var average_rear_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_bl.wheel.spin +
+				wheel_br.wheel.spin
+			) * 0.5
+		)
+
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
@@ -76,73 +94,77 @@ func get_gearing() -> float:
 func set_input_inertia(value):
 	gearbox.set_input_inertia(value)
 
+func calculate_inertia() -> float:
+	var wheel_inertia := 0.0
 
-func get_reaction_torque(torque: float, drive_inertia: float, delta: float) -> float:
-	assert(parameters != null)
+	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+		wheel_inertia += wheel.wheel.inertia
 
 	var gearing := gearbox.get_gearing()
 
 	if gearing == 0.0:
 		return 0.0
 
-	if parameters.drivetype == DRIVE_TYPE.RWD:
-		return (
-			rear_differential.get_reaction_torque(
-				torque,
-				[
-					wheel_bl,
-					wheel_br
-				],
-				drive_inertia,
-				delta
-			)
-		) / gearing
+	return wheel_inertia / pow(gearing, 2)
+	
+func calculate_torque(delta: float) -> float:
+	var torque := 0.0
 
-	if parameters.drivetype == DRIVE_TYPE.FWD:
-		return (
-			front_differential.get_reaction_torque(
-				torque,
-				[
-					wheel_fl,
-					wheel_fr
-				],
-				drive_inertia,
-				delta
-			)
-		) / gearing
+	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+		var angular_acceleration : float = (
+			wheel.wheel.spin - wheel.wheel.previous_spin
+		) / delta
 
-	if parameters.drivetype == DRIVE_TYPE.AWD:
-		return (
-			wheel_bl.apply_torque(
-				torque,drive_inertia,delta, true
-			) +
-			wheel_br.apply_torque(
-				torque,drive_inertia,delta, true
-			) +
-			wheel_fl.apply_torque(
-				torque,drive_inertia,delta, true
-			) +
-			wheel_fr.apply_torque(
-				torque,drive_inertia,delta, true
-			)
-		) / gearing
+		torque += wheel.wheel.inertia * angular_acceleration
 
-	return 0.0
+	return torque
+
+func get_av() -> float:
+	var gearbox_shaft_speed := 0.0
+	var gearing := get_gearing()
+
+	if (
+		parameters.drivetype ==
+		parameters.DRIVE_TYPE.RWD
+	):
+		gearbox_shaft_speed = (
+			average_rear_wheel_speed *
+			gearing
+		)
+
+	elif (
+		parameters.drivetype ==
+		parameters.DRIVE_TYPE.FWD
+	):
+		gearbox_shaft_speed = (
+			average_front_wheel_speed *
+			gearing
+		)
+
+	elif (
+		parameters.drivetype ==
+		parameters.DRIVE_TYPE.AWD
+	):
+		gearbox_shaft_speed = (
+			(
+				average_front_wheel_speed +
+				average_rear_wheel_speed
+			) *
+			0.5 *
+			gearing
+		)
+	return gearbox_shaft_speed
 
 func debug_print(...args) -> void:
 	args.push_front("DRIVETRAIN")
 	super.debug_print(args)
 
-# Return net torque
+# Return engine-side reaction torque
 func apply_torque(
 	torque: float,
-	clutch_input: float,
-	delta: float,
-	dryRun: bool = false
+	delta: float
 ) -> float:
 	assert(parameters != null)
-	assert(clutch_input >= 0.0)
-	assert(clutch_input <= 1.0)
 	assert(delta >= 0.0)
 
 	var rear_wheels = [
@@ -155,65 +177,41 @@ func apply_torque(
 		wheel_fr
 	]
 
-	gearbox.drive_inertia = gearbox.get_drive_inertia(
-		clutch_input
-	)
-
 	var gearing := gearbox.get_gearing()
-	var drive_torque := torque * gearing
+
+	if gearing == 0.0:
+		return 0.0
+
+	var geared_torque := torque * gearing
+
 	if parameters.drivetype == DRIVE_TYPE.RWD:
 		var reaction_torque := rear_differential.apply_torque(
-			drive_torque,
+			geared_torque,
 			rear_wheels,
 			gearbox.drive_inertia,
 			gearing,
-			delta,
-			dryRun
-		)
-		debug_print("RWD", "drive_torque=", drive_torque, " reaction_torque=", reaction_torque)
-
-		reaction_torque += wheel_fl.apply_torque(
-			0.0,
-			0.0,
-			delta,
-			dryRun
+			delta
 		)
 
-		reaction_torque += wheel_fr.apply_torque(
-			0.0,
-			0.0,
-			delta,
-			dryRun
+		debug_print(
+			"RWD",
+			"geared_torque=", geared_torque,
+			" reaction_torque=", reaction_torque
 		)
 
-		return reaction_torque
+		return reaction_torque / gearing
 
 	elif parameters.drivetype == DRIVE_TYPE.FWD:
 
 		var reaction_torque := front_differential.apply_torque(
-			drive_torque,
+			geared_torque,
 			front_wheels,
 			gearbox.drive_inertia,
 			gearing,
-			delta,
-			dryRun
+			delta
 		)
 
-		reaction_torque += wheel_bl.apply_torque(
-			0.0,
-			0.0,
-			delta,
-			dryRun
-		)
-
-		reaction_torque += wheel_br.apply_torque(
-			0.0,
-			0.0,
-			delta,
-			dryRun
-		)
-
-		return reaction_torque
+		return reaction_torque / gearing
 
 	elif parameters.drivetype == DRIVE_TYPE.AWD:
 		match parameters.center_diff.diff_type:
@@ -225,9 +223,9 @@ func apply_torque(
 					wheel_fr
 				]
 
-				var spin : float = center_differential._get_locked_spin(
+				var spin: float = center_differential._get_locked_spin(
 					wheels,
-					drive_torque,
+					geared_torque,
 					gearbox.drive_inertia,
 					delta
 				)
@@ -240,18 +238,17 @@ func apply_torque(
 				for wheel in wheels:
 					total_reaction_torque += (
 						wheel.apply_torque(
-							drive_torque,
+							geared_torque,
 							gearbox.drive_inertia,
-							delta,
-							true
+							delta
 						)
 					)
 
-				return drive_torque - total_reaction_torque
+				return total_reaction_torque / gearing
 
 			Differential.DIFF_TYPE.LIMITED_SLIP:
 				var rear_drive = (
-					drive_torque *
+					geared_torque *
 					(
 						1.0 -
 						parameters.center_split_fr
@@ -259,7 +256,7 @@ func apply_torque(
 				)
 
 				var front_drive = (
-					drive_torque *
+					geared_torque *
 					parameters.center_split_fr
 				)
 
@@ -268,8 +265,7 @@ func apply_torque(
 					rear_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta,
-					dryRun
+					delta
 				)
 
 				var front_reaction_torque := front_differential.apply_torque(
@@ -277,26 +273,24 @@ func apply_torque(
 					front_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta,
-					dryRun
+					delta
 				)
 
 				return (
 					rear_reaction_torque +
 					front_reaction_torque
-				)
+				) / gearing
 
 			Differential.DIFF_TYPE.OPEN_DIFF:
-				var rear_drive = drive_torque * 0.5
-				var front_drive = drive_torque * 0.5
+				var rear_drive = geared_torque * 0.5
+				var front_drive = geared_torque * 0.5
 
 				var rear_reaction_torque := rear_differential.apply_torque(
 					rear_drive,
 					rear_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta,
-					dryRun
+					delta
 				)
 
 				var front_reaction_torque := front_differential.apply_torque(
@@ -304,13 +298,12 @@ func apply_torque(
 					front_wheels,
 					gearbox.drive_inertia,
 					gearing,
-					delta,
-					dryRun
+					delta
 				)
 
 				return (
 					rear_reaction_torque +
 					front_reaction_torque
-				)
+				) / gearing
 
 	return 0.0

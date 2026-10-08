@@ -9,6 +9,7 @@ const ACKERMANN_DEFAULT := 0.15
 var ackermann := ACKERMANN_DEFAULT
 
 var spin := 0.0
+var previous_spin := 0.0
 
 var slip := Vector2.ZERO
 var force := Vector3.ZERO
@@ -143,6 +144,7 @@ func apply_torque(
 
 
 func set_spin(value: float) -> void:
+	previous_spin = spin
 	spin = value
 	#assert(spin == 0.0)
 
