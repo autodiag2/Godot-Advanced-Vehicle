@@ -4,7 +4,7 @@ extends GutTest
 var engine: EngineController
 var parameters: CarParameters
 var car: RigidBody3D
-var starter: EngineStarterController = EngineStarterController.new()
+var starter: EngineStarterController
 var audio_player: AudioStreamPlayer
 
 
@@ -21,6 +21,7 @@ func assert_float_eq(
 
 
 func before_each() -> void:
+	starter = EngineStarterController.new()
 	engine = EngineController.new()
 	parameters = CarParameters.new()
 	car = RigidBody3D.new()
@@ -1280,6 +1281,20 @@ func test_combustion_torque_increases_with_throttle() -> void:
 		low_torque
 	)
 
+func test_engine_torque() -> void:
+	var delta := 0.01
+	engine.reaction_torque = 0.0
+	assert_float_eq(engine.rpm, 0.0)
+	engine.apply(0.0, delta)
+	assert_float_eq(engine.rpm, 0.0)
+	engine.start()
+	engine.apply(0.0, delta)
+	var speed := engine.rpm
+	assert_gt(speed, 0.0)
+	engine.apply(1.0, delta)
+	var speed2 := engine.rpm
+	assert_gt(speed2, speed)
+	assert_lt(speed2, engine.parameters.max_rpm)
 
 func test_combustion_torque_is_zero_when_fuel_is_empty() -> void:
 	engine.rpm = 3000.0
