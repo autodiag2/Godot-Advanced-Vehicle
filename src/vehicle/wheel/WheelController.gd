@@ -97,7 +97,6 @@ func update_force(
 func apply_torque(
 	drive_torque: float,
 	drive_inertia: float,
-	z_vel: float,
 	delta: float,
 	dryRun: bool = false
 ) -> float:

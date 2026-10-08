@@ -116,7 +116,6 @@ func test_reaction_torque_is_returned() -> void:
 	var result := wheel.apply_torque(
 		drive_torque,
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -223,28 +222,12 @@ func test_setup_resets_dynamic_state():
 	assert_eq(wheel.slip, Vector2.ZERO)
 	assert_eq(wheel.force, Vector3.ZERO)
 
-
-func test_zero_delta_does_not_modify_spin():
-	wheel.spin = 10.0
-
-	var result := wheel.apply_torque(
-		100.0,
-		0.0,
-		10.0,
-		0.0
-	)
-
-	assert_eq(wheel.spin, 10.0)
-	assert_eq(result, 0.0)
-
-
 func test_negative_delta_does_not_modify_spin():
 	wheel.spin = 10.0
 
 	var result := wheel.apply_torque(
 		100.0,
 		0.0,
-		10.0,
 		-0.1
 	)
 
@@ -258,7 +241,6 @@ func test_zero_drive_torque_returns_net_torque():
 	var initial_spin := wheel.spin
 
 	var result := wheel.apply_torque(
-		0.0,
 		0.0,
 		0.0,
 		0.1
@@ -377,8 +359,6 @@ func test_low_speed_slip_uses_speed_threshold():
 
 
 func test_drive_inertia_affects_undriven_wheel_synchronization():
-	pending("z-vel is now unused")
-	return
 	wheel.spin = 0.0
 
 	var drive_inertia := wheel.inertia
@@ -386,7 +366,6 @@ func test_drive_inertia_affects_undriven_wheel_synchronization():
 	wheel.apply_torque(
 		0.0,
 		drive_inertia,
-		1.0 * tire.radius,
 		0.1
 	)
 
@@ -405,7 +384,6 @@ func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
 	wheel.apply_torque(
 		100.0,
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -415,7 +393,6 @@ func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
 
 	wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		0.2
 	)
@@ -433,7 +410,6 @@ func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
 	wheel.apply_torque(
 		100.0,
 		0.0,
-		5.0 * tire.radius,
 		0.1
 	)
 
@@ -450,7 +426,6 @@ func test_drive_torque_returns_reaction_torque() -> void:
 
 	var result := wheel.apply_torque(
 		drive_torque,
-		0.0,
 		0.0,
 		delta
 	)
@@ -478,14 +453,12 @@ func test_drive_inertia_reduces_wheel_acceleration() -> void:
 	wheel_without_drive_inertia.apply_torque(
 		drive_torque,
 		0.0,
-		0.0,
 		delta
 	)
 
 	wheel_with_drive_inertia.apply_torque(
 		drive_torque,
 		drive_inertia,
-		0.0,
 		delta
 	)
 
@@ -504,7 +477,6 @@ func test_wheel_force_reaction_torque_changes_spin() -> void:
 	wheel.apply_torque(
 		0.0,
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -521,7 +493,6 @@ func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
 	wheel.apply_torque(
 		100.0,
 		0.0,
-		0.0,
 		0.1
 	)
 
@@ -535,7 +506,6 @@ func test_dry_run_does_not_modify_spin() -> void:
 
 	var result := wheel.apply_torque(
 		100.0,
-		0.0,
 		0.0,
 		0.1,
 		true

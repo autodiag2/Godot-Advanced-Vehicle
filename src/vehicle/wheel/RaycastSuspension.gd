@@ -234,7 +234,6 @@ func apply_torque(
 	var wheel_reaction_torque := wheel.apply_torque(
 		corrected_torque,
 		drive_inertia,
-		z_vel,
 		delta,
 		dryRun
 	)
