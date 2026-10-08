@@ -121,7 +121,7 @@ func get_drive_inertia(clutch_input: float) -> float:
 	assert(clutch_input <= 1.0)
 	assert(params != null)
 
-	var gearing: int = abs(get_gearing())
+	var gearing: float = get_gearing()
 
 	var gearbox_inertia := (
 		pow(gearing, 2) *

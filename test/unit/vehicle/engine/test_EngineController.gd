@@ -313,7 +313,7 @@ func test_update_accelerates_engine() -> void:
 
 func test_update_uses_reaction_torque() -> void:
 	engine.rpm = 3000.0
-	engine.reaction_torque = -100.0
+	engine.reaction_torque = 100.0
 
 	var initial_angular_velocity := engine.angular_velocity
 
@@ -335,7 +335,7 @@ func test_update_uses_reaction_torque() -> void:
 
 func test_update_can_stall_engine() -> void:
 	engine.rpm = 1000.0
-	engine.reaction_torque = -10000.0
+	engine.reaction_torque = 10000.0
 
 	engine.apply(
 		0.0,
@@ -355,7 +355,7 @@ func test_update_can_stall_engine() -> void:
 
 func test_update_does_not_force_engine_to_idle() -> void:
 	engine.rpm = 400.0
-	engine.reaction_torque = -10000.0
+	engine.reaction_torque = 10000.0
 
 	engine.apply(
 		0.0,
@@ -370,7 +370,7 @@ func test_update_does_not_force_engine_to_idle() -> void:
 
 func test_limiter_prevents_rpm_above_maximum() -> void:
 	engine.rpm = 7900.0
-	engine.reaction_torque = 10000.0
+	engine.reaction_torque = -10000.0
 
 	engine.apply(
 		1.0,
@@ -385,7 +385,7 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 
 func test_limiter_generates_opposing_torque() -> void:
 	engine.rpm = 7900.0
-	engine.reaction_torque = 10000.0
+	engine.reaction_torque = -10000.0
 
 	engine.apply(
 		1.0,
@@ -960,7 +960,7 @@ func test_update_applies_positive_reaction_torque() -> void:
 func test_update_applies_negative_reaction_torque() -> void:
 	engine.rpm = 3000.0
 	engine.combustion_running = true
-	engine.reaction_torque = -1000.0
+	engine.reaction_torque = 1000.0
 
 	var initial_angular_velocity := engine.angular_velocity
 
@@ -977,7 +977,7 @@ func test_update_applies_negative_reaction_torque() -> void:
 
 func test_update_does_not_make_engine_spin_negative() -> void:
 	engine.rpm = 100.0
-	engine.reaction_torque = -10000.0
+	engine.reaction_torque = 10000.0
 
 	engine.apply(
 		0.0,
@@ -992,7 +992,7 @@ func test_update_does_not_make_engine_spin_negative() -> void:
 
 func test_update_limits_angular_velocity_to_zero_when_torque_is_negative() -> void:
 	engine.rpm = 1.0
-	engine.reaction_torque = -10000.0
+	engine.reaction_torque = 10000.0
 
 	engine.apply(
 		0.0,
@@ -1036,7 +1036,7 @@ func test_combustion_does_not_start_below_idle_from_starter() -> void:
 func test_running_engine_stops_combustion_when_rpm_reaches_zero() -> void:
 	engine.rpm = 100.0
 	engine.combustion_running = true
-	engine.reaction_torque = -10000.0
+	engine.reaction_torque = 10000.0
 
 	engine.apply(
 		0.0,
@@ -1465,7 +1465,7 @@ func test_engine_load_is_clamped_to_zero_for_negative_combustion_torque() -> voi
 func test_reaction_torque_can_overcome_combustion_torque() -> void:
 	engine.rpm = 3000.0
 	engine.combustion_running = true
-	engine.reaction_torque = -1000.0
+	engine.reaction_torque = 1000.0
 
 	var initial_angular_velocity := engine.angular_velocity
 

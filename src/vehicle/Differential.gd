@@ -55,8 +55,7 @@ func apply_torque(
 	wheels: Array,
 	drive_inertia: float,
 	gearing: float,
-	delta: float,
-	dryRun: bool = false
+	delta: float
 ) -> float:
 	assert(wheels.size() == 2)
 	assert(delta >= 0.0)
@@ -112,8 +111,6 @@ func apply_torque(
 
 	match diff_state:
 		DIFF_STATE.OPEN:
-			if not dryRun:
-				_diff_clutch.locked = true
 
 			var t1 := torque * _diff_split
 			var t2 := torque * (1.0 - _diff_split)
@@ -121,15 +118,13 @@ func apply_torque(
 			var reaction_torque_1: float = wheels[0].apply_torque(
 				t1,
 				drive_inertia,
-				delta,
-				dryRun
+				delta
 			)
 
 			var reaction_torque_2: float = wheels[1].apply_torque(
 				t2,
 				drive_inertia,
-				delta,
-				dryRun
+				delta
 			)
 
 			var diff_sum := (
@@ -169,15 +164,13 @@ func apply_torque(
 			var reaction_torque_1: float = wheels[0].apply_torque(
 				t1,
 				drive_inertia,
-				delta,
-				dryRun
+				delta
 			)
 
 			var reaction_torque_2: float = wheels[1].apply_torque(
 				t2,
 				drive_inertia,
-				delta,
-				dryRun
+				delta
 			)
 
 			return reaction_torque_1 + reaction_torque_2
@@ -221,15 +214,13 @@ func apply_torque(
 			var reaction_torque_1: float = wheels[0].apply_torque(
 				t1,
 				0.0,
-				delta,
-				dryRun
+				delta
 			)
 
 			var reaction_torque_2: float = wheels[1].apply_torque(
 				t2,
 				0.0,
-				delta,
-				dryRun
+				delta
 			)
 			debug_print("LOCKED apply t1=", t1, "/", reaction_torque_1, " t2=", t2, "/", reaction_torque_2)
 

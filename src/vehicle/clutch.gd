@@ -3,6 +3,11 @@ extends RefCounted
 
 @export var friction := 250.0
 
+var _locked := false
+
+func is_locked() -> bool:
+	return _locked
+
 # result x if for Te,c y for Tc,d (drivetrain)
 # Te,c : power applied to drivetrain
 # Tc,d : power applied by drivetrain on engine
@@ -32,8 +37,9 @@ func get_reaction_torques(
 	var clutch_torque_max := friction * (1.0 - clutch_input)
 	var result := Vector2.ZERO
 	
-		# locked state
+	# locked state
 	if absf(delta_av) < 0.5:
+		_locked = true
 		var total_inertia := inertia_engine + inertia_drivetrain
 		assert(0.0 < total_inertia)
 
@@ -47,8 +53,9 @@ func get_reaction_torques(
 		result.y = -clutch_torque
 		assert(absf(clutch_torque) <= clutch_torque_max)
 	else:
+		_locked = false
 		# Slipping state
-		var torque = minf(absf(delta_torque), clutch_torque_max)
+		var torque = clutch_torque_max
 		if 0.5 < delta_av:
 			result.x = torque
 			result.y = -torque

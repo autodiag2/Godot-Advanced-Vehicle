@@ -140,8 +140,7 @@ func test_full_throttle_does_not_immediately_reach_max_rpm() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.016,
-		car_view
+		0.016
 	)
 
 	assert_true(powertrain.engine.rpm != 0.0)
@@ -170,7 +169,6 @@ func test_neutral_does_not_apply_drive_torque_to_wheels() -> void:
 
 	var result := drivetrain.apply_torque(
 		100.0,
-		1.0,
 		0.016
 	)
 
@@ -195,7 +193,6 @@ func test_neutral_does_not_change_driven_wheel_spin() -> void:
 
 	drivetrain.apply_torque(
 		100.0,
-		1.0,
 		0.016
 	)
 

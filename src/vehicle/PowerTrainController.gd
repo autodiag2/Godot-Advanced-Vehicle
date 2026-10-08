@@ -149,9 +149,7 @@ func update_automatic_shifting(
 func apply(
 	throttle_input: float,
 	clutch_input: float,
-	delta: float,
-	car: RigidBody3D,
-	dryRun: bool = false
+	delta: float
 ):
 	assert(0.0 <= throttle_input)
 	assert(throttle_input <= 1.0)

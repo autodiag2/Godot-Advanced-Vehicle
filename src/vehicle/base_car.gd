@@ -155,8 +155,7 @@ func _physics_process(delta: float) -> void:
 	powertrain_controller.apply(
 		input_controller.throttle,
 		input_controller.clutch,
-		delta,
-		self
+		delta
 	)
 
 	engine.reaction_torque = (

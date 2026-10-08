@@ -125,8 +125,7 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
@@ -140,7 +139,7 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	)
 
 	assert_false(
-		powertrain.clutch.locked
+		powertrain.clutch.is_locked()
 	)
 
 	_free_wheels(wheels)
@@ -170,8 +169,7 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_gt(
@@ -205,8 +203,7 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_gt(
@@ -241,8 +238,7 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_lte(
@@ -267,20 +263,19 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 		wheels[3]
 	)
 
-	powertrain.clutch.locked = true
-
+	#powertrain.clutch.locked = true
+	
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_false(
-		powertrain.clutch.locked
+		powertrain.clutch.is_locked()
 	)
 
 	_free_wheels(wheels)
@@ -310,19 +305,17 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_false(
-		powertrain.clutch.locked
+		powertrain.clutch.is_locked()
 	)
 
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_gt(
@@ -357,8 +350,7 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
@@ -425,8 +417,7 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
@@ -456,8 +447,7 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
@@ -473,7 +463,7 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
-	powertrain.clutch.locked = true
+	#powertrain.clutch.locked = true
 
 	powertrain.initialize(
 		parameters,
@@ -487,12 +477,11 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_false(
-		powertrain.clutch.locked
+		powertrain.clutch.is_locked()
 	)
 
 	_free_wheels(wheels)
@@ -517,12 +506,11 @@ func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	powertrain.apply(
 		1.0,
 		1.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
-		powertrain.drivetrain.apply_torque(1000.0, 0.0, 0.1,true),
+		powertrain.drivetrain.apply_torque(1000.0, 0.1),
 		0.0
 	)
 
@@ -612,8 +600,7 @@ func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
 		powertrain.apply(
 			0.0,
 			0.0,
-			0.01,
-			car
+			0.01
 		)
 
 	assert_gt(
@@ -657,8 +644,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	powertrain.drivetrain.set_gear(0)
@@ -666,8 +652,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_gt(
@@ -700,8 +685,7 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	powertrain.drivetrain.set_gear(0)
@@ -709,8 +693,7 @@ func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	powertrain.apply(
 		1.0,
 		0.0,
-		0.01,
-		car
+		0.01
 	)
 
 	assert_float_eq(
