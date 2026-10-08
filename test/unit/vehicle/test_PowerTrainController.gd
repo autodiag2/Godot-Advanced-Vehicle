@@ -572,8 +572,8 @@ func test_average_wheel_speeds_are_live_getters() -> void:
 
 	_free_wheels(wheels)
 
-func _create_wheels() -> Array:
-	var wheels := [
+func _create_wheels() -> Array[RaycastSuspension]:
+	var wheels : Array[RaycastSuspension] = [
 		RaycastSuspension.new(),
 		RaycastSuspension.new(),
 		RaycastSuspension.new(),
@@ -585,6 +585,54 @@ func _create_wheels() -> Array:
 
 	return wheels
 
+func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
+	var parameters := _create_parameters()
+	engine = _create_engine(parameters)
+	var wheels := _create_wheels()
+	for corner in wheels:
+		corner.wheel.setup(CurveTireModel.new())
+
+	parameters.engine.rpm_idle = 800.0
+	parameters.engine.max_rpm = 6000.0
+
+	powertrain.initialize(
+		parameters,
+		engine,
+		wheels[0],
+		wheels[1],
+		wheels[2],
+		wheels[3]
+	)
+
+	powertrain.drivetrain.set_gear(1)
+
+	engine.rpm = parameters.engine.rpm_idle
+
+	for i in range(1000):
+		powertrain.apply(
+			0.0,
+			0.0,
+			0.01,
+			car
+		)
+
+	assert_gt(
+		engine.rpm,
+		0.0
+	)
+
+	assert_lt(
+		engine.rpm,
+		parameters.engine.max_rpm
+	)
+
+	assert_almost_eq(
+		engine.rpm,
+		parameters.engine.rpm_idle,
+		300.0
+	)
+
+	_free_wheels(wheels)
 
 func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	var parameters := _create_parameters()
