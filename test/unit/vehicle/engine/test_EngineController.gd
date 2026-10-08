@@ -392,7 +392,7 @@ func test_limiter_generates_opposing_torque() -> void:
 		0.1
 	)
 
-	assert_lt(
+	assert_gt(
 		engine.limiter_torque,
 		0.0
 	)

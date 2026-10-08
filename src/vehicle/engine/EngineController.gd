@@ -145,7 +145,7 @@ func apply(
 		rpm >= parameters.max_rpm &&
 		net_torque > 0.0
 	):
-		limiter_torque = -net_torque
+		limiter_torque = net_torque
 		net_torque = 0.0
 
 	if delta > 0.0:
@@ -163,16 +163,16 @@ func apply(
 
 		if next_angular_velocity > max_angular_velocity:
 			limiter_torque = (
+				net_torque - 
 				(
 					max_angular_velocity -
 					angular_velocity
 				) *
 				parameters.moment /
-				delta -
-				net_torque
+				delta
 			)
 
-			net_torque += limiter_torque
+			net_torque -= limiter_torque
 			angular_velocity = max_angular_velocity
 		else:
 			angular_velocity = maxf(
