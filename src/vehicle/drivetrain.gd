@@ -94,18 +94,27 @@ func get_gearing() -> float:
 func set_input_inertia(value):
 	gearbox.set_input_inertia(value)
 
-func calculate_inertia() -> float:
-	var wheel_inertia := 0.0
+func calculate_inertia(depth: int = 3) -> float:
+	assert(0 <= depth)
+	var total_inertia := 0.0
+	
+	var drivetrain_inertia_partial := 30.0
+	total_inertia += drivetrain_inertia_partial
+	
+	if 0 < depth:
+		var wheel_inertia := 0.0
 
-	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
-		wheel_inertia += wheel.wheel.inertia
+		for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+			wheel_inertia += wheel.wheel.inertia
 
-	var gearing := gearbox.get_gearing()
+		var gearing := gearbox.get_gearing()
 
-	if gearing == 0.0:
-		return 0.0
+		if gearing == 0.0:
+			return 0.0
 
-	return wheel_inertia / pow(gearing, 2)
+		total_inertia += wheel_inertia / pow(gearing, 2)
+	
+	return total_inertia
 	
 func calculate_torque(delta: float) -> float:
 	var torque := 0.0
@@ -184,10 +193,10 @@ func apply_torque(
 
 	var geared_torque := torque * gearing
 
-	wheel_bl.apply_torque(geared_torque/4.0, 0.0, delta)
-	wheel_br.apply_torque(geared_torque/4.0, 0.0, delta)
-	wheel_fl.apply_torque(geared_torque/4.0, 0.0, delta)
-	wheel_fr.apply_torque(geared_torque/4.0, 0.0, delta)
+	wheel_bl.apply_torque(geared_torque/4.0, delta)
+	wheel_br.apply_torque(geared_torque/4.0, delta)
+	wheel_fl.apply_torque(geared_torque/4.0, delta)
+	wheel_fr.apply_torque(geared_torque/4.0, delta)
 	return 0.0
 	if parameters.drivetype == DRIVE_TYPE.RWD:
 		var reaction_torque := rear_differential.apply_torque(

@@ -165,11 +165,11 @@ func apply(
 	var engine_av := engine.angular_velocity
 	var engine_inertia := parameters.engine.moment
 
-	#print("engine_torque=", engine_torque, " engine_av=", engine_av, " engine_inertia=", engine_inertia)
+	print("engine_torque=", engine_torque, " engine_av=", engine_av, " engine_inertia=", engine_inertia)
 	var drivetrain_torque := drivetrain.calculate_torque(delta)
 	var drivetrain_av := drivetrain.get_av()
 	var drivetrain_inertia := drivetrain.calculate_inertia()
-	#print("drivetrain_torque=", drivetrain_torque, " drivetrain_av=", drivetrain_av, " drivetrain_inertia=", drivetrain_inertia)
+	print("drivetrain_torque=", drivetrain_torque, " drivetrain_av=", drivetrain_av, " drivetrain_inertia=", drivetrain_inertia)
 	var reaction_torques := clutch.get_reaction_torques(
 		engine_av,
 		drivetrain_av,
@@ -180,7 +180,7 @@ func apply(
 		clutch_input
 	)
 	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
-	#print("clutch reaction(Tc)=", absf(reaction_torques.x))
+	print("clutch reaction(Tc)=", absf(reaction_torques.x))
 
 	engine.apply(
 		throttle_input,
@@ -188,4 +188,4 @@ func apply(
 		reaction_torques.y
 	)
 	
-	drivetrain.apply_torque(-reaction_torques.x, delta)
+	drivetrain.apply_torque(reaction_torques.x, delta)
