@@ -172,14 +172,14 @@ func apply_torque(
 		)
 		debug_print("RWD", "drive_torque=", drive_torque, " reaction_torque=", reaction_torque)
 
-		wheel_fl.apply_torque(
+		reaction_torque += wheel_fl.apply_torque(
 			0.0,
 			0.0,
 			delta,
 			dryRun
 		)
 
-		wheel_fr.apply_torque(
+		reaction_torque += wheel_fr.apply_torque(
 			0.0,
 			0.0,
 			delta,
@@ -199,14 +199,14 @@ func apply_torque(
 			dryRun
 		)
 
-		wheel_bl.apply_torque(
+		reaction_torque += wheel_bl.apply_torque(
 			0.0,
 			0.0,
 			delta,
 			dryRun
 		)
 
-		wheel_br.apply_torque(
+		reaction_torque += wheel_br.apply_torque(
 			0.0,
 			0.0,
 			delta,
