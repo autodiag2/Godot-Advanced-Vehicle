@@ -1258,3 +1258,229 @@ func test_engine_inertia_affects_angular_acceleration() -> void:
 		doubled_inertia_acceleration * 2.0,
 		acceleration * 0.05
 	)
+
+func test_combustion_torque_is_zero_when_combustion_is_disabled() -> void:
+	engine.rpm = 3000.0
+
+	assert_eq(
+		engine.calculate_combusion_torque(1.0),
+		0.0
+	)
+
+
+func test_combustion_torque_increases_with_throttle() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+
+	var low_torque := engine.calculate_combusion_torque(0.25)
+	var high_torque := engine.calculate_combusion_torque(0.75)
+
+	assert_gt(
+		high_torque,
+		low_torque
+	)
+
+
+func test_combustion_torque_is_zero_when_fuel_is_empty() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 0.0
+
+	assert_eq(
+		engine.calculate_combusion_torque(1.0),
+		0.0
+	)
+
+
+func test_combustion_torque_reaches_max_torque_at_full_throttle() -> void:
+	engine.rpm = 4000.0
+	engine.combustion_running = true
+
+	assert_float_eq(
+		engine.calculate_combusion_torque(1.0),
+		parameters.engine.max_torque
+	)
+
+
+func test_engine_load_is_zero_at_zero_throttle() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+
+	assert_eq(
+		engine.calculate_engine_load(0.0),
+		0.0
+	)
+
+
+func test_engine_load_is_one_at_full_throttle() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+
+	assert_eq(
+		engine.calculate_engine_load(1.0),
+		1.0
+	)
+
+
+func test_fuel_consumption_increases_with_engine_load() -> void:
+	parameters.engine.bsfc_map = load(
+		"res://assets/vehicle/sport_car/petrol_bsfc.tres"
+	)
+
+	engine.initialize(
+		parameters,
+		car,
+		starter,
+		audio_player
+	)
+
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+
+	var fuel_before_low_load := engine.fuel_tank.fuel_litres
+	engine.output_torque = engine.calculate_torque(
+		0.25,
+		3000.0
+	)
+
+	engine.consume_fuel(
+		0.25,
+		1.0
+	)
+
+	var consumption_low_load := (
+		fuel_before_low_load -
+		engine.fuel_tank.fuel_litres
+	)
+
+	engine.fuel_tank.fuel_litres = fuel_before_low_load
+
+	var fuel_before_high_load := engine.fuel_tank.fuel_litres
+	engine.output_torque = engine.calculate_torque(
+		0.75,
+		3000.0
+	)
+
+	engine.consume_fuel(
+		0.75,
+		1.0
+	)
+
+	var consumption_high_load := (
+		fuel_before_high_load -
+		engine.fuel_tank.fuel_litres
+	)
+
+	assert_gt(
+		consumption_high_load,
+		consumption_low_load
+	)
+
+
+func test_fuel_cut_does_not_activate_below_fuel_cut_rpm() -> void:
+	engine.combustion_running = true
+	engine.drivetrain_connected = true
+	engine.rpm = parameters.engine.rpm_idle
+	engine.output_torque = 0.0
+
+	var initial_fuel := engine.fuel_tank.fuel_litres
+
+	engine.consume_fuel(
+		0.0,
+		1.0
+	)
+
+	assert_lt(
+		engine.fuel_tank.fuel_litres,
+		initial_fuel
+	)
+
+
+func test_fuel_cut_does_not_activate_with_open_throttle() -> void:
+	engine.combustion_running = true
+	engine.drivetrain_connected = true
+	engine.rpm = parameters.engine.rpm_idle * 2.0
+	engine.output_torque = 0.0
+
+	var initial_fuel := engine.fuel_tank.fuel_litres
+
+	engine.consume_fuel(
+		0.1,
+		1.0
+	)
+
+	assert_lt(
+		engine.fuel_tank.fuel_litres,
+		initial_fuel
+	)
+
+
+func test_fuel_cut_activates_above_fuel_cut_rpm() -> void:
+	engine.combustion_running = true
+	engine.drivetrain_connected = true
+	engine.rpm = (
+		parameters.engine.rpm_idle *
+		EngineController.FUEL_CUT_RPM_FACTOR
+	) + 1.0
+	engine.output_torque = 0.0
+
+	var initial_fuel := engine.fuel_tank.fuel_litres
+
+	engine.consume_fuel(
+		0.0,
+		1.0
+	)
+
+	assert_eq(
+		engine.fuel_tank.fuel_litres,
+		initial_fuel
+	)
+
+
+func test_engine_load_is_clamped_to_zero_for_negative_combustion_torque() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = false
+
+	assert_eq(
+		engine.calculate_engine_load(0.0),
+		0.0
+	)
+
+
+func test_reaction_torque_can_overcome_combustion_torque() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.reaction_torque = -1000.0
+
+	var initial_angular_velocity := engine.angular_velocity
+
+	engine.apply(
+		1.0,
+		0.1
+	)
+
+	assert_lt(
+		engine.angular_velocity,
+		initial_angular_velocity
+	)
+
+
+func test_zero_reaction_torque_does_not_change_torque_calculation() -> void:
+	engine.rpm = 3000.0
+	engine.combustion_running = true
+	engine.reaction_torque = 0.0
+
+	var expected_torque := engine.calculate_torque(
+		1.0,
+		3000.0
+	)
+
+	engine.apply(
+		1.0,
+		0.0
+	)
+
+	assert_float_eq(
+		engine.output_torque,
+		expected_torque
+	)

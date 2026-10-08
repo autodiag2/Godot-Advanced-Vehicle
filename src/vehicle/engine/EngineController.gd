@@ -394,11 +394,15 @@ func calculate_normal_fuel_consumption(throttle_input: float, delta: float) -> f
 		)
 	)
 
-func calculate_combusion_torque(throttle_input: float, engine_rpm: float = rpm) -> float:
+func calculate_combusion_torque(
+	throttle_input: float, 
+	engine_rpm: float = rpm,
+	fuel_litres: float = fuel_tank.fuel_litres
+) -> float:
 	assert(0.0 <= throttle_input)
 	assert(throttle_input <= 1.0)
 	
-	if not combustion_running:
+	if not combustion_running || 0.0 == fuel_litres:
 		return 0.0
 
 	var rpm_factor: float = clamp(
