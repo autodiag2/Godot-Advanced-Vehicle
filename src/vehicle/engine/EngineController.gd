@@ -137,7 +137,7 @@ func apply(
 
 	var net_torque := (
 		output_torque +
-		starter.get_torque() -
+		starter.get_torque() - 
 		reaction_torque
 	)
 

@@ -249,7 +249,7 @@ func apply_torque(
 	)
 
 	brake_disc.update_usage(
-		torque,
+		brake_torque,
 		wheel.spin,
 		delta
 	)
