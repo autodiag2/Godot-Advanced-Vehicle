@@ -90,10 +90,6 @@ func set_gear(gear):
 func get_gearing() -> float:
 	return gearbox.get_gearing()
 
-
-func set_input_inertia(value):
-	gearbox.set_input_inertia(value)
-
 func calculate_inertia(depth: int = 3) -> float:
 	assert(0 <= depth)
 	var total_inertia := 0.0
@@ -101,16 +97,18 @@ func calculate_inertia(depth: int = 3) -> float:
 	var drivetrain_inertia_partial := 30.0
 	total_inertia += drivetrain_inertia_partial
 	
+	var gearing := gearbox.get_gearing()
+
+	if gearing == 0.0:
+		return 0.0
+
+	total_inertia += gearbox.calculate_inertia()
+	
 	if 0 < depth:
 		var wheel_inertia := 0.0
 
 		for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
 			wheel_inertia += wheel.wheel.inertia
-
-		var gearing := gearbox.get_gearing()
-
-		if gearing == 0.0:
-			return 0.0
 
 		total_inertia += wheel_inertia / pow(gearing, 2)
 	

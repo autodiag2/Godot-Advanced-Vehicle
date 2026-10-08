@@ -208,7 +208,7 @@ func calculate_torque(delta: float):
 		sign(wheel.spin) *
 		brake_torque
 	)
-	print("torque=", torque, " tire_torque=", tire_torque, " signed_brake_torque=", signed_brake_torque)
+	#print("torque=", torque, " tire_torque=", tire_torque, " signed_brake_torque=", signed_brake_torque)
 	return torque + tire_torque + signed_brake_torque
 
 # Apply torque to wheels and change it's spin

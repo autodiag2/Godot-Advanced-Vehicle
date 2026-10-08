@@ -15,7 +15,7 @@ var selected_gear: int:
 		_selected_gear = value
 		if ( powertrain != null ):
 			powertrain.onGearboxGearChange(_selected_gear)
-var _engine_inertia := 0.0
+
 var drive_inertia := 10.0
 var last_shift_time := 0
 var powertrain: PowertrainController
@@ -80,6 +80,11 @@ func set_gear(gear):
 
 	selected_gear = gear
 
+func calculate_inertia() -> float:
+	return (
+		pow(get_gearing(), 2) *
+		params.gear_inertia
+	)
 
 func shift_up():
 	if selected_gear < params.gear_ratios.size():
@@ -109,31 +114,3 @@ func get_gearing() -> float:
 		return -params.reverse_ratio
 
 	return 0.0
-
-
-func set_input_inertia(value):
-	assert(value > 0.0)
-	_engine_inertia = value
-
-
-func get_drive_inertia(clutch_input: float) -> float:
-	assert(clutch_input >= 0.0)
-	assert(clutch_input <= 1.0)
-	assert(params != null)
-
-	var gearing: float = get_gearing()
-
-	var gearbox_inertia := (
-		pow(gearing, 2) *
-		params.gear_inertia
-	)
-
-	var reflected_engine_inertia := (
-		_engine_inertia *
-		(1.0 - clutch_input)
-	)
-
-	return (
-		gearbox_inertia +
-		reflected_engine_inertia
-	)
