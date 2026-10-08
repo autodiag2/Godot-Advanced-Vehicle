@@ -158,10 +158,6 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
-	engine.reaction_torque = (
-		powertrain_controller.clutch_reaction_torque
-	)
-
 	motion_controller.apply_aerodynamic_drag(
 		self,
 		parameters

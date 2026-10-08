@@ -14,10 +14,10 @@ func is_locked() -> bool:
 # engine_torque is Te
 # drivetrain_torque is Tp
 # engine_av is we
-# drivertrain_torque is wd
+# drivetrain_torque is wd
 func get_reaction_torques(
 	engine_av: float,
-	drivertrain_torque: float,
+	drivetrain_av: float,
 	engine_torque: float,
 	drivetrain_torque: float,
 	inertia_engine: float,
@@ -25,15 +25,15 @@ func get_reaction_torques(
 	clutch_input: float
 ) -> Vector2:
 	assert(not is_nan(engine_torque))
-	assert(not is_nan(drivetrain_torque))
+	assert(not is_nan(drivetrain_av))
 	assert(not is_nan(engine_av))
-	assert(not is_nan(drivertrain_torque))
+	assert(not is_nan(drivetrain_torque))
 	assert(not is_nan(inertia_engine))
 	assert(not is_nan(inertia_drivetrain))
 	assert(0.0 <= clutch_input)
 	assert(clutch_input <= 1.0)
 	var delta_torque := engine_torque - drivetrain_torque
-	var delta_av := engine_av - drivertrain_torque
+	var delta_av := engine_av - drivetrain_av
 	var clutch_torque_max := friction * (1.0 - clutch_input)
 	var result := Vector2.ZERO
 	
@@ -55,7 +55,7 @@ func get_reaction_torques(
 	else:
 		_locked = false
 		# Slipping state
-		var torque = clutch_torque_max
+		var torque = minf(clutch_torque_max, maxf(drivetrain_torque, engine_torque))
 		if 0.5 < delta_av:
 			result.x = torque
 			result.y = -torque

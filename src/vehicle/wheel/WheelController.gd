@@ -98,8 +98,7 @@ func update_force(
 func apply_torque(
 	drive_torque: float,
 	drive_inertia: float,
-	delta: float,
-	dryRun: bool = false
+	delta: float
 ) -> float:
 	assert(tire != null)
 	assert(0.0 <= drive_inertia)
@@ -137,8 +136,7 @@ func apply_torque(
 
 	var next_spin := spin + spin_delta
 
-	if not dryRun:
-		set_spin(next_spin)
+	set_spin(next_spin)
 
 	return reaction_torque
 

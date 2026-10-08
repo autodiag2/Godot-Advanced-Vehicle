@@ -11,9 +11,6 @@ var wheel_br: RaycastSuspension
 
 var parameters: CarParameters
 
-var clutch_reaction_torque: float = 0.0
-var wheel_drive_torque: float = 0.0
-
 var average_front_wheel_speed: float:
 	get:
 		return (

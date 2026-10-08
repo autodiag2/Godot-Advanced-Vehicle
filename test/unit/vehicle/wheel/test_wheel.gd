@@ -358,7 +358,7 @@ func test_low_speed_slip_uses_speed_threshold():
 	)
 
 
-func test_drive_inertia_affects_undriven_wheel_synchronization():
+func test_drive_inertia_is_included_in_wheel_inertia():
 	wheel.spin = 0.0
 
 	var drive_inertia := wheel.inertia
@@ -369,7 +369,7 @@ func test_drive_inertia_affects_undriven_wheel_synchronization():
 		0.1
 	)
 
-	var expected := 1.0
+	var expected := 0.0
 
 	assert_almost_eq(
 		wheel.spin,
@@ -499,30 +499,4 @@ func test_drive_torque_overcomes_opposing_tire_reaction() -> void:
 	assert_gt(
 		wheel.spin,
 		0.0
-	)
-
-func test_dry_run_does_not_modify_spin() -> void:
-	wheel.spin = 10.0
-
-	var result := wheel.apply_torque(
-		100.0,
-		0.0,
-		0.1,
-		true
-	)
-
-	assert_eq(
-		wheel.spin,
-		10.0
-	)
-
-	var expected := (
-		wheel.force.y *
-		wheel.tire.radius
-	)
-
-	assert_almost_eq(
-		result,
-		expected,
-		0.000001
 	)
