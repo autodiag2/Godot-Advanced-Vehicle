@@ -255,7 +255,7 @@ func test_locked_differential_brakes_progressively() -> void:
 
 	var previous_spin := left.get_spin()
 
-	for i in range(10):
+	for i in range(15):
 		differential.apply_torque(
 			-20.0,
 			wheels,
@@ -273,8 +273,8 @@ func test_locked_differential_brakes_progressively() -> void:
 
 		previous_spin = left.get_spin()
 
-	assert_gt(left.get_spin(), 0.0)
-	assert_gt(right.get_spin(), 0.0)
+	assert_lte(left.get_spin(), 0.0)
+	assert_lte(right.get_spin(), 0.0)
 
 func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop() -> void:
 	var left := _create_wheel()

@@ -108,7 +108,7 @@ func test_average_front_wheel_speed_is_calculated_from_wheels() -> void:
 
 func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -151,7 +151,7 @@ func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
 	parameters.engine.moment = 2.0
 	parameters.drivetrain.gearbox.gear_ratios = [3.0]
 
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -186,7 +186,7 @@ func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	var parameters := _create_parameters()
 	parameters.clutch_friction = 1000.0
 
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -221,7 +221,7 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 	var parameters := _create_parameters()
 	parameters.clutch_friction = 1000.0
 
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -255,7 +255,7 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 
 func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -290,7 +290,7 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 	var parameters := _create_parameters()
 	parameters.clutch_friction = 1000.0
 
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -337,7 +337,7 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	var parameters := _create_parameters()
 	parameters.drivetrain.gearbox.gear_ratios = [3.0]
 
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -395,7 +395,7 @@ func _create_parameters() -> CarParameters:
 func _create_engine(
 	parameters_arg: CarParameters
 ) -> EngineController:
-	var engine := EngineController.new()
+	engine = EngineController.new()
 
 	engine.parameters = parameters_arg.engine
 	engine.car_parameters = parameters_arg
@@ -408,7 +408,7 @@ func _create_engine(
 
 func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.clutch_reaction_torque = 100.0
@@ -439,7 +439,7 @@ func test_engage_clears_clutch_reaction_torque_when_fully_disengaged() -> void:
 
 func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.wheel_drive_torque = 100.0
@@ -470,7 +470,7 @@ func test_engage_clears_wheel_drive_torque_when_fully_disengaged() -> void:
 
 func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.clutch.locked = true
@@ -500,7 +500,7 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 
 func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
@@ -588,7 +588,7 @@ func _create_wheels() -> Array:
 
 func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	parameters.engine.rpm_idle = 800.0
@@ -632,7 +632,7 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 
 func test_selecting_neutral_removes_clutch_reaction_torque() -> void:
 	var parameters := _create_parameters()
-	var engine := _create_engine(parameters)
+	engine = _create_engine(parameters)
 	var wheels := _create_wheels()
 
 	powertrain.initialize(
