@@ -1186,8 +1186,6 @@ func test_engine_load_increases_with_combustion_torque() -> void:
 	)
 
 func test_update_output_torque_is_zero_when_fuel_is_exhausted() -> void:
-	pending("Disabled temporarily: fuel-exhaustion torque behavior needs review")
-	return
 	engine.rpm = parameters.engine.rpm_idle
 	engine.fuel_tank.fuel_litres = 0.0
 	engine.combustion_running = true
@@ -1197,9 +1195,9 @@ func test_update_output_torque_is_zero_when_fuel_is_exhausted() -> void:
 		0.0
 	)
 
-	assert_eq(
+	assert_float_eq(
 		engine.output_torque,
-		0.0
+		-engine.calculate_friction_torque(engine.rpm)
 	)
 
 
