@@ -193,6 +193,21 @@ func calculate_braked_torque_amount(torque: float) -> float:
 	var reduced_torque := absf(torque) - brake_torque
 	return maxf(reduced_torque, 0.0)
 
+func calculate_torque(delta: float):
+	assert(0.0 <= delta)
+	var torque := 0.0
+	var angular_acceleration : float = (
+		wheel.spin - wheel.previous_spin
+	) / delta
+
+	torque += wheel.inertia * angular_acceleration
+	var brake_torque := get_brake_torque()
+	var signed_brake_torque : float = (
+		sign(wheel.spin) *
+		brake_torque
+	)
+	return torque + signed_brake_torque
+
 # Apply torque to wheels and change it's spin
 func apply_torque(
 	torque,
@@ -202,17 +217,12 @@ func apply_torque(
 ):
 	var brake_torque := get_brake_torque()
 
-	var total_inertia : float = (
-		wheel.inertia +
-		drive_inertia
-	)
-
 	var max_brake_torque := 0.0
 
 	if delta > 0.0:
 		max_brake_torque = (
 			abs(wheel.spin) *
-			total_inertia /
+			wheel.inertia /
 			delta
 		)
 

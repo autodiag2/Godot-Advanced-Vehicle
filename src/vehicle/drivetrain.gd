@@ -111,11 +111,7 @@ func calculate_torque(delta: float) -> float:
 	var torque := 0.0
 
 	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
-		var angular_acceleration : float = (
-			wheel.wheel.spin - wheel.wheel.previous_spin
-		) / delta
-
-		torque += wheel.wheel.inertia * angular_acceleration
+		torque += wheel.calculate_torque(delta)
 	
 	var gearing := gearbox.get_gearing()
 	if gearing == 0.0:

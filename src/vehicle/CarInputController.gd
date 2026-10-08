@@ -13,7 +13,7 @@ func update(input_joystick: Control) -> void:
 	if input_joystick:
 		joystick_output = input_joystick.scene.output
 
-	steering = joystick_output.x
+	steering = -joystick_output.x
 
 	if joystick_output.y < 0.0:
 		throttle = -joystick_output.y

@@ -166,17 +166,17 @@ func apply(
 	var engine_inertia := parameters.engine.moment
 
 	#print("engine_torque=", engine_torque, " engine_av=", engine_av, " engine_inertia=", engine_inertia)
-	var powertrain_torque := drivetrain.calculate_torque(delta)
-	var powertrain_av := drivetrain.get_av()
-	var powertrain_inertia := drivetrain.calculate_inertia()
-	#print("powertrain_torque=", powertrain_torque, " powertrain_av=", powertrain_av, " powertrain_inertia=", powertrain_inertia)
+	var drivetrain_torque := drivetrain.calculate_torque(delta)
+	var drivetrain_av := drivetrain.get_av()
+	var drivetrain_inertia := drivetrain.calculate_inertia()
+	#print("drivetrain_torque=", drivetrain_torque, " drivetrain_av=", drivetrain_av, " drivetrain_inertia=", drivetrain_inertia)
 	var reaction_torques := clutch.get_reaction_torques(
 		engine_av,
-		powertrain_av,
+		drivetrain_av,
 		engine_torque,
-		powertrain_torque,
+		drivetrain_torque,
 		engine_inertia,
-		powertrain_inertia,
+		drivetrain_inertia,
 		clutch_input
 	)
 	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
