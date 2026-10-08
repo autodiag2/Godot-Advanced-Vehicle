@@ -188,4 +188,4 @@ func apply(
 		reaction_torques.y
 	)
 	
-	drivetrain.apply_torque(reaction_torques.x, delta)
+	drivetrain.apply_torque(-reaction_torques.x, delta)

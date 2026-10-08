@@ -103,16 +103,10 @@ func get_gearing() -> float:
 	)
 
 	if selected_gear > 0:
-		return (
-			params.gear_ratios[selected_gear - 1] *
-			parameters_drivetrain.final_drive
-		)
+		return params.gear_ratios[selected_gear - 1]
 
 	if selected_gear == -1:
-		return (
-			-params.reverse_ratio *
-			parameters_drivetrain.final_drive
-		)
+		return -params.reverse_ratio
 
 	return 0.0
 

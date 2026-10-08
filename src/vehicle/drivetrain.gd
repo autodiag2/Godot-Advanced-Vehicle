@@ -116,8 +116,12 @@ func calculate_torque(delta: float) -> float:
 		) / delta
 
 		torque += wheel.wheel.inertia * angular_acceleration
+	
+	var gearing := gearbox.get_gearing()
+	if gearing == 0.0:
+		return 0.0
 
-	return torque
+	return torque / gearing
 
 func get_av() -> float:
 	var gearbox_shaft_speed := 0.0
@@ -184,6 +188,11 @@ func apply_torque(
 
 	var geared_torque := torque * gearing
 
+	wheel_bl.apply_torque(geared_torque/4.0, 0.0, delta)
+	wheel_br.apply_torque(geared_torque/4.0, 0.0, delta)
+	wheel_fl.apply_torque(geared_torque/4.0, 0.0, delta)
+	wheel_fr.apply_torque(geared_torque/4.0, 0.0, delta)
+	return 0.0
 	if parameters.drivetype == DRIVE_TYPE.RWD:
 		var reaction_torque := rear_differential.apply_torque(
 			geared_torque,
