@@ -772,6 +772,14 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 	)
 	assert_true(engine.combustion_running)
 	
+func test_at_rest_engine_stays_around_idle():
+	var idl_rpm := 800.0
+	engine.parameters.rpm_idle = idl_rpm
+	engine.start()
+	for i in range(10):
+		engine.apply(0.0, 0.1)
+	assert_lt(engine.rpm, idl_rpm)
+
 func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	engine.rpm = parameters.engine.rpm_idle
 	engine.fuel_tank.fuel_litres = 0.0

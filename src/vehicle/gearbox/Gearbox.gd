@@ -104,7 +104,7 @@ func automatic_shifting(
 				shift_up()
 
 
-func set_gear(gear):
+func set_gear(gear: int):
 	assert(params != null)
 
 	gear = clamp(
