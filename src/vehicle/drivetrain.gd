@@ -15,7 +15,7 @@ var differential := Differential.new()
 @export var parameters: DriveTrainParameters:
 	set(value):
 		parameters = value
-		gearbox.setup(value, gearbox.powertrain)
+		gearbox.setup(value, gearbox.powertrain, gearbox.differential)
 
 var average_front_wheel_speed: float:
 	get:
@@ -54,7 +54,8 @@ func setup(
 
 	gearbox.setup(
 		parameters_arg,
-		powertrain
+		powertrain,
+		differential
 	)
 	differential.initialise(parameters.rear_diff, wheel_fl, wheel_fr, wheel_bl, wheel_br)
 
@@ -155,21 +156,9 @@ func debug_print(...args) -> void:
 func apply_torque(
 	torque: float,
 	delta: float
-) -> float:
+):
 	assert(parameters != null)
 	assert(delta >= 0.0)
 
-	var gearing := gearbox.get_gearing()
-
-	if gearing == 0.0:
-		return 0.0
-
-	var geared_torque := torque * gearing
-
-	var drive_inertia := 0.0
-	var reaction_torque := differential.apply_torque(
-		geared_torque,
-		delta
-	)
-
-	return reaction_torque / gearing
+	gearbox.apply_torque(torque, delta)
+	return 0.0

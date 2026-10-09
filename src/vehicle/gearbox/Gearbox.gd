@@ -19,13 +19,32 @@ var selected_gear: int:
 var drive_inertia := 10.0
 var last_shift_time := 0
 var powertrain: PowertrainController
+var differential: Differential
+var input_av := 0.0
+var output_av := 0.0
 
-func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController) -> void:
+func apply_torque(torque: float, delta: float):
+	assert(delta >= 0.0)
+
+	if delta == 0.0:
+		return 0.0
+
+	var gearing := get_gearing()
+
+	if gearing == 0.0:
+		return 0.0
+
+	var output_torque := torque * gearing
+	output_av = input_av / gearing
+	differential.apply_torque(output_torque, delta)
+
+func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
 	assert(parameters != null)
 	parameters_drivetrain = parameters
 	powertrain = powertrain_arg
 	params = parameters_drivetrain.gearbox
-
+	self.differential = differential_arg
+	
 func automatic_shifting(
 	cur_torque,
 	lower_gear_torque,
