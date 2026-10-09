@@ -16,7 +16,6 @@ var selected_gear: int:
 		if ( powertrain != null ):
 			powertrain.onGearboxGearChange(_selected_gear)
 
-var drive_inertia := 10.0
 var last_shift_time := 0
 var powertrain: PowertrainController
 var differential: Differential
@@ -31,7 +30,6 @@ func apply_torque(torque: float, delta: float) -> float:
 
 	var gearing := get_gearing()
 
-	# The output shaft remains connected to the differential in neutral.
 	if parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.RWD:
 		output_av = differential.average_rear_wheel_speed
 	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.FWD:
@@ -43,17 +41,26 @@ func apply_torque(torque: float, delta: float) -> float:
 		) * 0.5
 
 	if gearing == 0.0:
-		# The input shaft rotates independently of the output shaft.
-		assert(0.0 < params.gear_inertia)
+		assert(params.gear_inertia > 0.0)
 		input_av += torque / params.gear_inertia * delta
 		return torque
 
-	# An engaged gear constrains input and output shaft speeds.
+	var previous_input_av := input_av
 	input_av = output_av * gearing
 
-	var output_torque := torque * gearing
-	differential.apply_torque(output_torque, delta)
-	return NAN # torque - differential reaction
+	var input_angular_acceleration := (
+		input_av - previous_input_av
+	) / delta
+
+	var transmitted_torque := (
+		torque -
+		params.gear_inertia * input_angular_acceleration
+	)
+
+	var output_torque := transmitted_torque * gearing
+	var net_output_torque := differential.apply_torque(output_torque, delta)
+
+	return net_output_torque / gearing
 
 func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
 	assert(parameters != null)

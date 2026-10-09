@@ -160,26 +160,6 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 	)
 
 
-func test_fully_disengaged_clutch_does_not_make_drive_inertia_zero() -> void:
-
-	engine.parameters.moment = 2.0
-	powertrain.drivetrain.gearbox.params.gear_ratios = [3.0]
-	powertrain.drivetrain.set_gear(1)
-
-	engine.angular_velocity = 100.0
-
-	powertrain.apply(
-		1.0,
-		1.0,
-		0.01
-	)
-
-	assert_gt(
-		powertrain.drivetrain.gearbox.drive_inertia,
-		0.0
-	)
-
-
 func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	pending("TODO")
 
