@@ -20,6 +20,23 @@ var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
 var wheel_br: RaycastSuspension
+var average_front_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_fl.wheel.spin +
+				wheel_fr.wheel.spin
+			) * 0.5
+		)
+
+var average_rear_wheel_speed: float:
+	get:
+		return (
+			(
+				wheel_bl.wheel.spin +
+				wheel_br.wheel.spin
+			) * 0.5
+		)
 var type : DIFF_TYPE = DIFF_TYPE.LOCKED
 
 func initialise(parameters_arg: DiffParameters, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension):

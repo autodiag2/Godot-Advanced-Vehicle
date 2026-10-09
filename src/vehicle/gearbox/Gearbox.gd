@@ -35,8 +35,21 @@ func apply_torque(torque: float, delta: float):
 		return 0.0
 
 	var output_torque := torque * gearing
-	output_av = input_av / gearing
 	differential.apply_torque(output_torque, delta)
+	
+	if parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.RWD:
+		output_av = differential.average_rear_wheel_speed                
+	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.FWD:
+		output_av = differential.average_front_wheel_speed       
+	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.AWD:     
+		output_av = (
+				(
+						differential.average_rear_wheel_speed +
+						differential.average_front_wheel_speed
+				) *        
+				0.5
+		)       
+	input_av = output_av * gearing
 
 func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
 	assert(parameters != null)
@@ -100,10 +113,25 @@ func set_gear(gear):
 	selected_gear = gear
 
 func calculate_inertia() -> float:
+	var gearing := get_gearing()
+
+	if gearing == 0.0:
+		return params.gear_inertia
+
 	return (
-		pow(get_gearing(), 2) *
-		params.gear_inertia
+		pow(gearing, 2) *
+		params.gear_inertia +
+		differential.calculate_inertia() / pow(gearing, 2)
 	)
+
+func calculate_torque(delta: float) -> float:
+	var gearing := get_gearing()
+	if gearing == 0.0:
+		return 0.0
+
+	var torque := differential.calculate_torque(delta)
+
+	return torque / gearing
 
 func shift_up():
 	if selected_gear < params.gear_ratios.size():

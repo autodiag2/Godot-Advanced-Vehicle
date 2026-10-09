@@ -17,24 +17,6 @@ var differential := Differential.new()
 		parameters = value
 		gearbox.setup(value, gearbox.powertrain, gearbox.differential)
 
-var average_front_wheel_speed: float:
-	get:
-		return (
-			(
-				wheel_fl.wheel.spin +
-				wheel_fr.wheel.spin
-			) * 0.5
-		)
-
-var average_rear_wheel_speed: float:
-	get:
-		return (
-			(
-				wheel_bl.wheel.spin +
-				wheel_br.wheel.spin
-			) * 0.5
-		)
-
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
@@ -92,61 +74,14 @@ func calculate_inertia(depth: int = 3) -> float:
 	
 	var drivetrain_inertia_partial := 30.0
 	total_inertia += drivetrain_inertia_partial
-	
-	var gearing := gearbox.get_gearing()
-
-	if gearing == 0.0:
-		return 0.0
-
 	total_inertia += gearbox.calculate_inertia()
-	total_inertia += differential.calculate_inertia() / gearing
-
 	return total_inertia
 	
 func calculate_torque(delta: float) -> float:
-	var torque := differential.calculate_torque(delta)
-	
-	var gearing := gearbox.get_gearing()
-	if gearing == 0.0:
-		return 0.0
-
-	return torque / gearing
+	return gearbox.calculate_torque(delta)
 
 func get_av() -> float:
-	var gearbox_shaft_speed := 0.0
-	var gearing := get_gearing()
-
-	if (
-		parameters.drivetype ==
-		parameters.DRIVE_TYPE.RWD
-	):
-		gearbox_shaft_speed = (
-			average_rear_wheel_speed *
-			gearing
-		)
-
-	elif (
-		parameters.drivetype ==
-		parameters.DRIVE_TYPE.FWD
-	):
-		gearbox_shaft_speed = (
-			average_front_wheel_speed *
-			gearing
-		)
-
-	elif (
-		parameters.drivetype ==
-		parameters.DRIVE_TYPE.AWD
-	):
-		gearbox_shaft_speed = (
-			(
-				average_front_wheel_speed +
-				average_rear_wheel_speed
-			) *
-			0.5 *
-			gearing
-		)
-	return gearbox_shaft_speed
+	return gearbox.input_av
 
 func debug_print(...args) -> void:
 	args.push_front("DRIVETRAIN")
@@ -156,9 +91,9 @@ func debug_print(...args) -> void:
 func apply_torque(
 	torque: float,
 	delta: float
-):
+) -> float:
 	assert(parameters != null)
 	assert(delta >= 0.0)
 
 	gearbox.apply_torque(torque, delta)
-	return 0.0
+	return NAN
