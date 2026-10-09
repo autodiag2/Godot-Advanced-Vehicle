@@ -771,7 +771,6 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 		starter.active
 	)
 	assert_true(engine.combustion_running)
-
 	
 func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	engine.rpm = parameters.engine.rpm_idle
