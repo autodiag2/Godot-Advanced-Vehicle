@@ -37,7 +37,6 @@ func get_reaction_torques(
 	var clutch_torque_max := friction * (1.0 - clutch_input)
 	var result := Vector2.ZERO
 	
-	# locked state
 	if absf(delta_av) < 0.5:
 		_locked = true
 		var total_inertia := inertia_engine + inertia_drivetrain
@@ -54,8 +53,7 @@ func get_reaction_torques(
 		assert(absf(clutch_torque) <= clutch_torque_max)
 	else:
 		_locked = false
-		# Slipping state
-		var torque = minf(clutch_torque_max, maxf(drivetrain_torque, engine_torque))
+		var torque = clutch_torque_max
 		if 0.5 < delta_av:
 			result.x = torque
 			result.y = -torque

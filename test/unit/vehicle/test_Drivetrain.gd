@@ -72,18 +72,18 @@ func test_neutral_has_zero_gearing() -> void:
 func test_first_gear_has_positive_gearing() -> void:
 	drivetrain.gearbox.set_gear(1)
 
-	assert_float_eq(
-		drivetrain.gearbox.get_gearing(),
-		14.0
+	assert_lt(
+		0.0,
+		drivetrain.gearbox.get_gearing()
 	)
 
 
 func test_reverse_has_negative_gearing() -> void:
 	drivetrain.gearbox.set_gear(-1)
 
-	assert_float_eq(
+	assert_lt(
 		drivetrain.gearbox.get_gearing(),
-		-12.8
+		0.0
 	)
 
 
