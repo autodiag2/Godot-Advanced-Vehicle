@@ -4,6 +4,7 @@ extends RefCounted
 var parameters_drivetrain: DriveTrainParameters
 @export var params: GearboxParameters
 
+var listeners: Array[Variant] = []
 var _selected_gear: int = 0
 var selected_gear: int:
 	get:
@@ -13,14 +14,18 @@ var selected_gear: int:
 			return
 
 		_selected_gear = value
-		if ( powertrain != null ):
-			powertrain.onGearboxGearChange(_selected_gear)
+		for listener in listeners:
+			listener.onGearboxGearChange(_selected_gear)
 
-var last_shift_time := 0
-var powertrain: PowertrainController
 var differential: Differential
 var input_av := 0.0
 var output_av := 0.0
+
+func setup(parameters: DriveTrainParameters, differential_arg: Differential) -> void:
+	assert(parameters != null)
+	parameters_drivetrain = parameters
+	params = parameters_drivetrain.gearbox
+	self.differential = differential_arg
 
 func apply_torque(torque: float, delta: float) -> float:
 	assert(delta >= 0.0)
@@ -62,56 +67,6 @@ func apply_torque(torque: float, delta: float) -> float:
 
 	return net_output_torque / gearing
 
-func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
-	assert(parameters != null)
-	parameters_drivetrain = parameters
-	powertrain = powertrain_arg
-	params = parameters_drivetrain.gearbox
-	self.differential = differential_arg
-	
-func automatic_shifting(
-	cur_torque,
-	lower_gear_torque,
-	higher_gear_torque,
-	rpm,
-	max_rpm,
-	brake_input,
-	speed
-):
-	if not params.automatic:
-		return
-
-	var reversing = false
-	var shift_time = 700
-
-	if selected_gear == -1:
-		reversing = true
-
-	if (
-		selected_gear > 0 &&
-		higher_gear_torque > cur_torque
-	):
-		if rpm > 0.85 * max_rpm:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_up()
-
-	if (
-		selected_gear > 1 &&
-		rpm < 0.5 * max_rpm &&
-		lower_gear_torque > cur_torque
-	):
-		if Time.get_ticks_msec() - last_shift_time > shift_time:
-			shift_down()
-
-	if abs(selected_gear) <= 1 and abs(speed) < 3.0 and brake_input > 0.2:
-		if not reversing:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_down()
-		else:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_up()
-
-
 func set_gear(gear: int):
 	assert(params != null)
 
@@ -146,13 +101,11 @@ func calculate_torque(delta: float) -> float:
 func shift_up():
 	if selected_gear < params.gear_ratios.size():
 		selected_gear += 1
-		last_shift_time = Time.get_ticks_msec()
 		set_gear(selected_gear)
 
 func shift_down():
 	if selected_gear > -1:
 		selected_gear -= 1
-		last_shift_time = Time.get_ticks_msec()
 		set_gear(selected_gear)
 
 
@@ -170,3 +123,15 @@ func get_gearing() -> float:
 		return -params.reverse_ratio
 
 	return 0.0
+
+func add_listener(listener: Variant) -> void:
+	assert(listener != null)
+
+	if !listeners.has(listener):
+		listeners.append(listener)
+
+
+func remove_listener(listener: Variant) -> void:
+	assert(listener != null)
+
+	listeners.erase(listener)

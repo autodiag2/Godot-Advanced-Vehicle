@@ -15,7 +15,7 @@ var differential := Differential.new()
 @export var parameters: DriveTrainParameters:
 	set(value):
 		parameters = value
-		gearbox.setup(value, gearbox.powertrain, gearbox.differential)
+		gearbox.setup(value, gearbox.differential)
 
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
@@ -36,29 +36,10 @@ func setup(
 
 	gearbox.setup(
 		parameters_arg,
-		powertrain,
 		differential
 	)
+	gearbox.add_listener(powertrain)
 	differential.initialise(parameters.rear_diff, wheel_bl, wheel_br, wheel_fl, wheel_fr, parameters)
-
-func automatic_shifting(
-	cur_torque,
-	lower_gear_torque,
-	higher_gear_torque,
-	rpm,
-	max_rpm,
-	brake_input,
-	speed
-):
-	gearbox.automatic_shifting(
-		cur_torque,
-		lower_gear_torque,
-		higher_gear_torque,
-		rpm,
-		max_rpm,
-		brake_input,
-		speed
-	)
 
 
 func set_gear(gear):

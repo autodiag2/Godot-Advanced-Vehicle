@@ -138,10 +138,11 @@ func _physics_process(delta: float) -> void:
 		parameters.max_steer
 	)
 
-	powertrain_controller.update_automatic_shifting(
+	powertrain_controller.tcu.update(
 		input_controller.throttle,
 		input_controller.brake,
-		motion_controller.longitudinal_velocity
+		motion_controller.longitudinal_velocity,
+		delta
 	)
 
 	suspension.apply_forces(

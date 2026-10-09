@@ -4,6 +4,7 @@ extends RefCounted
 var 	engine: EngineController
 var clutch := Clutch.new()
 var drivetrain := DriveTrain.new()
+var tcu: TCU = TCU.new()
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
@@ -13,7 +14,6 @@ var wheels: Array[RaycastSuspension]:
 		return [wheel_bl,wheel_br,wheel_fl,wheel_fr]
 	set(value):
 		assert(false)
-
 var parameters: CarParameters
 
 var average_front_wheel_speed: float:
@@ -57,92 +57,12 @@ func initialize(
 	wheel_bl.set_params(parameters.wheel_params_bl)
 	wheel_br = wheel_br_arg
 	wheel_br.set_params(parameters.wheel_params_br)
-
+	
 	drivetrain.setup(
 		parameters.drivetrain,
 		self
 	)
-
-
-func update_automatic_shifting(
-	throttle_input: float,
-	brake_input: float,
-	longitudinal_speed: float
-) -> void:
-	var driven_wheel_speed := average_front_wheel_speed
-
-	if (
-		parameters.drivetrain.drivetype ==
-		parameters.drivetrain.DRIVE_TYPE.RWD
-	):
-		driven_wheel_speed = average_rear_wheel_speed
-
-	elif (
-		parameters.drivetrain.drivetype ==
-		parameters.drivetrain.DRIVE_TYPE.AWD
-	):
-		driven_wheel_speed = (
-			average_front_wheel_speed +
-			average_rear_wheel_speed
-		) * 0.5
-	var next_gear_rpm := 0.0
-	var previous_gear_rpm := 0.0
-
-	var next_gear := drivetrain.gearbox.selected_gear + 1
-	var previous_gear := drivetrain.gearbox.selected_gear - 1
-
-	if (
-		next_gear > 0 &&
-		next_gear <=
-		parameters.drivetrain.gearbox.gear_ratios.size()
-	):
-		next_gear_rpm = (
-			parameters.drivetrain.gearbox.gear_ratios[
-				next_gear - 1
-			] *
-			parameters.drivetrain.final_drive *
-			absf(driven_wheel_speed) *
-			EngineController.RPM_PER_RADIAN_PER_SECOND
-		)
-
-	if (
-		previous_gear > 0 &&
-		previous_gear <=
-		parameters.drivetrain.gearbox.gear_ratios.size()
-	):
-		previous_gear_rpm = (
-			parameters.drivetrain.gearbox.gear_ratios[
-				previous_gear - 1
-			] *
-			parameters.drivetrain.final_drive *
-			absf(driven_wheel_speed) *
-			EngineController.RPM_PER_RADIAN_PER_SECOND
-		)
-
-	var next_gear_torque := (
-		engine.calculate_torque(
-			throttle_input,
-			next_gear_rpm
-		)
-	)
-
-	var previous_gear_torque := (
-		engine.calculate_torque(
-			throttle_input,
-			previous_gear_rpm
-		)
-	)
-
-	drivetrain.automatic_shifting(
-		engine.output_torque,
-		previous_gear_torque,
-		next_gear_torque,
-		engine.rpm,
-		parameters.engine.max_rpm,
-		brake_input,
-		longitudinal_speed
-	)
-
+	tcu.link(parameters, engine, drivetrain.gearbox, wheel_fl, wheel_fr, wheel_bl, wheel_br)
 
 func apply(
 	throttle_input: float,

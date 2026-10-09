@@ -43,7 +43,7 @@ func before_each() -> void:
 	differential.wheel_fr = wheel_fr
 
 	gearbox = Gearbox.new()
-	gearbox.setup(drivetrain_parameters, null, differential)
+	gearbox.setup(drivetrain_parameters, differential)
 
 
 func test_neutral_input_shaft_accelerates_from_torque_and_inertia() -> void:
