@@ -32,6 +32,7 @@ var car_parameters: CarParameters
 var parameters: EngineParameters
 var audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
+var starter_sound: AudioStream
 var was_running: bool = false
 var fuel_tank: FuelTank = FuelTank.new()
 
@@ -81,6 +82,7 @@ func initialize(
 	parameters = parameters_arg.engine
 	car_parameters = parameters_arg
 	engine_sound = parameters.sound
+	starter_sound = parameters.starter_sound
 	
 	audio_player = audio_player_arg
 	angular_velocity = 0.0
@@ -495,28 +497,31 @@ func update_sound() -> void:
 	if not audio_player:
 		return
 
-	if not combustion_running:
-		stop_sound()
-		return
-
-	var pitch_scale: float = rpm / 1000.0
-
-	if (
-		rpm > 0.0 &&
-		rpm <= parameters.max_rpm
-	):
+	if starter.active:
+		if audio_player.stream != starter_sound:
+			audio_player.set_stream(starter_sound)
+		if not audio_player.playing:
+			audio_player.play()
+		audio_player.pitch_scale = starter.torque_ramp_rate
+	else:
+		var pitch_scale: float = rpm / 1000.0
 		if audio_player.stream != engine_sound:
 			audio_player.set_stream(
 				engine_sound
 			)
-
-		if !audio_player.playing:
-			audio_player.play()
-
-		audio_player.pitch_scale = pitch_scale
-	else:
-		if audio_player.playing:
-			audio_player.stop()
+		if not combustion_running:
+			stop_sound()
+			return
+		if (
+			rpm > 0.0 &&
+			rpm <= parameters.max_rpm
+		):
+			if not audio_player.playing:
+				audio_player.play()
+			audio_player.pitch_scale = pitch_scale
+		else:
+			if audio_player.playing:
+				audio_player.stop()
 
 func start() -> void:
 	starter.start()

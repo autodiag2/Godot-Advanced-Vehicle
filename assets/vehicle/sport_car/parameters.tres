@@ -5,8 +5,9 @@
 [ext_resource type="Script" uid="uid://cq401wgg5c803" path="res://src/vehicle/drivetrain_params.gd" id="3_pt33x"]
 [ext_resource type="Resource" uid="uid://dgywvijqfg0j8" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="4_educo"]
 [ext_resource type="Script" uid="uid://dyf28fs4lbp0a" path="res://src/vehicle/engine/EngineParameters.gd" id="5_1bc2m"]
-[ext_resource type="AudioStream" path="res://assets/engine/tres/engine_sample.tres" id="6_nl1t6"]
+[ext_resource type="AudioStream" uid="uid://cntdncgh30pxj" path="res://assets/engine/sport_car/sound.wav" id="6_ftcts"]
 [ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="7_3iann"]
+[ext_resource type="AudioStream" uid="uid://bqio6o2hnxqkn" path="res://assets/engine/sport_car/starter_sound.wav" id="7_pt33x"]
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="8_o1b1q"]
 [ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve/CurveTireModel.gd" id="9_12dcd"]
 
@@ -47,7 +48,8 @@ point_count = 8
 script = ExtResource("5_1bc2m")
 torque_curve = SubResource("Curve_cjyhj")
 throttle_model = SubResource("Curve_68moi")
-sound = ExtResource("6_nl1t6")
+sound = ExtResource("6_ftcts")
+starter_sound = ExtResource("7_pt33x")
 metadata/_custom_type_script = "uid://dyf28fs4lbp0a"
 
 [sub_resource type="Resource" id="Resource_0bi4d"]

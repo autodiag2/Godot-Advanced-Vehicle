@@ -11,3 +11,4 @@ extends Resource
 @export var bsfc_map: EngineBSFCMap = preload("res://assets/vehicle/sport_car/petrol_bsfc.tres") # g/kWh
 @export var idle_fuel_rate := 0.8 # L/h
 @export var sound: AudioStream
+@export var starter_sound: AudioStream
