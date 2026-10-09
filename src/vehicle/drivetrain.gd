@@ -95,5 +95,4 @@ func apply_torque(
 	assert(parameters != null)
 	assert(delta >= 0.0)
 
-	gearbox.apply_torque(torque, delta)
-	return NAN
+	return gearbox.apply_torque(torque, delta)

@@ -23,11 +23,11 @@ var differential: Differential
 var input_av := 0.0
 var output_av := 0.0
 
-func apply_torque(torque: float, delta: float) -> void:
+func apply_torque(torque: float, delta: float) -> float:
 	assert(delta >= 0.0)
 
 	if delta == 0.0:
-		return
+		return 0.0
 
 	var gearing := get_gearing()
 
@@ -46,13 +46,14 @@ func apply_torque(torque: float, delta: float) -> void:
 		# The input shaft rotates independently of the output shaft.
 		assert(0.0 < params.gear_inertia)
 		input_av += torque / params.gear_inertia * delta
-		return
+		return torque
 
 	# An engaged gear constrains input and output shaft speeds.
 	input_av = output_av * gearing
 
 	var output_torque := torque * gearing
 	differential.apply_torque(output_torque, delta)
+	return NAN # torque - differential reaction
 
 func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
 	assert(parameters != null)

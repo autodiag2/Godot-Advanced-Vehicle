@@ -175,14 +175,15 @@ func test_neutral_does_not_apply_drive_torque_to_wheels() -> void:
 
 	drivetrain.gearbox.set_gear(0)
 
-	var result := drivetrain.apply_torque(
+	var v0 : float = drivetrain.wheel_bl.get_spin()
+	drivetrain.apply_torque(
 		100.0,
 		0.016
 	)
-
+	var v1 : float = drivetrain.wheel_bl.get_spin()
 	assert_almost_eq(
-		result,
-		0.0,
+		v0,
+		v1,
 		0.001,
 		"Neutral must not transmit engine torque"
 	)

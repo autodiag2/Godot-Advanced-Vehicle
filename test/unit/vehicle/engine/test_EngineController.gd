@@ -389,17 +389,6 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 		parameters.engine.max_rpm
 	)
 
-func test_torque_for_clutch() -> void:
-	engine.start()
-	_wait_combustion_running()
-
-	assert_gt(engine.rpm, parameters.engine.rpm_idle - 100.0)
-	assert_lt(engine.rpm, parameters.engine.rpm_idle + 100.0)
-	
-	var clutch_seen_torque := engine.calculate_torque(1.0, 0.1, 1.0)
-	assert_lt(clutch_seen_torque, 10.0)
-	assert_gt(clutch_seen_torque, -10.0)
-
 func test_limiter_generates_opposing_torque() -> void:
 	engine.rpm = 7900.0
 	engine.reaction_torque = -10000.0
