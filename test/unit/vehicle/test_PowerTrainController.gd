@@ -350,10 +350,10 @@ func test_select_neutral_do_not_raise_engine_rpm():
 	var idl_rpm := 800.0
 	engine.parameters.rpm_idle = idl_rpm
 	engine.start()
+	powertrain.drivetrain.gearbox.set_gear(0)
 	for i in range(10):
 		powertrain.apply(0.0, 0.0, 0.1)
 	assert_lt(engine.rpm,idl_rpm)
-	powertrain.drivetrain.gearbox.set_gear(0)
 	for i in range(10):
 		powertrain.apply(0.0, 0.0, 0.1)
 	assert_lt(engine.rpm,idl_rpm)
