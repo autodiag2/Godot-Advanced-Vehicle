@@ -23,33 +23,36 @@ var differential: Differential
 var input_av := 0.0
 var output_av := 0.0
 
-func apply_torque(torque: float, delta: float):
+func apply_torque(torque: float, delta: float) -> void:
 	assert(delta >= 0.0)
 
 	if delta == 0.0:
-		return 0.0
+		return
 
 	var gearing := get_gearing()
 
+	# The output shaft remains connected to the differential in neutral.
+	if parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.RWD:
+		output_av = differential.average_rear_wheel_speed
+	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.FWD:
+		output_av = differential.average_front_wheel_speed
+	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.AWD:
+		output_av = (
+			differential.average_rear_wheel_speed +
+			differential.average_front_wheel_speed
+		) * 0.5
+
 	if gearing == 0.0:
-		return 0.0
+		# The input shaft rotates independently of the output shaft.
+		assert(0.0 < params.gear_inertia)
+		input_av += torque / params.gear_inertia * delta
+		return
+
+	# An engaged gear constrains input and output shaft speeds.
+	input_av = output_av * gearing
 
 	var output_torque := torque * gearing
 	differential.apply_torque(output_torque, delta)
-	
-	if parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.RWD:
-		output_av = differential.average_rear_wheel_speed                
-	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.FWD:
-		output_av = differential.average_front_wheel_speed       
-	elif parameters_drivetrain.drivetype == DriveTrainParameters.DRIVE_TYPE.AWD:     
-		output_av = (
-				(
-						differential.average_rear_wheel_speed +
-						differential.average_front_wheel_speed
-				) *        
-				0.5
-		)       
-	input_av = output_av * gearing
 
 func setup(parameters: DriveTrainParameters, powertrain_arg: PowertrainController, differential_arg: Differential) -> void:
 	assert(parameters != null)
@@ -119,7 +122,6 @@ func calculate_inertia() -> float:
 		return params.gear_inertia
 
 	return (
-		pow(gearing, 2) *
 		params.gear_inertia +
 		differential.calculate_inertia() / pow(gearing, 2)
 	)
