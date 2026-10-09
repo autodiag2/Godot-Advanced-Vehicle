@@ -156,7 +156,8 @@ func apply(
 	assert(0.0 <= delta)
 
 	var engine_torque := engine.calculate_torque(
-		throttle_input
+		throttle_input,
+		delta
 	)
 	var engine_av := engine.angular_velocity
 	var engine_inertia := parameters.engine.moment

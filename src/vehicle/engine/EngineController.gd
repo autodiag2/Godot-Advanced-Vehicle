@@ -92,6 +92,36 @@ func initialize(
 	combustion_running = false
 	drivetrain_connected = false
 	fuel_tank.initialise(parameters_arg, car)
+	starter_initialise(1.0)
+
+func starter_initialise(cranking_time: float):
+	var t := calculate_starter_torque(cranking_time)
+	starter.stop()
+	starter.torque = t
+
+func calculate_starter_torque(cranking_time: float) -> float:
+	assert(cranking_time > 0.0)
+
+	var idle_angular_velocity := (
+		parameters.rpm_idle /
+		RPM_PER_RADIAN_PER_SECOND
+	)
+
+	var angular_acceleration := (
+		idle_angular_velocity /
+		cranking_time
+	)
+
+	var acceleration_torque := (
+		parameters.moment *
+		angular_acceleration
+	)
+
+	var friction_torque := calculate_friction_torque(
+		parameters.rpm_idle
+	)
+
+	return acceleration_torque + friction_torque
 
 func set_drivetrain_connected(connected: bool) -> void:
 	drivetrain_connected = connected
@@ -106,27 +136,22 @@ func apply(
 	assert(throttle_input >= 0.0)
 	assert(throttle_input <= 1.0)
 	assert(delta >= 0.0)
+	starter.update(delta)
 	
 	var was_running_before_update: bool = angular_velocity > 0.0
+	
+	if fuel_tank.fuel_litres <= 0.0:
+		combustion_running = false
 
 	output_torque = calculate_torque(
 		throttle_input,
-		rpm,
-		combustion_running || starter.get_torque() > 0.0
+		delta
 	)
-
-	if fuel_tank.fuel_litres <= 0.0:
-		combustion_running = false
-		output_torque = calculate_torque(
-			0.0,
-			rpm,
-			false
-		)
 
 	limiter_torque = 0.0
 
 	if (
-		starter.get_torque() > 0.0 &&
+		starter.active &&
 		fuel_tank.fuel_litres > 0.0 &&
 		rpm >= parameters.rpm_idle
 	):
@@ -137,11 +162,9 @@ func apply(
 			listener.onCombustionSelfSustaining(self)
 
 	var net_torque := (
-		output_torque +
-		starter.get_torque() - 
-		reaction_torque
+		output_torque - reaction_torque
 	)
-	print("output_torque=", output_torque, " starter.get_torque()=", starter.get_torque(), " reaction_torque=", reaction_torque)
+	print("output_torque=", output_torque, " reaction_torque=", reaction_torque)
 
 	if (
 		rpm >= parameters.max_rpm &&
@@ -211,8 +234,9 @@ func apply(
 
 func calculate_torque(
 	throttle_input: float,
+	delta: float,
 	engine_rpm: float = rpm,
-	combustion_enabled: bool = true
+	combustion_enabled: bool = combustion_running
 ) -> float:
 	assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
@@ -243,9 +267,11 @@ func calculate_torque(
 			idle_error
 		)
 
-	#print("combustion_torque=", combustion_torque, " idle_torque=", idle_torque, " engine_friction_torque=", engine_friction_torque)
+	var starter_torque := starter.get_torque(delta)
+	print("combustion_torque=", combustion_torque, " starter_torque=", starter_torque, " idle_torque=", idle_torque, " engine_friction_torque=", engine_friction_torque)
 	return (
 		combustion_torque +
+		starter_torque +
 		idle_torque -
 		engine_friction_torque
 	)

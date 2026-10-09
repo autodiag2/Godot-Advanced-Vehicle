@@ -1,22 +1,38 @@
 class_name EngineStarterController
 extends EngineController.Listener
 
-var torque: float = 150.0
+var torque: float = 5.0
+var torque_ramp_rate: float = 1000.0
+var target_torque: float = 0.0
 var active: bool = false
 
 func start() -> void:
 	active = true
+	target_torque = torque
 
 
 func stop() -> void:
 	active = false
+	target_torque = 0.0
 
 
-func get_torque() -> float:
-	if active:
-		return torque
+func get_torque(delta: float) -> float:
+	assert(0.0 <= delta)
 
-	return 0.0
+	var current_torque := target_torque if active else 0.0
+	print("current_torque=", current_torque)
+	return current_torque
+
+
+func update(delta: float) -> void:
+	assert(0.0 <= delta)
+
+	var desired_torque := torque if active else 0.0
+	target_torque = move_toward(
+		target_torque,
+		desired_torque,
+		torque_ramp_rate * delta
+	)
 
 
 func onCombustionSelfSustaining(engine: EngineController) -> void:

@@ -72,8 +72,8 @@ func test_initialize_sets_fuel() -> void:
 		25.0
 	)
 func test_starter_is_not_immediate() -> void:
-	assert_eq(engine.rpm, 0.0)
 	engine.starter_initialise(2.0)
+	assert_eq(engine.rpm, 0.0)
 	engine.start()
 	assert_eq(engine.rpm, 0.0)
 	engine.apply(0.0, 1.0, 0.0)
