@@ -149,7 +149,6 @@ func shift_up():
 		last_shift_time = Time.get_ticks_msec()
 		set_gear(selected_gear)
 
-
 func shift_down():
 	if selected_gear > -1:
 		selected_gear -= 1
