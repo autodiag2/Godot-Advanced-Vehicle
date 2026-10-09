@@ -245,12 +245,13 @@ func test_locked_differential_handles_unequal_initial_wheel_speeds() -> void:
 	wheel_bl.set_spin(10.0)
 	wheel_br.set_spin(5.0)
 
-	differential.apply_torque(0.0, 0.1)
+	for i in range(10):
+		differential.apply_torque(0.0, 1/differential.locked_synchronization_rate)
 
 	assert_almost_eq(
 		wheel_bl.get_spin(),
 		wheel_br.get_spin(),
-		0.000001
+		0.1
 	)
 
 
@@ -279,8 +280,8 @@ func test_locked_differential_handles_zero_timestep() -> void:
 
 	differential.apply_torque(100.0, 0.0)
 
-	assert_eq(wheel_bl.get_spin(), 10.0)
-	assert_eq(wheel_br.get_spin(), 10.0)
+	assert_almost_eq(wheel_bl.get_spin(), 10.0, 0.001)
+	assert_almost_eq(wheel_br.get_spin(), 10.0, 0.001)
 
 
 func test_locked_differential_handles_zero_drive_torque_at_equal_speed() -> void:
@@ -297,6 +298,24 @@ func test_locked_differential_handles_zero_drive_torque_at_equal_speed() -> void
 		0.000001
 	)
 
+func test_locked_differential_does_not_synchronize_wheels_immediately() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.set_spin(10.0)
+	wheel_br.set_spin(5.0)
+
+	differential.apply_torque(0.0, 0.01)
+
+	assert_gt(
+		absf(wheel_bl.get_spin() - wheel_br.get_spin()),
+		0.0,
+		"Locked differential should not synchronize wheel speeds immediately"
+	)
+	assert_lt(
+		absf(wheel_bl.get_spin() - wheel_br.get_spin()),
+		5.0,
+		"Locked differential should reduce the wheel-speed difference"
+	)
 
 func test_locked_differential_reverses_wheel_rotation_under_reverse_torque() -> void:
 	differential.set_type(Differential.DIFF_TYPE.LOCKED)

@@ -37,6 +37,7 @@ var average_rear_wheel_speed: float:
 		)
 var type : DIFF_TYPE = DIFF_TYPE.LOCKED
 var drive_type := DriveTrainParameters.DRIVE_TYPE.RWD
+var locked_synchronization_rate := 10.0 # Hz
 
 @warning_ignore("shadowed_variable")
 func initialise(parameters_arg: DiffParameters, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, drivetrain_parameters: DriveTrainParameters):
@@ -73,11 +74,12 @@ func apply_torque(
 	torque: float,
 	delta: float
 ) -> float:
-	assert(delta >= 0.0)
+	assert(0.0 <= delta)
 
 	if drive_type == DriveTrainParameters.DRIVE_TYPE.RWD:
 		var wheel_bl_reaction := wheel_bl.get_reaction_torque()
 		var wheel_br_reaction := wheel_br.get_reaction_torque()
+
 		if type == DIFF_TYPE.LOCKED:
 			var wheel_inertia_bl: float = wheel_bl.wheel.inertia
 			var wheel_inertia_br: float = wheel_br.wheel.inertia
@@ -85,6 +87,27 @@ func apply_torque(
 
 			if total_inertia <= 0.0:
 				return 0.0
+
+			if delta > 0.0:
+				var spin_difference := (
+					wheel_bl.get_spin() -
+					wheel_br.get_spin()
+				)
+				var correction_fraction := (
+					1.0 - exp(-locked_synchronization_rate * delta)
+				)
+				var spin_correction := (
+					spin_difference * correction_fraction
+				)
+
+				wheel_bl.set_spin(
+					wheel_bl.get_spin() -
+					spin_correction * wheel_inertia_br / total_inertia
+				)
+				wheel_br.set_spin(
+					wheel_br.get_spin() +
+					spin_correction * wheel_inertia_bl / total_inertia
+				)
 
 			var angular_acceleration := (
 				torque -
@@ -103,10 +126,11 @@ func apply_torque(
 			)
 
 			var net_torque := 0.0
+			print("t_bl=", t_bl, " t_br=", t_br)
 			net_torque += wheel_bl.apply_torque(t_bl, delta)
 			net_torque += wheel_br.apply_torque(t_br, delta)
 			return net_torque
 	else:
 		assert(false, "not implemented")
-	
+
 	return NAN

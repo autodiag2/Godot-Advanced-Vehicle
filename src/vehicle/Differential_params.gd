@@ -11,4 +11,4 @@ enum DIFF_TYPE {
 @export var power_ratio: float = 2.0
 @export var coast_ratio: float = 1.0
 
-@export var diff_type = DIFF_TYPE.LIMITED_SLIP
+@export var diff_type = DIFF_TYPE.LOCKED
