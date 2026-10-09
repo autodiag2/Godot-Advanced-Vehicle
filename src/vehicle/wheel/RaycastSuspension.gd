@@ -221,48 +221,22 @@ func calculate_torque(delta: float):
 
 # Apply torque to wheels and change it's spin
 func apply_torque(
-	torque,
+	net_torque,
 	delta
 ):
-	var brake_torque := get_brake_torque()
-
-	var max_brake_torque := 0.0
-
-	if delta > 0.0:
-		max_brake_torque = (
-			abs(wheel.spin) *
-			wheel.inertia /
-			delta
-		)
-
-	brake_torque = minf(
-		brake_torque,
-		max_brake_torque
-	)
-
-	var signed_brake_torque : float = (
-		-sign(wheel.spin) *
-		brake_torque
-	)
-
-	var corrected_torque : float = (
-		torque +
-		signed_brake_torque
-	)
-
 	var wheel_net_torqure := wheel.apply_torque(
-		corrected_torque,
+		net_torque,
 		0.0,
 		delta
 	)
 
 	brake_disc.update_usage(
-		brake_torque,
+		get_brake_torque(),
 		wheel.spin,
 		delta
 	)
 
-	return corrected_torque - wheel_net_torqure
+	return wheel_net_torqure
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)

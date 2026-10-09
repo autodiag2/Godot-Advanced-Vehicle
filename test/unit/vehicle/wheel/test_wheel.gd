@@ -204,18 +204,6 @@ func test_setup_resets_dynamic_state():
 	assert_eq(wheel.slip, Vector2.ZERO)
 	assert_eq(wheel.force, Vector3.ZERO)
 
-func test_negative_delta_does_not_modify_spin():
-	wheel.spin = 10.0
-
-	var result := wheel.apply_torque(
-		100.0,
-		0.0,
-		-0.1
-	)
-
-	assert_eq(wheel.spin, 10.0)
-	assert_eq(result, 0.0)
-
 
 func test_zero_drive_torque_returns_net_torque():
 	wheel.spin = 10.0
@@ -444,7 +432,7 @@ func test_drive_inertia_reduces_wheel_acceleration() -> void:
 	)
 
 
-func test_wheel_force_reaction_torque_changes_spin() -> void:
+func test_wheel_force_reaction_torque_do_not_changes_spin_at_wheel_level() -> void:
 	wheel.spin = 10.0
 	wheel.force.y = 100.0
 
@@ -456,7 +444,7 @@ func test_wheel_force_reaction_torque_changes_spin() -> void:
 		0.1
 	)
 
-	assert_lt(
+	assert_eq(
 		wheel.spin,
 		initial_spin
 	)

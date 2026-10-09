@@ -81,23 +81,26 @@ func apply_torque(
 		if type == DIFF_TYPE.LOCKED:
 			var wheel_inertia_bl: float = wheel_bl.wheel.inertia
 			var wheel_inertia_br: float = wheel_br.wheel.inertia
+			var total_inertia := wheel_inertia_bl + wheel_inertia_br
 
-			var total_inertia := (
-				wheel_inertia_bl +
-				wheel_inertia_br
-			)
+			if total_inertia <= 0.0:
+				return 0.0
 
-			assert(0.0 <= total_inertia)
-
-			# Common angular acceleration of the locked system.
 			var angular_acceleration := (
 				torque -
 				wheel_bl_reaction -
 				wheel_br_reaction
 			) / total_inertia
 
-			var t_bl := wheel_inertia_bl * angular_acceleration
-			var t_br := wheel_inertia_br * angular_acceleration
+			var t_bl := (
+				wheel_inertia_bl * angular_acceleration -
+				wheel_bl_reaction
+			)
+
+			var t_br := (
+				wheel_inertia_br * angular_acceleration -
+				wheel_br_reaction
+			)
 
 			var net_torque := 0.0
 			net_torque += wheel_bl.apply_torque(t_bl, delta)
