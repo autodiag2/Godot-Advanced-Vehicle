@@ -189,10 +189,10 @@ func test_clutch_reaction_torque_opposes_engine_torque() -> void:
 
 
 func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
-	#powertrain.clutch.locked = true
-	
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
+	powertrain.clutch._locked = true
+	powertrain.drivetrain.set_gear(1)
 
 	powertrain.apply(
 		1.0,
@@ -200,9 +200,15 @@ func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
 		0.01
 	)
 
-	assert_false(
-		powertrain.clutch.is_locked()
+	assert_false(powertrain.clutch.is_locked())
+	assert_eq(powertrain.wheel_bl.get_spin(), 0.0)
+	
+	powertrain.apply(
+		1.0,
+		0.0,
+		0.1
 	)
+	assert_gt(powertrain.wheel_bl.get_spin(), 0.0)
 
 
 func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
@@ -228,9 +234,6 @@ func test_reengaging_after_disengaged_clutch_can_transmit_torque() -> void:
 		0.0,
 		0.01
 	)
-
-	pending("TODO")
-
 
 func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	powertrain.drivetrain.gearbox.params.gear_ratios = [3.0]

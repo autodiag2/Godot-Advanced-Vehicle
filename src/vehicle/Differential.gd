@@ -39,6 +39,7 @@ var average_rear_wheel_speed: float:
 		)
 var type : DIFF_TYPE = DIFF_TYPE.LOCKED
 
+@warning_ignore("shadowed_variable")
 func initialise(parameters_arg: DiffParameters, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension):
 	assert(parameters_arg != null)
 	parameters = parameters_arg
@@ -47,6 +48,7 @@ func initialise(parameters_arg: DiffParameters, wheel_fl: RaycastSuspension, whe
 	self.wheel_fl = wheel_fl
 	self.wheel_fr = wheel_fr
 
+@warning_ignore("shadowed_variable")
 func set_type(type: DIFF_TYPE):
 	self.type = type
 
