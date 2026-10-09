@@ -27,6 +27,59 @@ func assert_float_eq(
 		threshold
 	)
 
+func _create_parameters() -> CarParameters:
+	var parameters := CarParameters.new()
+
+	parameters.engine.moment = 1.0
+	parameters.clutch_friction = 250.0
+	parameters.engine.max_rpm = 6000.0
+	parameters.engine.rpm_idle = 800.0
+	parameters.engine.max_torque = 200.0
+
+	parameters.drivetrain = DriveTrainParameters.new()
+	parameters.drivetrain.gearbox.gear_ratios = [3.0]
+	parameters.drivetrain.final_drive = 3.5
+	parameters.drivetrain.drivetype = (
+		DriveTrainParameters.DRIVE_TYPE.RWD
+	)
+
+	parameters.drivetrain.rear_diff = DiffParameters.new()
+	parameters.drivetrain.front_diff = DiffParameters.new()
+	parameters.drivetrain.center_diff = DiffParameters.new()
+
+	return parameters
+
+
+func _create_engine(
+	parameters_arg: CarParameters
+) -> EngineController:
+	engine = EngineController.new()
+
+	engine.parameters = parameters_arg.engine
+	engine.car_parameters = parameters_arg
+	engine.angular_velocity = 100.0
+	engine.output_torque = 100.0
+	engine.starter = EngineStarterController.new()
+
+	return engine
+
+
+func _create_wheels() -> Array[RaycastSuspension]:
+	var wheels : Array[RaycastSuspension] = [
+		RaycastSuspension.new(),
+		RaycastSuspension.new(),
+		RaycastSuspension.new(),
+		RaycastSuspension.new()
+	]
+
+	for suspension in wheels:
+		suspension.wheel.setup(TireModel.new())
+
+	return wheels
+
+func _free_wheels(wheels: Array) -> void:
+	for wheel in wheels:
+		wheel.free()
 
 func test_powertrain_initializes_clutch_friction() -> void:
 	var parameters := _create_parameters()
@@ -49,28 +102,54 @@ func test_powertrain_initializes_clutch_friction() -> void:
 	)
 	_free_wheels([powertrain.wheel_bl, powertrain.wheel_br, powertrain.wheel_fl, powertrain.wheel_fr])
 
-
-func test_powertrain_initializes_drivetrain_engine_inertia() -> void:
+func test_engine_accelerates_car_only_after_engaging_first_gear() -> void:
 	var parameters := _create_parameters()
-	parameters.engine.moment = 2.5
 	var wheels := _create_wheels()
+	engine = _create_engine(parameters)
 
 	powertrain.initialize(
 		parameters,
-		powertrain.engine,
+		engine,
 		wheels[0],
 		wheels[1],
 		wheels[2],
 		wheels[3]
 	)
 
-	assert_float_eq(
-		powertrain.drivetrain.gearbox._engine_inertia,
-		2.5
-	)
-	
-	_free_wheels([powertrain.wheel_bl, powertrain.wheel_br, powertrain.wheel_fl, powertrain.wheel_fr])
+	var delta := 0.01
+	engine.combustion_running = true
 
+	# Run the engine in neutral.
+	for i in range(100):
+		powertrain.apply(0.0, 0.0, delta)
+
+	assert_float_eq(
+		powertrain.average_rear_wheel_speed,
+		0.0
+	)
+	assert_float_eq(
+		powertrain.average_front_wheel_speed,
+		0.0
+	)
+
+	# Engage first gear and apply throttle.
+	powertrain.drivetrain.gearbox.set_gear(1)
+
+	for i in range(100):
+		powertrain.apply(0.0, 0.0, delta)
+
+	assert_gt(
+		powertrain.average_rear_wheel_speed,
+		0.0,
+		"Engine torque should accelerate the rear wheels in first gear."
+	)
+
+	_free_wheels([
+		powertrain.wheel_bl,
+		powertrain.wheel_br,
+		powertrain.wheel_fl,
+		powertrain.wheel_fr
+	])
 
 func test_average_rear_wheel_speed_is_calculated_from_wheels() -> void:
 	var wheels := _create_wheels()
@@ -287,41 +366,7 @@ func test_neutral_does_not_produce_wheel_drive_torque() -> void:
 	_free_wheels(wheels)
 
 
-func _create_parameters() -> CarParameters:
-	var parameters := CarParameters.new()
 
-	parameters.engine.moment = 1.0
-	parameters.clutch_friction = 250.0
-	parameters.engine.max_rpm = 6000.0
-	parameters.engine.rpm_idle = 800.0
-	parameters.engine.max_torque = 200.0
-
-	parameters.drivetrain = DriveTrainParameters.new()
-	parameters.drivetrain.gearbox.gear_ratios = [3.0]
-	parameters.drivetrain.final_drive = 3.5
-	parameters.drivetrain.drivetype = (
-		DriveTrainParameters.DRIVE_TYPE.RWD
-	)
-
-	parameters.drivetrain.rear_diff = DiffParameters.new()
-	parameters.drivetrain.front_diff = DiffParameters.new()
-	parameters.drivetrain.center_diff = DiffParameters.new()
-
-	return parameters
-
-
-func _create_engine(
-	parameters_arg: CarParameters
-) -> EngineController:
-	engine = EngineController.new()
-
-	engine.parameters = parameters_arg.engine
-	engine.car_parameters = parameters_arg
-	engine.angular_velocity = 100.0
-	engine.output_torque = 100.0
-	engine.starter = EngineStarterController.new()
-
-	return engine
 
 func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	var parameters := _create_parameters()
@@ -425,19 +470,6 @@ func test_average_wheel_speeds_are_live_getters() -> void:
 
 	_free_wheels(wheels)
 
-func _create_wheels() -> Array[RaycastSuspension]:
-	var wheels : Array[RaycastSuspension] = [
-		RaycastSuspension.new(),
-		RaycastSuspension.new(),
-		RaycastSuspension.new(),
-		RaycastSuspension.new()
-	]
-
-	for suspension in wheels:
-		suspension.wheel.setup(TireModel.new())
-
-	return wheels
-
 func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
 	var parameters := _create_parameters()
 	engine = _create_engine(parameters)
@@ -526,7 +558,3 @@ func test_selecting_neutral_does_not_stop_running_engine() -> void:
 	)
 
 	_free_wheels(wheels)
-
-func _free_wheels(wheels: Array) -> void:
-	for wheel in wheels:
-		wheel.free()
