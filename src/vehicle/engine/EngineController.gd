@@ -243,6 +243,7 @@ func calculate_torque(
 			idle_error
 		)
 
+	#print("combustion_torque=", combustion_torque, " idle_torque=", idle_torque, " engine_friction_torque=", engine_friction_torque)
 	return (
 		combustion_torque +
 		idle_torque -
