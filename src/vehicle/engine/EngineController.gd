@@ -502,7 +502,7 @@ func update_sound() -> void:
 			audio_player.set_stream(starter_sound)
 		if not audio_player.playing:
 			audio_player.play()
-		audio_player.pitch_scale = starter.torque_ramp_rate
+		audio_player.pitch_scale = 1.0
 	else:
 		var pitch_scale: float = rpm / 1000.0
 		if audio_player.stream != engine_sound:
