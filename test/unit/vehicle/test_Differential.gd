@@ -27,11 +27,6 @@ func after_each():
 	wheel_br.free()
 	wheel_fl.free()
 	wheel_fr.free()
-	
-func _create_wheel() -> FakeWheel:
-	var wheel := FakeWheel.new()
-	wheel.wheel.inertia = 1.0
-	return wheel
 
 func test_open_differential_applies_torque_to_both_wheels() -> void:
 
