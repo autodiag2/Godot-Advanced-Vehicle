@@ -241,7 +241,7 @@ func apply_torque(
 func set_spin(value) -> void:
 	wheel.set_spin(value)
 
-func get_spin():
+func get_spin() -> float:
 	return wheel.get_spin()
 
 func steer(input, max_steer):

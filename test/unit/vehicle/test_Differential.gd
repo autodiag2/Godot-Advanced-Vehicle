@@ -28,6 +28,24 @@ func after_each():
 	wheel_fl.free()
 	wheel_fr.free()
 
+func test_ensure_brake_torque_taken_in_account():
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+	differential.apply_torque(100.0, 0.2)
+	var lps := wheel_bl.get_spin()
+	var rps := wheel_br.get_spin()
+	assert_gt(lps,0.0)
+	assert_gt(rps,0.0)
+	wheel_bl.brake(0.0)
+	wheel_br.brake(0.0)
+	differential.apply_torque(0.0, 0.2)
+	assert_almost_eq(lps,wheel_bl.get_spin(), 0.0001)
+	assert_almost_eq(rps,wheel_br.get_spin(), 0.0001)
+	wheel_bl.brake(1.0)
+	wheel_br.brake(1.0)
+	differential.apply_torque(0.0, 0.2)
+	assert_gt(lps,wheel_bl.get_spin())
+	assert_gt(rps,wheel_br.get_spin())
+
 func test_open_differential_applies_torque_to_both_wheels() -> void:
 
 	differential.set_type(Differential.DIFF_TYPE.OPEN_DIFF)
