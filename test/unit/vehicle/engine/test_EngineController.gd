@@ -71,6 +71,17 @@ func test_initialize_sets_fuel() -> void:
 		engine.fuel_tank.fuel_litres,
 		25.0
 	)
+func test_starter_is_not_immediate() -> void:
+	assert_eq(engine.rpm, 0.0)
+	engine.starter_initialise(2.0)
+	engine.start()
+	assert_eq(engine.rpm, 0.0)
+	engine.apply(0.0, 1.0, 0.0)
+	assert_gt(engine.rpm, 0.0)
+	assert_lt(engine.rpm, engine.parameters.rpm_idle)
+	engine.apply(0.0, 1.0, 0.0)
+	assert_lt(engine.parameters.rpm_idle - 100.0, engine.rpm)
+	assert_lt(engine.rpm, engine.parameters.rpm_idle + 100.0)
 
 func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load() -> void:
 	parameters.engine.bsfc_map = load(
@@ -379,7 +390,7 @@ func test_torque_for_clutch() -> void:
 	assert_gt(engine.rpm, parameters.engine.rpm_idle - 100.0)
 	assert_lt(engine.rpm, parameters.engine.rpm_idle + 100.0)
 	
-	var clutch_seen_torque := engine.calculate_torque(1.0)
+	var clutch_seen_torque := engine.calculate_torque(1.0, 1.0)
 	assert_lt(clutch_seen_torque, 10.0)
 	assert_gt(clutch_seen_torque, -10.0)
 
