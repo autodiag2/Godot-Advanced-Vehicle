@@ -131,6 +131,7 @@ func apply(
 		rpm >= parameters.rpm_idle
 	):
 		combustion_running = true
+		starter.stop()
 
 		for listener in listeners:
 			listener.onCombustionSelfSustaining(self)
@@ -140,6 +141,7 @@ func apply(
 		starter.get_torque() - 
 		reaction_torque
 	)
+	print("output_torque=", output_torque, " starter.get_torque()=", starter.get_torque(), " reaction_torque=", reaction_torque)
 
 	if (
 		rpm >= parameters.max_rpm &&

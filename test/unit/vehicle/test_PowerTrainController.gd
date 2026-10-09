@@ -117,7 +117,7 @@ func test_engine_accelerates_car_only_after_engaging_first_gear() -> void:
 	)
 
 	var delta := 0.01
-	engine.combustion_running = true
+	engine.start()
 
 	# Run the engine in neutral.
 	for i in range(100):
