@@ -39,7 +39,7 @@ func setup(
 		powertrain,
 		differential
 	)
-	differential.initialise(parameters.rear_diff, wheel_fl, wheel_fr, wheel_bl, wheel_br, parameters)
+	differential.initialise(parameters.rear_diff, wheel_bl, wheel_br, wheel_fl, wheel_fr, parameters)
 
 func automatic_shifting(
 	cur_torque,

@@ -36,4 +36,4 @@ func apply_torque(
 	if not dryRun:
 		spin = next_spin
 
-	return reaction_torque
+	return net_torque

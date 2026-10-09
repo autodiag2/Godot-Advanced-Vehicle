@@ -150,7 +150,6 @@ func apply_torque(
 func set_spin(value: float) -> void:
 	previous_spin = spin
 	spin = value
-	#assert(spin == 0.0)
 
 func get_spin() -> float:
 	return spin

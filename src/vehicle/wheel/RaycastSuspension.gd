@@ -250,7 +250,7 @@ func apply_torque(
 		signed_brake_torque
 	)
 
-	var wheel_reaction_torque := wheel.apply_torque(
+	var wheel_net_torqure := wheel.apply_torque(
 		corrected_torque,
 		0.0,
 		delta
@@ -262,7 +262,7 @@ func apply_torque(
 		delta
 	)
 
-	return wheel_reaction_torque
+	return corrected_torque - wheel_net_torqure
 
 func set_spin(value) -> void:
 	wheel.set_spin(value)

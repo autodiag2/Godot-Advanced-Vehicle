@@ -269,7 +269,8 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	)
 
 
-func test_neutral_gear_transmits_no_drivetrain_torque() -> void:
+# gearbox input shaft still spin
+func test_neutral_gear_transmits_reflect_torque_without_losses() -> void:
 	powertrain.drivetrain.set_gear(0)
 
 	powertrain.apply(
@@ -280,7 +281,7 @@ func test_neutral_gear_transmits_no_drivetrain_torque() -> void:
 
 	assert_float_eq(
 		powertrain.drivetrain.apply_torque(1000.0, 0.1),
-		0.0
+		1000.0
 	)
 
 func test_average_wheel_speeds_are_live_getters() -> void:
