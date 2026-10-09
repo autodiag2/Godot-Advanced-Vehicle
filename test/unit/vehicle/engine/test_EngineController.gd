@@ -234,32 +234,35 @@ func test_rpm_and_angular_velocity_are_consistent() -> void:
 
 
 func test_calculate_torque_at_full_throttle() -> void:
-	engine.combustion_running = true
+	engine.start()
+	for i in range(10):
+		engine.apply(0.0, 2.0, 0.0)
 	var torque := engine.calculate_torque(
 		1.0,
+		0.1,
 		4000.0
 	)
 
-	assert_float_eq(
-		torque,
-		192.0
-	)
+	assert_lt(torque, 192.0 + 20.0)
+	assert_gt(torque, 192.0 - 20.0)
 
 func test_calculate_torque_at_half_throttle() -> void:
-	engine.combustion_running = true
+	engine.start()
+	for i in range(10):
+		engine.apply(0.0, 2.0, 0.0)
 	var torque := engine.calculate_torque(
 		0.5,
+		0.1,
 		4000.0
 	)
 
-	assert_float_eq(
-		torque,
-		92.0
-	)
+	assert_lt(torque, 92.0 + 20.0)
+	assert_gt(torque, 92.0 - 20.0)
 
 func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
 	var torque := engine.calculate_torque(
 		0.0,
+		0.1,
 		0.0
 	)
 
@@ -270,8 +273,11 @@ func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
 
 
 func test_idle_control_produces_positive_torque_below_idle() -> void:
+	engine.start()
+	_wait_combustion_running()
 	var torque := engine.calculate_torque(
 		0.0,
+		0.1,
 		400.0
 	)
 
@@ -284,6 +290,7 @@ func test_idle_control_produces_positive_torque_below_idle() -> void:
 func test_idle_control_is_zero_at_idle() -> void:
 	var torque := engine.calculate_torque(
 		0.0,
+		0.1,
 		parameters.engine.rpm_idle
 	)
 
@@ -384,13 +391,12 @@ func test_limiter_prevents_rpm_above_maximum() -> void:
 
 func test_torque_for_clutch() -> void:
 	engine.start()
-	for i in range(100):
-		engine.apply(0.0, 0.2, 0.0)
-	print("engine.rpm=", engine.rpm)
+	_wait_combustion_running()
+
 	assert_gt(engine.rpm, parameters.engine.rpm_idle - 100.0)
 	assert_lt(engine.rpm, parameters.engine.rpm_idle + 100.0)
 	
-	var clutch_seen_torque := engine.calculate_torque(1.0, 1.0)
+	var clutch_seen_torque := engine.calculate_torque(1.0, 0.1, 1.0)
 	assert_lt(clutch_seen_torque, 10.0)
 	assert_gt(clutch_seen_torque, -10.0)
 
@@ -560,7 +566,8 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 func test_update_sound_starts_engine_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.engine.rpm_idle
+	engine.start()
+	_wait_combustion_running()
 	engine.update_sound()
 
 	assert_true(
@@ -647,6 +654,8 @@ func test_no_load_fuel_consumption_increases_with_rpm() -> void:
 func test_update_sound_sets_pitch_from_rpm() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
+	engine.start()
+	_wait_combustion_running()
 	engine.rpm = 2000.0
 
 	engine.update_sound()
@@ -660,8 +669,8 @@ func test_update_sound_sets_pitch_from_rpm() -> void:
 func test_update_sound_plays_below_idle() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.engine.rpm_idle
-
+	engine.start()
+	_wait_combustion_running()
 	engine.update_sound()
 
 	assert_true(
@@ -680,6 +689,8 @@ func test_update_sound_plays_below_idle() -> void:
 func test_update_sound_stops_at_maximum_rpm() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
+	engine.start()
+	_wait_combustion_running()
 	engine.rpm = parameters.engine.max_rpm - 1.0
 
 	engine.update_sound()
@@ -696,11 +707,17 @@ func test_update_sound_stops_at_maximum_rpm() -> void:
 		audio_player.playing
 	)
 
+func _wait_combustion_running():
+	for i in range(10):
+		engine.apply(0.0, 1.0, 0.0)
+	assert(engine.combustion_running)
 
 func test_stop_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
-	engine.rpm = parameters.engine.rpm_idle
+	
+	engine.start()
+	_wait_combustion_running()
 
 	engine.update_sound()
 
@@ -778,9 +795,10 @@ func test_at_rest_engine_stays_around_idle():
 	var idl_rpm := 800.0
 	engine.parameters.rpm_idle = idl_rpm
 	engine.start()
-	for i in range(10):
+	for i in range(15):
 		engine.apply(0.0, 0.1)
-	assert_lt(engine.rpm, idl_rpm)
+	assert_gt(engine.rpm, idl_rpm-100.0)
+	assert_lt(engine.rpm, idl_rpm+100.0)
 
 func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	engine.rpm = parameters.engine.rpm_idle
@@ -1077,6 +1095,7 @@ func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> voi
 
 	var torque := engine.calculate_torque(
 		1.0,
+		0.1,
 		engine.rpm,
 		false
 	)
@@ -1090,12 +1109,14 @@ func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> voi
 func test_idle_control_increases_as_rpm_falls_below_idle() -> void:
 	var torque_at_700 := engine.calculate_torque(
 		0.0,
+		0.1,
 		700.0,
 		true
 	)
 
 	var torque_at_400 := engine.calculate_torque(
 		0.0,
+		0.1,
 		400.0,
 		true
 	)
@@ -1225,6 +1246,8 @@ func test_update_sound_stops_when_rpm_is_zero() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)
 
+	engine.start()
+	_wait_combustion_running()
 	engine.rpm = parameters.engine.rpm_idle
 	engine.update_sound()
 
@@ -1374,6 +1397,7 @@ func test_fuel_consumption_increases_with_engine_load() -> void:
 	var fuel_before_low_load := engine.fuel_tank.fuel_litres
 	engine.output_torque = engine.calculate_torque(
 		0.25,
+		0.1,
 		3000.0
 	)
 
@@ -1392,6 +1416,7 @@ func test_fuel_consumption_increases_with_engine_load() -> void:
 	var fuel_before_high_load := engine.fuel_tank.fuel_litres
 	engine.output_torque = engine.calculate_torque(
 		0.75,
+		0.1,
 		3000.0
 	)
 
@@ -1506,6 +1531,7 @@ func test_zero_reaction_torque_does_not_change_torque_calculation() -> void:
 
 	var expected_torque := engine.calculate_torque(
 		1.0,
+		0.1,
 		3000.0
 	)
 

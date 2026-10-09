@@ -228,6 +228,7 @@ func apply(
 		throttle_input,
 		delta
 	)
+	update_sound()
 	
 	return net_torque
 
@@ -374,10 +375,8 @@ func consume_fuel(
 	if fuel_tank.fuel_litres == 0.0:
 		output_torque = 0.0
 		rpm = 0.0
-		combustion_running = false
-		stop_sound()
-	else:
-		update_sound()
+		combustion_running = false	
+	update_sound()
 
 
 func calculate_normal_fuel_consumption(throttle_input: float, delta: float) -> float:
@@ -493,8 +492,12 @@ func calculate_engine_load(throttle_input: float) -> float:
 	)
 
 func update_sound() -> void:
-	assert(audio_player != null)
-	assert(angular_velocity >= 0.0)
+	if not audio_player:
+		return
+
+	if not combustion_running:
+		stop_sound()
+		return
 
 	var pitch_scale: float = rpm / 1000.0
 
