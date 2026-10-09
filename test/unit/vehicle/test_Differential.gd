@@ -220,3 +220,98 @@ func test_locked_differential_does_not_use_artificial_five_rad_per_second_stop()
 		wheel_br.get_spin(),
 		0.000001
 	)
+
+func test_locked_differential_handles_unequal_initial_wheel_speeds() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.set_spin(10.0)
+	wheel_br.set_spin(5.0)
+
+	differential.apply_torque(0.0, 0.1)
+
+	assert_almost_eq(
+		wheel_bl.get_spin(),
+		wheel_br.get_spin(),
+		0.000001
+	)
+
+
+func test_locked_differential_handles_unequal_wheel_inertias() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.wheel.inertia = 2.0
+	wheel_br.wheel.inertia = 4.0
+
+	differential.apply_torque(120.0, 0.1)
+
+	assert_almost_eq(
+		wheel_bl.get_spin(),
+		wheel_br.get_spin(),
+		0.000001
+	)
+
+	assert_gt(wheel_bl.get_spin(), 0.0)
+
+
+func test_locked_differential_handles_zero_timestep() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.set_spin(10.0)
+	wheel_br.set_spin(10.0)
+
+	differential.apply_torque(100.0, 0.0)
+
+	assert_eq(wheel_bl.get_spin(), 10.0)
+	assert_eq(wheel_br.get_spin(), 10.0)
+
+
+func test_locked_differential_handles_zero_drive_torque_at_equal_speed() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.set_spin(10.0)
+	wheel_br.set_spin(10.0)
+
+	differential.apply_torque(0.0, 0.1)
+
+	assert_almost_eq(
+		wheel_bl.get_spin(),
+		wheel_br.get_spin(),
+		0.000001
+	)
+
+
+func test_locked_differential_reverses_wheel_rotation_under_reverse_torque() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.set_spin(1.0)
+	wheel_br.set_spin(1.0)
+
+	for i in range(20):
+		differential.apply_torque(-100.0, 0.1)
+
+	assert_lt(wheel_bl.get_spin(), 0.0)
+	assert_lt(wheel_br.get_spin(), 0.0)
+
+	assert_almost_eq(
+		wheel_bl.get_spin(),
+		wheel_br.get_spin(),
+		0.000001
+	)
+
+
+func test_locked_differential_does_not_diverge_under_asymmetric_wheel_inertia() -> void:
+	differential.set_type(Differential.DIFF_TYPE.LOCKED)
+
+	wheel_bl.wheel.inertia = 2.0
+	wheel_br.wheel.inertia = 4.0
+
+	wheel_bl.set_spin(10.0)
+	wheel_br.set_spin(10.0)
+
+	differential.apply_torque(100.0, 0.1)
+
+	assert_almost_eq(
+		wheel_bl.get_spin(),
+		wheel_br.get_spin(),
+		0.000001
+	)
