@@ -8,6 +8,11 @@ var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
 var wheel_bl: RaycastSuspension
 var wheel_br: RaycastSuspension
+var wheels: Array[RaycastSuspension]:
+	get:
+		return [wheel_bl,wheel_br,wheel_fl,wheel_fr]
+	set(value):
+		assert(false)
 
 var parameters: CarParameters
 
