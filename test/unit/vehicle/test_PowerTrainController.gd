@@ -269,7 +269,7 @@ func test_engage_unlocks_clutch_when_fully_disengaged() -> void:
 	)
 
 
-func test_engage_clears_drivetrain_reaction_torque_in_neutral() -> void:
+func test_neutral_gear_transmits_no_drivetrain_torque() -> void:
 	powertrain.drivetrain.set_gear(0)
 
 	powertrain.apply(

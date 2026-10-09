@@ -107,24 +107,6 @@ func test_set_and_get_spin():
 
 	assert_eq(wheel.get_spin(), 12.0)
 
-func test_reaction_torque_is_returned() -> void:
-	wheel.force.y = 100.0
-
-	var drive_torque := 1000.0
-	var expected := 100.0 * tire.radius
-
-	var result := wheel.apply_torque(
-		drive_torque,
-		0.0,
-		0.1
-	)
-
-	assert_almost_eq(
-		result,
-		expected,
-		0.000001
-	)
-
 
 func test_steer_zero():
 	assert_eq(
@@ -405,7 +387,7 @@ func test_drive_torque_increases_spin_proportionally_to_delta() -> void:
 
 
 func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
-	wheel.spin = 5.0
+	wheel.set_spin(5.0)
 
 	wheel.apply_torque(
 		100.0,
@@ -418,25 +400,19 @@ func test_drive_torque_accelerates_wheel_from_existing_spin() -> void:
 		5.0
 	)
 
-func test_drive_torque_returns_reaction_torque() -> void:
+func test_drive_torque_returns_net_torque() -> void:
 	wheel.spin = 0.0
 
 	var drive_torque := 100.0
 	var delta := 0.1
 
-	var result := wheel.apply_torque(
+	var net_torque := wheel.apply_torque(
 		drive_torque,
 		0.0,
 		delta
 	)
 
-	var expected := wheel.force.y * wheel.tire.radius
-
-	assert_almost_eq(
-		result,
-		expected,
-		0.000001
-	)
+	assert_lt(0.0, net_torque)
 
 
 func test_drive_inertia_reduces_wheel_acceleration() -> void:

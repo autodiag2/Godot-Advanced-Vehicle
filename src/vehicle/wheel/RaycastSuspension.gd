@@ -193,6 +193,14 @@ func calculate_braked_torque_amount(torque: float) -> float:
 	var reduced_torque := absf(torque) - brake_torque
 	return maxf(reduced_torque, 0.0)
 
+func get_reaction_torque() -> float:
+	var brake_torque := get_brake_torque()
+	var signed_brake_torque : float = (
+		sign(wheel.spin) *
+		brake_torque
+	)
+	return wheel.get_road_reaction_torque() + signed_brake_torque
+
 func calculate_torque(delta: float):
 	assert(0.0 <= delta)
 	var angular_acceleration : float = (

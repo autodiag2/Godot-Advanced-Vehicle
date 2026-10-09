@@ -13,8 +13,6 @@ enum DIFF_STATE {
 	OPEN,
 }
 
-var _diff_clutch := Clutch.new()
-var _diff_split := 0.5
 var parameters := DiffParameters.new()
 var wheel_fl: RaycastSuspension
 var wheel_fr: RaycastSuspension
@@ -38,9 +36,10 @@ var average_rear_wheel_speed: float:
 			) * 0.5
 		)
 var type : DIFF_TYPE = DIFF_TYPE.LOCKED
+var drive_type := DriveTrainParameters.DRIVE_TYPE.RWD
 
 @warning_ignore("shadowed_variable")
-func initialise(parameters_arg: DiffParameters, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension):
+func initialise(parameters_arg: DiffParameters, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension, drivetrain_parameters: DriveTrainParameters):
 	assert(parameters_arg != null)
 	parameters = parameters_arg
 	self.wheel_bl = wheel_bl
@@ -76,8 +75,44 @@ func apply_torque(
 ) -> float:
 	assert(delta >= 0.0)
 
-	wheel_bl.apply_torque(torque/4.0, delta)
-	wheel_br.apply_torque(torque/4.0, delta)
-	wheel_fl.apply_torque(torque/4.0, delta)
-	wheel_fr.apply_torque(torque/4.0, delta)
-	return 0.0
+	if drive_type == DriveTrainParameters.DRIVE_TYPE.RWD:
+		var wheel_bl_reaction := wheel_bl.get_reaction_torque()
+		var wheel_br_reaction := wheel_br.get_reaction_torque()
+		if type == DIFF_STATE.LOCKED:
+			var wheel_inertia_bl: float = wheel_bl.wheel.inertia
+			var wheel_inertia_br: float = wheel_br.wheel.inertia
+
+			var total_inertia := (
+				wheel_inertia_bl +
+				wheel_inertia_br
+			)
+
+			assert(0.0 <= total_inertia)
+
+			# Common angular acceleration of the locked system.
+			var angular_acceleration := (
+				torque -
+				wheel_bl_reaction -
+				wheel_br_reaction
+			) / total_inertia
+
+			# Drive torque required at each wheel so that:
+			# wheel net torque = wheel inertia * angular acceleration.
+			var t_bl := (
+				wheel_inertia_bl *
+				angular_acceleration -
+				wheel_bl_reaction
+			)
+
+			var t_br := (
+				wheel_inertia_br *
+				angular_acceleration -
+				wheel_br_reaction
+			)
+			wheel_bl.apply_torque(t_bl, delta)
+			wheel_br.apply_torque(t_br, delta)
+			return NAN
+	else:
+		assert(false, "not implemented")
+	
+	return NAN

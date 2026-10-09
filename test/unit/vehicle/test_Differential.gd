@@ -20,7 +20,7 @@ func before_each():
 	wheel_bl.set_params(car_params.wheel_params_bl)
 	wheel_br = RaycastSuspension.new()
 	wheel_br.set_params(car_params.wheel_params_br)
-	differential.initialise(parameters, wheel_bl, wheel_br, wheel_fl, wheel_fr)
+	differential.initialise(parameters, wheel_bl, wheel_br, wheel_fl, wheel_fr, car_params.drivetrain)
 
 func after_each():
 	wheel_bl.free()
@@ -136,7 +136,6 @@ func test_locked_differential_accelerates_from_zero_when_drive_torque_exists() -
 
 	var drive_torque := 100.0
 	var drive_inertia := 0.0
-	var gearing := 1.0
 	var delta := 0.1
 
 	assert_eq(wheel_bl.get_spin(), 0.0)

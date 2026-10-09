@@ -95,6 +95,9 @@ func update_force(
 
 	return force
 
+func get_road_reaction_torque() -> float:
+	return force.y * tire.radius
+
 func apply_torque(
 	drive_torque: float,
 	drive_inertia: float,
@@ -110,7 +113,7 @@ func apply_torque(
 
 	assert(total_inertia > 0.0)
 
-	var reaction_torque := force.y * tire.radius
+	var reaction_torque := get_road_reaction_torque()
 	debug_print("reaction_torque=", reaction_torque)
 	
 	var net_torque := drive_torque - reaction_torque
@@ -128,17 +131,20 @@ func apply_torque(
 	):
 		net_torque = stopping_torque
 
+	var new_spin := (
+		net_torque / total_inertia
+	)
 	var spin_delta := (
 		delta *
-		net_torque /
-		total_inertia
+		new_spin
 	)
-
+	
+	print("drive_torque=", drive_torque, " reaction_torque=", reaction_torque, " spin_delta=", spin_delta)
 	var next_spin := spin + spin_delta
 
 	set_spin(next_spin)
 
-	return reaction_torque
+	return net_torque
 
 
 func set_spin(value: float) -> void:
