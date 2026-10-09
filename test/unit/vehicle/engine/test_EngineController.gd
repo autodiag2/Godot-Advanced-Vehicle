@@ -758,19 +758,20 @@ func test_starter_stops_when_engine_becomes_self_sustaining() -> void:
 		engine.fuel_tank.fuel_litres,
 		0.0
 	)
-	starter.start()
-	assert_eq(
-		engine.starter,
-		starter
-	)
-	engine.apply(
-		0.0,
-		0.001
-	)
-
+	engine.start()
 	assert_true(
 		starter.active
 	)
+	for i in range(10):
+		engine.apply(
+			0.0,
+			0.1
+		)
+	assert_false(
+		starter.active
+	)
+	assert_true(engine.combustion_running)
+
 	
 func test_engine_produces_no_combustion_torque_without_fuel() -> void:
 	engine.rpm = parameters.engine.rpm_idle
