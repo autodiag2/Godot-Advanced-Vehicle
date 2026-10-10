@@ -2004,3 +2004,190 @@ func test_realism_fuel_consumption_increases_with_rpm_at_same_load() -> void:
 	)
 
 	assert_gt(high_rpm_consumption, low_rpm_consumption)
+
+
+func test_realism_combustion_torque_is_zero_without_fuel() -> void:
+	engine.fuel_tank.fuel_litres = 0.0
+	engine.combustion_running = true
+	engine.rpm = 2000.0
+	assert_almost_eq(engine.calculate_combusion_torque(1.0), 0.0, 0.01)
+
+
+func test_realism_torque_is_zero_at_zero_throttle_when_combustion_is_off() -> void:
+	engine.combustion_running = false
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = 2500.0
+	assert_almost_eq(engine.calculate_combusion_torque(0.0), 0.0, 0.01)
+
+
+func test_realism_combustion_torque_is_bounded_by_maximum_torque() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	for rpm_value in [800.0, 1500.0, 3000.0, 6000.0, 7900.0]:
+		var torque = engine.calculate_combusion_torque(1.0, rpm_value)
+		assert_gte(torque, 0.0)
+		assert_lte(torque, parameters.engine.max_torque + 0.01)
+
+
+func test_realism_torque_does_not_jump_when_rpm_changes_slightly() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	var torque_before = engine.calculate_combusion_torque(0.75, 3000.0)
+	var torque_after = engine.calculate_combusion_torque(0.75, 3001.0)
+	assert_lt(absf(torque_after - torque_before), 1.0)
+
+
+func test_realism_torque_does_not_exceed_maximum_at_redline() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	var torque = engine.calculate_combusion_torque(1.0, parameters.engine.max_rpm)
+	assert_gte(torque, 0.0)
+	assert_lte(torque, parameters.engine.max_torque + 0.01)
+
+
+func test_realism_coasting_engine_loses_rpm_without_combustion() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	var initial_rpm = engine.rpm
+	for i in range(10):
+		engine.apply(0.0, 0.01, 0.0)
+	assert_lt(engine.rpm, initial_rpm)
+
+
+func test_realism_engine_friction_increases_with_rpm() -> void:
+	var low = engine.calculate_friction_torque(1000.0)
+	var medium = engine.calculate_friction_torque(4000.0)
+	var high = engine.calculate_friction_torque(7000.0)
+	assert_lte(low, medium)
+	assert_lte(medium, high)
+
+
+func test_realism_engine_friction_is_bounded_by_brake_torque() -> void:
+	for rpm_value in [0.0, 1000.0, 4000.0, 8000.0, 12000.0]:
+		var friction = engine.calculate_friction_torque(rpm_value)
+		assert_gte(friction, 0.0)
+		assert_lte(friction, parameters.engine.brake_torque + 0.01)
+
+
+func test_realism_coast_down_does_not_reverse_engine_rotation() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 1.0
+	for i in range(10):
+		engine.apply(0.0, 0.1, 0.0)
+	assert_gte(engine.angular_velocity, 0.0)
+
+
+func test_realism_engine_does_not_gain_energy_from_friction() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	var initial_velocity = engine.angular_velocity
+	engine.apply(0.0, 0.01, 0.0)
+	assert_lte(engine.angular_velocity, initial_velocity)
+
+
+func test_realism_fuel_consumption_is_zero_without_combustion() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	var initial_fuel = engine.fuel_tank.fuel_litres
+	engine.consume_fuel(1.0, 1.0)
+	assert_almost_eq(engine.fuel_tank.fuel_litres, initial_fuel, 0.000001)
+
+
+func test_realism_fuel_consumption_is_non_negative_at_all_tested_rpms() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	for rpm_value in [0.0, 800.0, 1500.0, 3000.0, 6000.0]:
+		engine.rpm = rpm_value
+		var consumption = engine.calculate_normal_fuel_consumption(0.5, 0.1)
+		assert_gte(consumption, 0.0)
+		assert_false(is_nan(consumption))
+		assert_false(is_inf(consumption))
+
+
+func test_realism_fuel_consumption_scales_with_time_step() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = 3000.0
+	engine.output_torque = 100.0
+	var short_interval = engine.calculate_normal_fuel_consumption(0.5, 0.01)
+	var long_interval = engine.calculate_normal_fuel_consumption(0.5, 0.02)
+	assert_almost_eq(long_interval, short_interval * 2.0, 0.000001)
+
+
+func test_realism_fuel_consumption_increases_with_load_for_same_bsfc() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = 3000.0
+	engine.output_torque = 50.0
+	var low_load = engine.calculate_normal_fuel_consumption(0.25, 1.0)
+	engine.output_torque = 150.0
+	var high_load = engine.calculate_normal_fuel_consumption(0.75, 1.0)
+	assert_gt(high_load, low_load)
+
+
+func test_realism_starter_does_not_start_combustion_without_fuel() -> void:
+	engine.fuel_tank.fuel_litres = 0.0
+	engine.combustion_running = false
+	engine.angular_velocity = 0.0
+	engine.start()
+	for i in range(100):
+		engine.apply(0.0, 0.01, 0.0)
+	assert_false(engine.combustion_running)
+
+
+func test_realism_stopping_engine_clears_rotational_state() -> void:
+	engine.combustion_running = true
+	engine.rpm = 2500.0
+	engine.output_torque = 100.0
+	engine.stop()
+	assert_almost_eq(engine.rpm, 0.0, 0.001)
+	assert_almost_eq(engine.output_torque, 0.0, 0.001)
+	assert_false(engine.combustion_running)
+
+
+func test_realism_combustion_does_not_restart_without_starter() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 0.0
+	engine.fuel_tank.fuel_litres = 10.0
+	for i in range(10):
+		engine.apply(1.0, 0.01, 0.0)
+	assert_false(engine.combustion_running)
+	assert_almost_eq(engine.rpm, 0.0, 0.001)
+
+
+func test_realism_engine_state_remains_finite_after_repeated_updates() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = 1000.0
+	for i in range(1000):
+		engine.apply(0.5, 0.001, 0.0)
+	assert_false(is_nan(engine.angular_velocity))
+	assert_false(is_inf(engine.angular_velocity))
+	assert_gte(engine.angular_velocity, 0.0)
+
+
+func test_realism_engine_rpm_remains_within_limiter_after_sustained_throttle() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = parameters.engine.max_rpm - 100.0
+	for i in range(100):
+		engine.apply(1.0, 0.01, 0.0)
+	assert_lte(engine.rpm, parameters.engine.max_rpm + 0.01)
+
+
+func test_realism_engine_with_large_inertia_accelerates_more_slowly() -> void:
+	engine.combustion_running = true
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.rpm = 2000.0
+	parameters.engine.moment = 0.2
+	var initial_velocity = engine.angular_velocity
+	engine.apply(1.0, 0.01, 0.0)
+	var low_inertia_delta = engine.angular_velocity - initial_velocity
+
+	engine.rpm = 2000.0
+	parameters.engine.moment = 0.4
+	initial_velocity = engine.angular_velocity
+	engine.apply(1.0, 0.01, 0.0)
+	var high_inertia_delta = engine.angular_velocity - initial_velocity
+
+	assert_gt(low_inertia_delta, high_inertia_delta)
