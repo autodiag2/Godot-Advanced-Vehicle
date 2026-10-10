@@ -5,15 +5,15 @@ const SETTLE_FRAMES := 30
 const TEST_FRAMES := 240
 const RPM_TOLERANCE := 100.0
 
-var vehicle: BaseCar
+var vehicle: Vehicle
 var floor_body: StaticBody3D
 
 
 func before_each() -> void:
-	vehicle = BaseCar.new()
+	vehicle = Vehicle.new()
 	vehicle.name = "FakeVehicle"
 
-	# BaseCar resolves these children through @onready paths.
+	# Vehicle resolves these children through @onready paths.
 	for wheel_name in [
 		"Wheel_fl",
 		"Wheel_fr",

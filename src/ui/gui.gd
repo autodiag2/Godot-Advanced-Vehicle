@@ -7,9 +7,9 @@ extends Control
 @onready var BreakPadsUsageLabel = $Essentials/VBoxContainer/BreakPadsUsageLabel
 @onready var TireInfoApp = $TireInfoApp
 
-var vehicle: BaseCar
+var vehicle: Vehicle
 
-func set_vehicle(vehicle_arg: BaseCar) -> void:
+func set_vehicle(vehicle_arg: Vehicle) -> void:
 	vehicle = vehicle_arg
 	TireInfoApp.onSetVehicle(vehicle)
 

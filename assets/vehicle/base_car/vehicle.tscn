@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://exyybiakl0yk"]
 
-[ext_resource type="Script" uid="uid://c8y4l6a7xg0lf" path="res://src/vehicle/base_car.gd" id="1_ei42k"]
+[ext_resource type="Script" uid="uid://c8y4l6a7xg0lf" path="res://src/vehicle/Vehicle.gd" id="1_ei42k"]
 [ext_resource type="Script" uid="uid://dcxp356dtbg48" path="res://src/camera.gd" id="2_57qns"]
 [ext_resource type="Script" uid="uid://d1awu17tnr7mo" path="res://src/vehicle/wheel/RaycastSuspension.gd" id="3_vw78d"]
 [ext_resource type="Material" path="res://assets/vehicle/base_car/tire.tres" id="4_ky7y3"]

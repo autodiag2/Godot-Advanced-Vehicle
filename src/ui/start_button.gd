@@ -87,7 +87,7 @@ func _on_pressed() -> void:
 		"Vehicle",
 		true,
 		false
-	) as BaseCar
+	) as Vehicle
 
 	if not car:
 		return

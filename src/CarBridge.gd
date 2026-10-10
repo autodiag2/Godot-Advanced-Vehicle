@@ -29,7 +29,7 @@ func _process(_delta):
 
 	var vehicle := get_tree().get_first_node_in_group(
 		"player_car"
-	) as BaseCar
+	) as Vehicle
 
 	if vehicle == null:
 		return

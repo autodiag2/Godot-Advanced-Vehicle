@@ -1,4 +1,4 @@
-extends TestBaseCar
+extends TestVehicle
 
 func test_car_accelerates_with_throttle() -> void:
 	

@@ -16,7 +16,7 @@ const VEHICLE_SPAWN := "VehicleSpawn"
 
 var current_world: Node
 var current_vehicle_container: Node
-var current_vehicle: BaseCar
+var current_vehicle: Vehicle
 var hud: Control
 var setup_screen: Control
 var world_scenes: Array[PackedScene] = []
@@ -126,9 +126,9 @@ func load_vehicle(vehicle: Variant) -> void:
 	current_vehicle_container = scene.instantiate()
 	vehicle_root.add_child(current_vehicle_container)
 
-	var car := current_vehicle_container as BaseCar
+	var car := current_vehicle_container as Vehicle
 	if car == null:
-		car = current_vehicle_container.find_child("Vehicle", true, false) as BaseCar
+		car = current_vehicle_container.find_child("Vehicle", true, false) as Vehicle
 
 	assert(car != null)
 	current_vehicle = car

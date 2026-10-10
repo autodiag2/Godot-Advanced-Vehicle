@@ -1,4 +1,4 @@
-class_name TestBaseCar extends GutTest
+class_name TestVehicle extends GutTest
 
 const WORLDSIM_SCENE = preload("res://assets/WorldSim.tscn")
 const VEHICLE_SCENE = preload("res://assets/vehicle/sport_car/vehicle.tscn")
@@ -9,18 +9,18 @@ class FakeCarInputController extends CarInputController:
 		pass
 
 var world_sim : WorldSim
-var vehicle : BaseCar
+var vehicle : Vehicle
 
 func before_each() -> void:
 	world_sim = await _create_world_sim()
-	vehicle = world_sim.current_vehicle as BaseCar
+	vehicle = world_sim.current_vehicle as Vehicle
 	assert_not_null(vehicle)
 
 func after_each() -> void:
 	world_sim.queue_free()
 
 @warning_ignore("shadowed_variable")
-func _wait_for_vehicle_to_fall(vehicle: BaseCar) -> void:
+func _wait_for_vehicle_to_fall(vehicle: Vehicle) -> void:
 	for i in range(1000):
 		await get_tree().physics_frame
 
@@ -42,7 +42,7 @@ func _create_world_sim() -> WorldSim:
 	await get_tree().physics_frame
 
 	@warning_ignore("shadowed_variable")
-	var vehicle := world_sim.current_vehicle as BaseCar
+	var vehicle := world_sim.current_vehicle as Vehicle
 	assert_not_null(vehicle)
 	var inputController = FakeCarInputController.new()
 	vehicle.input_controller = inputController

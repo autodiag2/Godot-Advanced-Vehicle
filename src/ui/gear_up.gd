@@ -8,7 +8,7 @@ func _on_pressed() -> void:
 		"Vehicle",
 		true,
 		false
-	) as BaseCar
+	) as Vehicle
 
 	if car:
 		car.shift_up()

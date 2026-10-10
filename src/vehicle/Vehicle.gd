@@ -1,4 +1,4 @@
-class_name BaseCar
+class_name Vehicle
 extends RigidBody3D
 
 @export var parameters := CarParameters.new()

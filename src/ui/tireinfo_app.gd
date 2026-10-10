@@ -8,7 +8,7 @@ var wheel_br: RaycastSuspension
 func _ready() -> void:
 	pass
 
-func onSetVehicle(vehicle: BaseCar):
+func onSetVehicle(vehicle: Vehicle):
 	wheel_bl = vehicle.wheel_bl
 	wheel_br = vehicle.wheel_br
 	wheel_fl = vehicle.wheel_fl
