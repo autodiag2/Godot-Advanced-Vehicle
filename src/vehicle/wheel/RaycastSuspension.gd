@@ -195,29 +195,17 @@ func calculate_braked_torque_amount(torque: float) -> float:
 
 func get_reaction_torque() -> float:
 	var brake_torque := get_brake_torque()
-	var signed_brake_torque : float = (
-		sign(wheel.spin) *
-		brake_torque
-	)
-	return wheel.get_road_reaction_torque() + signed_brake_torque
+	var road_torque := wheel.get_road_reaction_torque()
+	var spin_sign := signf(wheel.spin)
 
-func calculate_torque(delta: float):
+	if spin_sign == 0.0:
+		return road_torque
+
+	return road_torque + spin_sign * brake_torque
+
+func calculate_torque(delta: float) -> float:
 	assert(0.0 <= delta)
-	var angular_acceleration : float = (
-		wheel.spin - wheel.previous_spin
-	) / delta
-	var torque := wheel.inertia * angular_acceleration
-	var tire_torque := (
-		wheel.force.y *
-		wheel.tire.radius
-	)
-	var brake_torque := get_brake_torque()
-	var signed_brake_torque : float = (
-		sign(wheel.spin) *
-		brake_torque
-	)
-	#print("torque=", torque, " tire_torque=", tire_torque, " signed_brake_torque=", signed_brake_torque)
-	return torque + tire_torque + signed_brake_torque
+	return get_reaction_torque()
 
 # Apply torque to wheels and change it's spin
 func apply_torque(

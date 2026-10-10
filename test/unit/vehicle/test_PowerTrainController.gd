@@ -196,7 +196,7 @@ func test_braking_in_gear_can_stall_engine() -> void:
 		powertrain.apply(
 			0.0,
 			0.0,
-			0.01
+			1
 		)
 
 		if not engine.combustion_running:
@@ -362,9 +362,9 @@ func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
 	engine.parameters.rpm_idle = 800.0
 	engine.parameters.max_rpm = 6000.0
 
+	engine.start()
+	_wait_combustion_running()
 	powertrain.drivetrain.set_gear(1)
-
-	engine.rpm = engine.parameters.rpm_idle
 
 	for i in range(1000):
 		powertrain.apply(

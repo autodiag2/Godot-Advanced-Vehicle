@@ -76,61 +76,52 @@ func apply_torque(
 ) -> float:
 	assert(0.0 <= delta)
 
-	if drive_type == DriveTrainParameters.DRIVE_TYPE.RWD:
-		var wheel_bl_reaction := wheel_bl.get_reaction_torque()
-		var wheel_br_reaction := wheel_br.get_reaction_torque()
-
-		if type == DIFF_TYPE.LOCKED:
-			var wheel_inertia_bl: float = wheel_bl.wheel.inertia
-			var wheel_inertia_br: float = wheel_br.wheel.inertia
-			var total_inertia := wheel_inertia_bl + wheel_inertia_br
-
-			if total_inertia <= 0.0:
-				return 0.0
-
-			if delta > 0.0:
-				var spin_difference := (
-					wheel_bl.get_spin() -
-					wheel_br.get_spin()
-				)
-				var correction_fraction := (
-					1.0 - exp(-locked_synchronization_rate * delta)
-				)
-				var spin_correction := (
-					spin_difference * correction_fraction
-				)
-
-				wheel_bl.set_spin(
-					wheel_bl.get_spin() -
-					spin_correction * wheel_inertia_br / total_inertia
-				)
-				wheel_br.set_spin(
-					wheel_br.get_spin() +
-					spin_correction * wheel_inertia_bl / total_inertia
-				)
-
-			var angular_acceleration := (
-				torque -
-				wheel_bl_reaction -
-				wheel_br_reaction
-			) / total_inertia
-
-			var t_bl := (
-				wheel_inertia_bl * angular_acceleration -
-				wheel_bl_reaction
-			)
-
-			var t_br := (
-				wheel_inertia_br * angular_acceleration -
-				wheel_br_reaction
-			)
-
-			var net_torque := 0.0
-			print("t_bl=", t_bl, " t_br=", t_br)
-			net_torque += wheel_bl.apply_torque(t_bl, delta)
-			net_torque += wheel_br.apply_torque(t_br, delta)
-			return net_torque
-	else:
+	if drive_type != DriveTrainParameters.DRIVE_TYPE.RWD:
 		assert(false, "not implemented")
+		return NAN
 
-	return NAN
+	var wheel_bl_reaction := wheel_bl.get_reaction_torque()
+	var wheel_br_reaction := wheel_br.get_reaction_torque()
+
+	var wheel_inertia_bl: float = wheel_bl.wheel.inertia
+	var wheel_inertia_br: float = wheel_br.wheel.inertia
+	var total_inertia := wheel_inertia_bl + wheel_inertia_br
+
+	if total_inertia <= 0.0:
+		return 0.0
+
+	if delta > 0.0 and type == DIFF_TYPE.LOCKED:
+		var spin_difference := wheel_bl.get_spin() - wheel_br.get_spin()
+		var correction_fraction := 1.0 - exp(-locked_synchronization_rate * delta)
+		var spin_correction := spin_difference * correction_fraction
+
+		var corrected_bl := (
+			wheel_bl.get_spin() -
+			spin_correction * wheel_inertia_br / total_inertia
+		)
+		var corrected_br := (
+			wheel_br.get_spin() +
+			spin_correction * wheel_inertia_bl / total_inertia
+		)
+
+		wheel_bl.set_spin(corrected_bl)
+		wheel_br.set_spin(corrected_br)
+
+	var angular_acceleration := (
+		torque - wheel_bl_reaction - wheel_br_reaction
+	) / total_inertia
+
+	var drive_torque_bl := wheel_inertia_bl * angular_acceleration
+	var drive_torque_br := wheel_inertia_br * angular_acceleration
+
+	var net_torque := 0.0
+	net_torque += wheel_bl.apply_torque(
+		drive_torque_bl,
+		delta
+	)
+	net_torque += wheel_br.apply_torque(
+		drive_torque_br,
+		delta
+	)
+
+	return net_torque

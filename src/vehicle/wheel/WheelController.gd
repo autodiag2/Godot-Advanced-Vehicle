@@ -110,10 +110,16 @@ func apply_torque(
 	var total_inertia := inertia + drive_inertia
 	assert(total_inertia > 0.0)
 
-	var spin_acceleration := net_torque / total_inertia
-	var spin_delta := delta * spin_acceleration
+	if delta == 0.0:
+		return net_torque
 
-	var next_spin := spin + spin_delta
+	var spin_acceleration := net_torque / total_inertia
+	var next_spin := spin + delta * spin_acceleration
+
+	if signf(spin) != 0.0 and signf(next_spin) != signf(spin):
+		if signf(net_torque) != signf(spin):
+			next_spin = 0.0
+
 	set_spin(next_spin)
 
 	return net_torque
