@@ -77,6 +77,7 @@ func _create_engine(
 	engine.initialize(parameters_arg, car, EngineStarterController.new(), audio_player)
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
+	engine.fuel_tank.fuel_litres = 40.0
 
 	return engine
 
@@ -162,6 +163,29 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 		powertrain.clutch.is_locked()
 	)
 
+func test_braking_in_gear_can_stall_engine() -> void:
+	engine.parameters.rpm_idle = 800.0
+	engine.parameters.max_rpm = 6000.0
+	engine.start()
+	_wait_combustion_running()
+
+	print("================ start braking ================")
+	powertrain.drivetrain.set_gear(1)
+	powertrain.drivetrain.brake(1.0)
+	for i in range(100):
+		powertrain.apply(
+			0.0,
+			0.0,
+			0.01
+		)
+
+		if not engine.combustion_running:
+			break
+
+	assert_false(
+		engine.combustion_running,
+		"Braking to a stop with the clutch engaged should be able to stall the engine."
+	)
 
 func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
 	powertrain.drivetrain.set_gear(0)

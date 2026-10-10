@@ -23,6 +23,16 @@ var wheel_bl: RaycastSuspension
 var wheel_br: RaycastSuspension
 
 
+func brake(clamping_factor: float):
+	wheel_bl.brake(clamping_factor)
+	wheel_br.brake(clamping_factor)
+	wheel_fl.brake(clamping_factor)
+	wheel_fr.brake(clamping_factor)
+
+func handbrake(clamping_factor: float):
+	wheel_bl.brake(clamping_factor)
+	wheel_br.brake(clamping_factor)
+
 func setup(
 	parameters_arg: DriveTrainParameters,
 	powertrain: PowertrainController

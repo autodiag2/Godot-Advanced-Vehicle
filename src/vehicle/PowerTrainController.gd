@@ -106,3 +106,13 @@ func apply(
 	)
 	
 	drivetrain.apply_torque(reaction_torques.x, delta)
+
+func brake(clamping_factor: float):
+	assert(0.0 <= clamping_factor)
+	assert(clamping_factor <= 1.0)
+	drivetrain.brake(clamping_factor)
+
+func handbrake(clamping_factor: float):
+	assert(0.0 <= clamping_factor)
+	assert(clamping_factor <= 1.0)
+	drivetrain.handbrake(clamping_factor)

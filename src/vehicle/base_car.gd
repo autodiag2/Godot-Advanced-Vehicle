@@ -62,12 +62,7 @@ func set_parameters(parameters_arg: CarParameters):
 		parameters.wheel_params_br.duplicate(true)
 	)
 
-	brake_controller.setup(
-		wheel_fl,
-		wheel_fr,
-		wheel_bl,
-		wheel_br
-	)
+	brake_controller.setup(powertrain_controller)
 
 	engine.initialize(
 		parameters,
