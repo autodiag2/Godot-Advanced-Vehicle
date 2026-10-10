@@ -392,12 +392,19 @@ func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
 func test_select_neutral_do_not_raise_engine_rpm():
 	powertrain.drivetrain.gearbox.set_gear(0)
 	engine.start()
-	for i in range(10):
-		powertrain.apply(0.0, 0.0, 1.0)
-	assert_true(engine.combustion_running)
+	_wait_combustion_running()
+	var idle_rpm = engine.rpm
+	for i in range(100):
+		powertrain.apply(0.0, 0.0, 0.1)
+	assert_lt(engine.rpm,idle_rpm)
+
+func test_select_neutral_do_not_raise_engine_rpm_under_large_test_steps():
+	powertrain.drivetrain.gearbox.set_gear(0)
+	engine.start()
+	_wait_combustion_running()
 	var idle_rpm = engine.rpm
 	for i in range(10):
-		powertrain.apply(0.0, 0.0, 0.1)
+		powertrain.apply(0.0, 0.0, 1)
 	assert_lt(engine.rpm,idle_rpm)
 
 func test_selecting_neutral_does_not_stop_running_engine() -> void:
