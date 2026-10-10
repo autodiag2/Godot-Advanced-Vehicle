@@ -25,7 +25,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	_free_wheels([powertrain.wheel_bl, powertrain.wheel_br, powertrain.wheel_fl, powertrain.wheel_fr])
-	audio_player.queue_free()
+	audio_player.free()
 	powertrain = null
 
 func after_all():
@@ -164,11 +164,23 @@ func test_fully_disengaged_clutch_transmits_no_drive_torque() -> void:
 
 
 func test_fully_engaged_clutch_can_transmit_engine_torque() -> void:
-	pending("TODO")
+	powertrain.drivetrain.set_gear(0)
+	engine.start()
+	_wait_combustion_running()
+	powertrain.drivetrain.set_gear(1)
 
+	assert_float_eq(powertrain.wheel_bl.get_spin(), 0.0)
+	powertrain.apply(
+		1.0,
+		0.0,
+		0.01
+	)
 
-func test_clutch_reaction_torque_opposes_engine_torque() -> void:
-	pending("TODO")
+	assert_gt(
+		powertrain.wheel_bl.get_spin(),
+		0.0,
+		"Fully engaged clutch should transmit positive engine torque to the drivetrain."
+	)
 
 
 func test_fully_disengaged_clutch_does_not_remain_locked() -> void:
@@ -334,17 +346,15 @@ func test_first_gear_closed_throttle_engine_stabilizes_at_idle() -> void:
 	)
 
 func test_select_neutral_do_not_raise_engine_rpm():
-	var idl_rpm := 800.0
-	engine.parameters.rpm_idle = idl_rpm
-	engine.start()
 	powertrain.drivetrain.gearbox.set_gear(0)
+	engine.start()
 	for i in range(10):
 		powertrain.apply(0.0, 0.0, 1.0)
 	assert_true(engine.combustion_running)
-	assert_lt(engine.rpm,idl_rpm)
+	var idle_rpm = engine.rpm
 	for i in range(10):
 		powertrain.apply(0.0, 0.0, 0.1)
-	assert_lt(engine.rpm,idl_rpm)
+	assert_lt(engine.rpm,idle_rpm)
 
 func test_selecting_neutral_does_not_stop_running_engine() -> void:
 

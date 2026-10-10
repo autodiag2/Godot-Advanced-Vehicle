@@ -45,6 +45,11 @@ func before_each() -> void:
 	gearbox = Gearbox.new()
 	gearbox.setup(drivetrain_parameters, differential)
 
+func after_each():
+	wheel_bl.free()
+	wheel_br.free()
+	wheel_fl.free()
+	wheel_fr.free()
 
 func test_neutral_input_shaft_accelerates_from_torque_and_inertia() -> void:
 	gearbox.params.gear_inertia = 0.5
