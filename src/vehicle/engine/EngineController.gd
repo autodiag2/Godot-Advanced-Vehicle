@@ -152,16 +152,17 @@ func apply(
 
 	limiter_torque = 0.0
 
+	#print("starter.active=", starter.active, "fuel_tank.fuel_litres=", fuel_tank.fuel_litres, " rpm=", rpm)
 	if (
 		starter.active &&
-		fuel_tank.fuel_litres > 0.0 &&
 		rpm >= parameters.rpm_idle
 	):
-		combustion_running = true
 		starter.stop()
+		if ( 0.0 <= fuel_tank.fuel_litres ):
+			combustion_running = true
 
-		for listener in listeners:
-			listener.onCombustionSelfSustaining(self)
+			for listener in listeners:
+				listener.onCombustionSelfSustaining(self)
 
 	var net_torque := (
 		output_torque - reaction_torque

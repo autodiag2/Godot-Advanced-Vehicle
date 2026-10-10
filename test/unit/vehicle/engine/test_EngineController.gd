@@ -701,6 +701,14 @@ func _wait_combustion_running():
 		engine.apply(0.0, 1.0, 0.0)
 	assert(engine.combustion_running)
 
+func test_ensure_starter_stop_in_case_no_fuel():
+	engine.fuel_tank.fuel_litres = 0.0
+	engine.start()
+	assert_gt(engine.starter.get_torque(0.1), 0.0)
+	for i in range(10):
+		engine.apply(0.0, 1.0, 0.0)
+	assert_float_eq(engine.starter.get_torque(0.1), 0.0)
+
 func test_stop_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
 	engine.initialize(parameters, car, starter, audio_player)

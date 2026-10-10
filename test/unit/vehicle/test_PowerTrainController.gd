@@ -4,7 +4,7 @@ extends GutTest
 var powertrain: PowertrainController
 var engine: EngineController = EngineController.new()
 var car: RigidBody3D = RigidBody3D.new()
-
+var audio_player: AudioStreamPlayer
 func before_each() -> void:
 	powertrain = PowertrainController.new()
 	powertrain.engine = engine
@@ -25,6 +25,7 @@ func before_each() -> void:
 
 func after_each() -> void:
 	_free_wheels([powertrain.wheel_bl, powertrain.wheel_br, powertrain.wheel_fl, powertrain.wheel_fr])
+	audio_player.queue_free()
 	powertrain = null
 
 func after_all():
@@ -63,17 +64,19 @@ func _create_parameters() -> CarParameters:
 
 	return parameters
 
+func _wait_combustion_running():
+	for i in range(10):
+		engine.apply(0.0, 1.0, 0.0)
+	assert(engine.combustion_running)
 
 func _create_engine(
 	parameters_arg: CarParameters
 ) -> EngineController:
 	engine = EngineController.new()
-
-	engine.parameters = parameters_arg.engine
-	engine.car_parameters = parameters_arg
+	audio_player = AudioStreamPlayer.new()
+	engine.initialize(parameters_arg, car, EngineStarterController.new(), audio_player)
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
-	engine.starter = EngineStarterController.new()
 
 	return engine
 
@@ -336,7 +339,8 @@ func test_select_neutral_do_not_raise_engine_rpm():
 	engine.start()
 	powertrain.drivetrain.gearbox.set_gear(0)
 	for i in range(10):
-		powertrain.apply(0.0, 0.0, 0.1)
+		powertrain.apply(0.0, 0.0, 1.0)
+	assert_true(engine.combustion_running)
 	assert_lt(engine.rpm,idl_rpm)
 	for i in range(10):
 		powertrain.apply(0.0, 0.0, 0.1)

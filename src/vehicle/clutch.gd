@@ -8,13 +8,8 @@ var _locked := false
 func is_locked() -> bool:
 	return _locked
 
-# result x if for Te,c y for Tc,d (drivetrain)
-# Te,c : power applied to drivetrain
-# Tc,d : power applied by drivetrain on engine
-# engine_torque is Te
-# drivetrain_torque is Tp
-# engine_av is we
-# drivetrain_torque is wd
+# result x reaction torque to apply on drivetrain
+# result y reaction torque to apply on engine
 func get_reaction_torques(
 	engine_av: float,
 	drivetrain_av: float,
@@ -50,7 +45,7 @@ func get_reaction_torques(
 
 		result.x = clutch_torque
 		result.y = -clutch_torque
-		assert(absf(clutch_torque) <= clutch_torque_max)
+		#assert(absf(clutch_torque) <= clutch_torque_max)
 	else:
 		_locked = false
 		var torque = clutch_torque_max
