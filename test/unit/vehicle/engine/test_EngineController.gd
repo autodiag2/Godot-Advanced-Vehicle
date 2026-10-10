@@ -1541,3 +1541,396 @@ func test_zero_reaction_torque_does_not_change_torque_calculation() -> void:
 		engine.output_torque,
 		expected_torque
 	)
+
+
+func test_full_throttle_does_not_exceed_maximum_torque() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(1.0, 0.0, 0.0)
+	assert_lte(engine.output_torque, parameters.engine.max_torque + 0.01)
+	assert_gte(engine.output_torque, 0.0)
+
+func test_zero_throttle_does_not_produce_positive_combustion_torque() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(0.0, 0.0, 0.0)
+	assert_almost_eq(engine.calculate_combusion_torque(0.0, engine.rpm), 0.0, 0.01)
+
+func test_engine_output_torque_is_finite() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(0.5, 0.01, 0.0)
+	assert_false(is_nan(engine.output_torque))
+	assert_false(is_inf(engine.output_torque))
+
+
+func test_angular_velocity_remains_finite_after_update() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(0.5, 0.01, 0.0)
+	assert_false(is_nan(engine.angular_velocity))
+	assert_false(is_inf(engine.angular_velocity))
+
+
+func test_small_positive_torque_increases_angular_velocity() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(1.0, 0.001, 0.0)
+	assert_gt(engine.angular_velocity, 2000.0 * TAU / 60.0)
+
+
+func test_engine_inertia_reduces_acceleration_for_same_torque() -> void:
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.parameters.moment = 0.2
+	var initial_velocity = engine.angular_velocity
+	engine.apply(1.0, 0.001, 0.0)
+	var acceleration_low_inertia = engine.angular_velocity - initial_velocity
+
+	engine.angular_velocity = initial_velocity
+	engine.parameters.moment = 0.4
+	engine.apply(1.0, 0.001, 0.0)
+	var acceleration_high_inertia = engine.angular_velocity - initial_velocity
+
+	assert_gt(acceleration_low_inertia, acceleration_high_inertia)
+
+
+func test_zero_throttle_does_not_exceed_full_throttle_output_torque() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(0.0, 0.0, 0.0)
+	var zero_throttle_torque = engine.output_torque
+	engine.apply(1.0, 0.0, 0.0)
+	assert_gte(engine.output_torque, zero_throttle_torque)
+
+
+func test_increasing_throttle_does_not_reduce_output_torque() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(0.25, 0.0, 0.0)
+	var low_throttle_torque = engine.output_torque
+	engine.apply(0.75, 0.0, 0.0)
+	var high_throttle_torque = engine.output_torque
+	assert_gte(high_throttle_torque, low_throttle_torque)
+
+
+func test_reaction_torque_reduces_net_torque() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	var unloaded_torque = engine.apply(1.0, 0.0, 0.0)
+	var loaded_torque = engine.apply(1.0, 0.0, 10.0)
+	assert_gt(unloaded_torque, loaded_torque)
+
+
+func test_reaction_torque_does_not_change_combustion_output_torque() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.apply(1.0, 0.0, 0.0)
+	var unloaded_output_torque = engine.output_torque
+	engine.apply(1.0, 0.0, 10.0)
+	assert_almost_eq(engine.output_torque, unloaded_output_torque, 0.01)
+
+
+func test_repeated_zero_delta_updates_preserve_angular_velocity() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	var initial_velocity = engine.angular_velocity
+	for i in range(10):
+		engine.apply(0.5, 0.0, 0.0)
+	assert_almost_eq(engine.angular_velocity, initial_velocity, 0.000001)
+
+
+func test_initialize_clears_reaction_torque() -> void:
+	engine.reaction_torque = 50.0
+	engine.initialize(parameters, car, starter, audio_player)
+	assert_almost_eq(engine.reaction_torque, 0.0, 0.000001)
+
+
+func test_initialize_clears_output_torque() -> void:
+	engine.output_torque = 100.0
+	engine.initialize(parameters, car, starter, audio_player)
+	assert_almost_eq(engine.output_torque, 0.0, 0.000001)
+
+
+func test_initialize_clears_limiter_torque() -> void:
+	engine.limiter_torque = 100.0
+	engine.initialize(parameters, car, starter, audio_player)
+	assert_almost_eq(engine.limiter_torque, 0.0, 0.000001)
+
+
+func test_initialize_disconnects_drivetrain() -> void:
+	engine.set_drivetrain_connected(true)
+	engine.initialize(parameters, car, starter, audio_player)
+	assert_false(engine.drivetrain_connected)
+
+
+func test_engine_load_stays_within_valid_range() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	for throttle in [0.0, 0.25, 0.5, 0.75, 1.0]:
+		engine.apply(throttle, 0.0, 0.0)
+		@warning_ignore("shadowed_global_identifier")
+		var load = engine.calculate_engine_load(throttle)
+		assert_gte(load, 0.0)
+		assert_lte(load, 1.0)
+
+
+func test_engine_load_does_not_decrease_with_throttle() -> void:
+	engine.angular_velocity = 2500.0 * TAU / 60.0
+	engine.combustion_running = true
+	var previous_load = 0.0
+	for throttle in [0.0, 0.25, 0.5, 0.75, 1.0]:
+		@warning_ignore("shadowed_global_identifier")
+		var load = engine.calculate_engine_load(throttle)
+		assert_gte(load + 0.000001, previous_load)
+		previous_load = load
+
+
+func test_fuel_level_remains_non_negative_after_consumption() -> void:
+	engine.fuel_tank.fuel_litres = 0.001
+	engine.combustion_running = true
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	engine.consume_fuel(1.0, 1.0)
+	assert_gte(engine.fuel_tank.fuel_litres, 0.0)
+
+
+func test_fuel_consumption_is_finite() -> void:
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	engine.combustion_running = true
+	var initial_fuel = engine.fuel_tank.fuel_litres
+	engine.consume_fuel(0.75, 0.1)
+	var consumed_fuel = initial_fuel - engine.fuel_tank.fuel_litres
+	assert_gte(consumed_fuel, 0.0)
+	assert_false(is_nan(consumed_fuel))
+	assert_false(is_inf(consumed_fuel))
+
+
+func test_fuel_consumption_does_not_increase_fuel() -> void:
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	engine.combustion_running = true
+	var initial_fuel = engine.fuel_tank.fuel_litres
+	engine.consume_fuel(0.75, 0.1)
+	assert_lte(engine.fuel_tank.fuel_litres, initial_fuel)
+
+
+func test_closed_throttle_fuel_consumption_is_bounded() -> void:
+	engine.angular_velocity = parameters.engine.rpm_idle * TAU / 60.0
+	engine.combustion_running = true
+	var initial_fuel = engine.fuel_tank.fuel_litres
+	engine.consume_fuel(0.0, 0.1)
+	var consumed_fuel = initial_fuel - engine.fuel_tank.fuel_litres
+	assert_gte(consumed_fuel, 0.0)
+	assert_lt(consumed_fuel, 0.01)
+
+
+func test_zero_fuel_prevents_positive_combustion_output() -> void:
+	engine.fuel_tank.fuel_litres = 0.0
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.combustion_running = true
+	assert_almost_eq(
+		engine.calculate_combusion_torque(1.0),
+		0.0,
+		0.01
+	)
+
+func test_starter_torque_is_not_applied_twice_per_update() -> void:
+	engine.starter_initialise(2.0)
+	engine.start()
+	var initial_velocity = engine.angular_velocity
+	engine.apply(0.0, 0.01, 0.0)
+	assert_gt(engine.angular_velocity, initial_velocity)
+	assert_lt(engine.angular_velocity, parameters.engine.rpm_idle * TAU / 60.0)
+
+
+func test_drivetrain_connection_can_be_toggled_repeatedly() -> void:
+	for connected in [true, false, true, false]:
+		engine.set_drivetrain_connected(connected)
+		assert_eq(engine.drivetrain_connected, connected)
+
+
+func test_engine_can_be_reinitialized_after_running() -> void:
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	engine.combustion_running = true
+	engine.output_torque = 100.0
+	engine.initialize(parameters, car, starter, audio_player)
+	assert_almost_eq(engine.angular_velocity, 0.0, 0.000001)
+	assert_almost_eq(engine.output_torque, 0.0, 0.000001)
+	assert_false(engine.combustion_running)
+	assert_gt(engine.fuel_tank.fuel_litres, 0.0)
+
+
+func test_fuel_consumption_scales_with_delta() -> void:
+	engine.angular_velocity = 3000.0 * TAU / 60.0
+	engine.combustion_running = true
+	var initial_fuel = engine.fuel_tank.fuel_litres
+	engine.consume_fuel(1.0, 0.01)
+	var short_interval_consumption = initial_fuel - engine.fuel_tank.fuel_litres
+
+	engine.fuel_tank.fuel_litres = initial_fuel
+	engine.consume_fuel(1.0, 0.02)
+	var long_interval_consumption = initial_fuel - engine.fuel_tank.fuel_litres
+
+	assert_gt(long_interval_consumption, short_interval_consumption)
+	assert_lt(long_interval_consumption, short_interval_consumption * 3.0)
+
+func test_engine_rotated_by_drivetrain_does_not_start_combustion() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	engine.set_drivetrain_connected(true)
+
+	engine.apply(0.0, 0.01, 0.0)
+
+	assert_false(engine.combustion_running)
+	assert_gt(engine.rpm, 0.0)
+
+
+func test_engine_rotated_without_combustion_produces_no_combustion_torque() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+
+	var combustion_torque = engine.calculate_combusion_torque(0.0)
+
+	assert_almost_eq(combustion_torque, 0.0, 0.01)
+
+
+func test_engine_friction_resists_drivetrain_rotation() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+
+	var friction_torque = engine.calculate_friction_torque(engine.rpm)
+	var net_torque = engine.calculate_torque(0.0, 0.0)
+
+	assert_gt(friction_torque, 0.0)
+	assert_lt(net_torque, 0.0)
+
+
+func test_engine_rotated_by_drivetrain_consumes_no_fuel_without_combustion() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	var initial_fuel = engine.fuel_tank.fuel_litres
+
+	engine.apply(0.0, 0.1, 0.0)
+
+	assert_almost_eq(engine.fuel_tank.fuel_litres, initial_fuel, 0.000001)
+	assert_false(engine.combustion_running)
+
+func test_reaction_torque_increases_rpm_when_engine_is_off() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 0.0
+	engine.set_drivetrain_connected(true)
+
+	var initial_rpm = engine.rpm
+	engine.apply(0.0, 0.1, -100.0)
+
+	assert_gt(engine.rpm, initial_rpm)
+	assert_false(engine.combustion_running)
+
+
+func test_zero_net_torque_does_not_change_angular_velocity() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+
+	var initial_velocity = engine.angular_velocity
+	var output_torque = engine.calculate_torque(0.0, 0.0)
+	var net_torque = engine.apply(0.0, 0.0, output_torque)
+
+	assert_almost_eq(net_torque, 0.0, 0.01)
+	assert_almost_eq(engine.angular_velocity, initial_velocity, 0.001)
+
+func test_positive_net_torque_increases_angular_velocity() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 1000.0 * TAU / 60.0
+	var initial_velocity = engine.angular_velocity
+	engine.apply(0.0, 0.1, -100.0)
+	assert_gt(engine.angular_velocity, initial_velocity)
+
+
+func test_negative_net_torque_decreases_angular_velocity() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 2000.0 * TAU / 60.0
+	var initial_velocity = engine.angular_velocity
+	engine.apply(0.0, 0.1, 100.0)
+	assert_lt(engine.angular_velocity, initial_velocity)
+
+
+func test_engine_friction_at_rest_does_not_create_negative_velocity() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 0.0
+	engine.apply(0.0, 0.1, 0.0)
+	assert_gte(engine.angular_velocity, 0.0)
+	assert_false(is_nan(engine.angular_velocity))
+	assert_false(is_inf(engine.angular_velocity))
+
+
+func test_engine_friction_does_not_decrease_with_rpm() -> void:
+	var low_rpm_friction = engine.calculate_friction_torque(1000.0)
+	var medium_rpm_friction = engine.calculate_friction_torque(4000.0)
+	var high_rpm_friction = engine.calculate_friction_torque(7000.0)
+	assert_gte(medium_rpm_friction, low_rpm_friction)
+	assert_gte(high_rpm_friction, medium_rpm_friction)
+
+
+func test_engine_friction_is_zero_or_positive_at_zero_rpm() -> void:
+	assert_gte(engine.calculate_friction_torque(0.0), 0.0)
+
+
+func test_large_delta_keeps_angular_velocity_finite_and_non_negative() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 1000.0 * TAU / 60.0
+	engine.apply(0.0, 10.0, 1000.0)
+	assert_gte(engine.angular_velocity, 0.0)
+	assert_false(is_nan(engine.angular_velocity))
+	assert_false(is_inf(engine.angular_velocity))
+
+
+func test_limiter_does_not_activate_below_maximum_rpm() -> void:
+	engine.combustion_running = true
+	engine.rpm = parameters.engine.max_rpm - 100.0
+	engine.apply(0.0, 0.0, 0.0)
+	assert_almost_eq(engine.limiter_torque, 0.0, 0.001)
+
+
+func test_limiter_handles_rpm_at_maximum_boundary() -> void:
+	engine.combustion_running = true
+	engine.rpm = parameters.engine.max_rpm
+	engine.apply(1.0, 0.01, 0.0)
+	assert_lte(engine.rpm, parameters.engine.max_rpm + 0.01)
+	assert_false(is_nan(engine.limiter_torque))
+	assert_false(is_inf(engine.limiter_torque))
+
+
+func test_limiter_releases_after_rpm_falls_below_maximum() -> void:
+	engine.combustion_running = true
+	engine.rpm = parameters.engine.max_rpm
+	engine.apply(0.0, 0.1, 100.0)
+	engine.apply(0.0, 0.0, 0.0)
+	assert_lte(engine.rpm, parameters.engine.max_rpm + 0.01)
+	assert_gte(engine.limiter_torque, 0.0)
+
+
+func test_reaction_torque_changes_net_torque_not_combustion_output() -> void:
+	engine.combustion_running = true
+	engine.rpm = 2500.0
+	engine.apply(0.75, 0.0, 0.0)
+	var output_without_load = engine.output_torque
+	var net_without_load = engine.apply(0.75, 0.0, 0.0)
+	var net_with_load = engine.apply(0.75, 0.0, 50.0)
+	assert_almost_eq(engine.output_torque, output_without_load, 0.01)
+	assert_lt(net_with_load, net_without_load)
+
+
+func test_engine_never_rotates_backwards_under_negative_net_torque() -> void:
+	engine.combustion_running = false
+	engine.angular_velocity = 1.0
+	engine.apply(0.0, 1.0, 1000.0)
+	assert_almost_eq(engine.angular_velocity, 0.0, 0.001)
+	assert_gte(engine.angular_velocity, 0.0)
+
+
+func test_angular_velocity_stays_finite_near_maximum_rpm() -> void:
+	engine.combustion_running = true
+	engine.rpm = parameters.engine.max_rpm - 1.0
+	engine.apply(1.0, 0.1, 0.0)
+	assert_false(is_nan(engine.angular_velocity))
+	assert_false(is_inf(engine.angular_velocity))
+	assert_gte(engine.angular_velocity, 0.0)
+	assert_lte(engine.rpm, parameters.engine.max_rpm + 0.01)
