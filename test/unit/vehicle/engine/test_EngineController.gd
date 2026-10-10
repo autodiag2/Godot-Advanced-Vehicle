@@ -1934,3 +1934,73 @@ func test_angular_velocity_stays_finite_near_maximum_rpm() -> void:
 	assert_false(is_inf(engine.angular_velocity))
 	assert_gte(engine.angular_velocity, 0.0)
 	assert_lte(engine.rpm, parameters.engine.max_rpm + 0.01)
+
+
+func test_realism_combustion_torque_is_zero_at_zero_rpm() -> void:
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.combustion_running = true
+	engine.rpm = 0.0
+
+	var torque = engine.calculate_combusion_torque(1.0)
+
+	assert_almost_eq(torque, 0.0, 0.01)
+
+
+func test_realism_throttle_response_is_not_instantaneous() -> void:
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.combustion_running = true
+	engine.rpm = 3000.0
+
+	engine.apply(0.0, 0.0, 0.0)
+	engine.apply(1.0, 0.001, 0.0)
+
+	assert_lt(engine.output_torque, parameters.engine.max_torque * 0.95)
+
+
+func test_realism_closed_throttle_includes_pumping_losses() -> void:
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.combustion_running = true
+	engine.rpm = 4000.0
+
+	var friction_torque = engine.calculate_friction_torque(engine.rpm)
+	var net_torque = engine.calculate_torque(0.0, 0.0)
+
+	assert_lt(net_torque, -friction_torque)
+
+
+func test_realism_engine_torque_varies_with_rpm() -> void:
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.combustion_running = true
+
+	var low_rpm_torque = engine.calculate_combusion_torque(
+		1.0,
+		1000.0
+	)
+	var high_rpm_torque = engine.calculate_combusion_torque(
+		1.0,
+		7000.0
+	)
+
+	assert_ne(low_rpm_torque, high_rpm_torque)
+
+
+func test_realism_fuel_consumption_increases_with_rpm_at_same_load() -> void:
+	engine.fuel_tank.fuel_litres = 10.0
+	engine.combustion_running = true
+	engine.rpm = 1500.0
+	engine.output_torque = 100.0
+
+	var low_rpm_consumption = engine.calculate_normal_fuel_consumption(
+		0.5,
+		1.0
+	)
+
+	engine.rpm = 5000.0
+	engine.output_torque = 100.0
+
+	var high_rpm_consumption = engine.calculate_normal_fuel_consumption(
+		0.5,
+		1.0
+	)
+
+	assert_gt(high_rpm_consumption, low_rpm_consumption)
