@@ -32,9 +32,8 @@ func before_each() -> void:
 	car_params.drivetrain = parameters
 	car_view = RigidBody3D.new()
 	engine_audio = AudioStreamPlayer.new()
-	var engine_starter = EngineStarterController.new()
 	var engine := EngineController.new()
-	engine.initialize(car_params, car_view, engine_starter, engine_audio)
+	engine.initialize(car_params, car_view, engine_audio)
 	powertrain = PowertrainController.new()
 	wheel_fl = RaycastSuspension.new()
 	wheel_fl.set_params(car_params.wheel_params_fl)

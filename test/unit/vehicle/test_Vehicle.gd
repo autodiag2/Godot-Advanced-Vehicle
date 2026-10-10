@@ -82,7 +82,7 @@ func _run_in_gear(
 	clutch: float,
 	frames: int = TEST_FRAMES
 ) -> void:
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(gear)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(gear)
 	vehicle.input_controller.throttle = throttle
 	vehicle.input_controller.clutch = clutch
 	await _step_physics(frames)
@@ -122,8 +122,8 @@ func test_vehicle_initializes_all_four_wheels() -> void:
 	assert_not_null(vehicle.wheel_bl)
 	assert_not_null(vehicle.wheel_br)
 
-	assert_not_null(vehicle.powertrain_controller.engine)
-	assert_not_null(vehicle.powertrain_controller.drivetrain)
+	assert_not_null(vehicle.powertrain.engine)
+	assert_not_null(vehicle.powertrain.drivetrain)
 
 
 func test_zero_throttle_does_not_create_combustion_drive_torque() -> void:
@@ -141,9 +141,9 @@ func test_zero_throttle_does_not_create_combustion_drive_torque() -> void:
 
 func test_stationary_vehicle_does_not_accelerate_engine_without_starter() -> void:
 	vehicle.stop()
-	vehicle.engine_starter_controller.stop()
+	
 	vehicle.input_controller.throttle = 0.0
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 
 	await _step_physics(SETTLE_FRAMES)
 
@@ -159,8 +159,8 @@ func test_stationary_vehicle_does_not_accelerate_engine_without_starter() -> voi
 
 func test_neutral_does_not_transmit_drive_torque_to_wheels() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 	vehicle.input_controller.clutch = 0.0
 	vehicle.input_controller.throttle = 0.0
 
@@ -182,10 +182,10 @@ func test_neutral_does_not_transmit_drive_torque_to_wheels() -> void:
 
 func test_zero_throttle_in_first_gear_does_not_raise_engine_to_high_rpm() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
+	
 	vehicle.input_controller.throttle = 0.0
 	vehicle.input_controller.clutch = 0.0
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(1)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
 
 	await _step_physics(SETTLE_FRAMES)
 
@@ -206,8 +206,8 @@ func test_zero_throttle_in_first_gear_does_not_raise_engine_to_high_rpm() -> voi
 
 func test_open_throttle_in_neutral_does_not_drive_wheels() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 
 	await _run_in_gear(0, 0.5, 0.0, TEST_FRAMES)
 
@@ -221,8 +221,8 @@ func test_open_throttle_in_neutral_does_not_drive_wheels() -> void:
 
 func test_throttle_in_first_gear_transmits_torque_to_rear_wheels() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(1)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
 	vehicle.input_controller.clutch = 0.0
 
 	await _step_physics(SETTLE_FRAMES)
@@ -241,8 +241,8 @@ func test_throttle_in_first_gear_transmits_torque_to_rear_wheels() -> void:
 
 func test_disengaged_clutch_prevents_engine_torque_from_driving_wheels() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(1)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
 	vehicle.input_controller.clutch = 1.0
 
 	await _step_physics(SETTLE_FRAMES)
@@ -262,8 +262,8 @@ func test_disengaged_clutch_prevents_engine_torque_from_driving_wheels() -> void
 
 func test_reengaging_clutch_transmits_torque_after_disengagement() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(1)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
 	vehicle.input_controller.throttle = 0.5
 	vehicle.input_controller.clutch = 1.0
 
@@ -284,7 +284,7 @@ func test_reengaging_clutch_transmits_torque_after_disengagement() -> void:
 
 func test_engine_rpm_remains_finite_under_load() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
+	
 
 	await _run_in_gear(1, 0.5, 0.0, TEST_FRAMES)
 
@@ -295,7 +295,7 @@ func test_engine_rpm_remains_finite_under_load() -> void:
 
 func test_wheel_speeds_remain_finite_under_load() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
+	
 
 	await _run_in_gear(1, 0.75, 0.0, TEST_FRAMES)
 
@@ -305,14 +305,14 @@ func test_wheel_speeds_remain_finite_under_load() -> void:
 
 func test_neutral_selection_does_not_stop_running_engine() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
+	
 	vehicle.input_controller.throttle = 0.3
 
 	await _run_in_gear(1, 0.3, 0.0, 60)
 
 	var rpm_before_neutral := vehicle.engine.rpm
 
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 	await _step_physics(60)
 
 	assert_true(
@@ -333,10 +333,10 @@ func test_neutral_selection_does_not_stop_running_engine() -> void:
 
 func test_braking_does_not_create_engine_drive_torque() -> void:
 	vehicle.stop()
-	vehicle.engine_starter_controller.stop()
+	
 	vehicle.input_controller.throttle = 0.0
 	vehicle.input_controller.brake = 1.0
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 
 	await _step_physics(TEST_FRAMES)
 
@@ -349,8 +349,8 @@ func test_braking_does_not_create_engine_drive_torque() -> void:
 
 func test_engine_does_not_exceed_rpm_limiter() -> void:
 	vehicle.start()
-	vehicle.engine_starter_controller.stop()
-	vehicle.powertrain_controller.drivetrain.gearbox.set_gear(0)
+	
+	vehicle.powertrain.drivetrain.gearbox.set_gear(0)
 
 	vehicle.engine.rpm = vehicle.engine.parameters.max_rpm - 100.0
 	vehicle.input_controller.throttle = 1.0

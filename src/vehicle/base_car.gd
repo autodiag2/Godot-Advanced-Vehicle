@@ -11,8 +11,7 @@ var input_controller := CarInputController.new()
 var steering_controller := SteeringController.new()
 var brake_controller := BrakeController.new()
 var engine := EngineController.new()
-var engine_starter_controller := EngineStarterController.new()
-var powertrain_controller := PowertrainController.new()
+var powertrain := PowertrainController.new()
 var suspension := SuspensionSystemController.new()
 var motion_controller := VehicleMotionController.new()
 
@@ -62,16 +61,15 @@ func set_parameters(parameters_arg: CarParameters):
 		parameters.wheel_params_br.duplicate(true)
 	)
 
-	brake_controller.setup(powertrain_controller)
+	brake_controller.setup(powertrain)
 
 	engine.initialize(
 		parameters,
 		self,
-		engine_starter_controller,
 		$EngineSound
 	)
 
-	powertrain_controller.initialize(
+	powertrain.initialize(
 		parameters,
 		engine,
 		wheel_fl,
@@ -82,7 +80,6 @@ func set_parameters(parameters_arg: CarParameters):
 
 func _ready() -> void:
 	add_to_group("player_car")
-	engine.add_listener(engine_starter_controller)
 
 	motion_controller.initialize(
 		self
@@ -133,7 +130,7 @@ func _physics_process(delta: float) -> void:
 		parameters.max_steer
 	)
 
-	powertrain_controller.tcu.update(
+	powertrain.tcu.update(
 		input_controller.throttle,
 		input_controller.brake,
 		motion_controller.longitudinal_velocity,
@@ -148,7 +145,7 @@ func _physics_process(delta: float) -> void:
 		delta
 	)
 
-	powertrain_controller.apply(
+	powertrain.apply(
 		input_controller.throttle,
 		input_controller.clutch,
 		delta
@@ -163,7 +160,7 @@ func getSpeedKmH() -> int:
 	return int(-linear_velocity.z * MPS_TO_KPH)
 
 func shift_up() -> void:
-	powertrain_controller.drivetrain.gearbox.shift_up()
+	powertrain.drivetrain.gearbox.shift_up()
 
 func shift_down() -> void:
-	powertrain_controller.drivetrain.gearbox.shift_down()
+	powertrain.drivetrain.gearbox.shift_down()

@@ -21,7 +21,7 @@ class Listener:
 		pass
 
 var listeners: Array[Listener] = []
-var starter: EngineStarterController
+var starter: EngineStarterController = EngineStarterController.new()
 var angular_velocity: float = 0.0 # rad/s
 var output_torque: float = 0.0 # N.m positive
 var limiter_torque: float = 0.0
@@ -66,13 +66,11 @@ func _init():
 func initialize(
 	parameters_arg: CarParameters,
 	car: RigidBody3D,
-	starter_arg: EngineStarterController,
 	audio_player_arg: AudioStreamPlayer
 ) -> void:
 	assert(parameters_arg != null)
 	assert(car != null)
 	assert(audio_player_arg != null)
-	assert(starter_arg != null)
 	assert(parameters_arg.engine.moment > 0.0)
 	assert(parameters_arg.engine.max_rpm > 0.0)
 	assert(parameters_arg.engine.rpm_idle >= 0.0)
@@ -86,13 +84,13 @@ func initialize(
 	audio_player = audio_player_arg
 	angular_velocity = 0.0
 	output_torque = 0.0
-	starter = starter_arg
 	limiter_torque = 0.0
 	reaction_torque = 0.0
 	combustion_running = false
 	drivetrain_connected = false
 	fuel_tank.initialise(parameters_arg, car)
 	starter_initialise(1.0)
+	add_listener(starter)
 
 func starter_initialise(cranking_time: float):
 	var t := calculate_starter_torque(cranking_time)
@@ -529,6 +527,7 @@ func stop() -> void:
 	output_torque = 0.0
 	limiter_torque = 0.0
 	reaction_torque = 0.0
+	starter.stop()
 	stop_sound()
 
 func stop_sound() -> void:

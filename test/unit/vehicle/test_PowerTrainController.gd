@@ -74,7 +74,7 @@ func _create_engine(
 ) -> EngineController:
 	engine = EngineController.new()
 	audio_player = AudioStreamPlayer.new()
-	engine.initialize(parameters_arg, car, EngineStarterController.new(), audio_player)
+	engine.initialize(parameters_arg, car, audio_player)
 	engine.angular_velocity = 100.0
 	engine.output_torque = 100.0
 	engine.fuel_tank.fuel_litres = 40.0

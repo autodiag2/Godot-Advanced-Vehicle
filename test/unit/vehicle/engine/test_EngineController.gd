@@ -21,8 +21,8 @@ func assert_float_eq(
 
 
 func before_each() -> void:
-	starter = EngineStarterController.new()
 	engine = EngineController.new()
+	starter = engine.starter
 	parameters = CarParameters.new()
 	car = RigidBody3D.new()
 	audio_player = AudioStreamPlayer.new()
@@ -56,7 +56,6 @@ func before_each() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -91,7 +90,6 @@ func test_bsfc_consumption_differs_at_3000_rpm_between_10_and_100_percent_load()
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -135,7 +133,6 @@ func test_initialize_resets_rotational_state() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -554,7 +551,7 @@ func test_fuel_consumption_cannot_go_below_zero() -> void:
 
 func test_update_sound_starts_engine_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	engine.start()
 	_wait_combustion_running()
 	engine.update_sound()
@@ -569,7 +566,6 @@ func test_idle_fuel_consumption_uses_idle_fuel_rate() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -598,7 +594,6 @@ func test_no_load_fuel_consumption_increases_with_rpm() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -642,7 +637,7 @@ func test_no_load_fuel_consumption_increases_with_rpm() -> void:
 
 func test_update_sound_sets_pitch_from_rpm() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	engine.start()
 	_wait_combustion_running()
 	engine.rpm = 2000.0
@@ -657,7 +652,7 @@ func test_update_sound_sets_pitch_from_rpm() -> void:
 
 func test_update_sound_plays_below_idle() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	engine.start()
 	_wait_combustion_running()
 	engine.update_sound()
@@ -677,7 +672,7 @@ func test_update_sound_plays_below_idle() -> void:
 
 func test_update_sound_stops_at_maximum_rpm() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	engine.start()
 	_wait_combustion_running()
 	engine.rpm = parameters.engine.max_rpm - 1.0
@@ -711,7 +706,7 @@ func test_ensure_starter_stop_in_case_no_fuel():
 
 func test_stop_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	
 	engine.start()
 	_wait_combustion_running()
@@ -829,7 +824,6 @@ func test_no_fuel_is_consumed_when_combustion_is_not_running() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -860,7 +854,6 @@ func test_fuel_cut_when_drivetrain_connected_and_throttle_closed() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -886,7 +879,6 @@ func test_closed_throttle_neutral_does_not_use_fuel_cut() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -913,7 +905,6 @@ func test_idle_to_normal_fuel_consumption_is_continuous() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -1241,7 +1232,7 @@ func test_update_output_torque_is_zero_when_fuel_is_exhausted() -> void:
 
 func test_update_sound_stops_when_rpm_is_zero() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 
 	engine.start()
 	_wait_combustion_running()
@@ -1384,7 +1375,6 @@ func test_fuel_consumption_increases_with_engine_load() -> void:
 	engine.initialize(
 		parameters,
 		car,
-		starter,
 		audio_player
 	)
 
@@ -1641,25 +1631,25 @@ func test_repeated_zero_delta_updates_preserve_angular_velocity() -> void:
 
 func test_initialize_clears_reaction_torque() -> void:
 	engine.reaction_torque = 50.0
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	assert_almost_eq(engine.reaction_torque, 0.0, 0.000001)
 
 
 func test_initialize_clears_output_torque() -> void:
 	engine.output_torque = 100.0
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	assert_almost_eq(engine.output_torque, 0.0, 0.000001)
 
 
 func test_initialize_clears_limiter_torque() -> void:
 	engine.limiter_torque = 100.0
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	assert_almost_eq(engine.limiter_torque, 0.0, 0.000001)
 
 
 func test_initialize_disconnects_drivetrain() -> void:
 	engine.set_drivetrain_connected(true)
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	assert_false(engine.drivetrain_connected)
 
 
@@ -1751,7 +1741,7 @@ func test_engine_can_be_reinitialized_after_running() -> void:
 	engine.angular_velocity = 3000.0 * TAU / 60.0
 	engine.combustion_running = true
 	engine.output_torque = 100.0
-	engine.initialize(parameters, car, starter, audio_player)
+	engine.initialize(parameters, car, audio_player)
 	assert_almost_eq(engine.angular_velocity, 0.0, 0.000001)
 	assert_almost_eq(engine.output_torque, 0.0, 0.000001)
 	assert_false(engine.combustion_running)

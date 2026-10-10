@@ -132,13 +132,13 @@ func update(
 		gearbox.selected_gear > 0 &&
 		next_gear_torque > cur_torque
 	):
-		if engine.rpm > 0.85 * engine.max_rpm:
+		if engine.rpm > 0.85 * engine.parameters.max_rpm:
 			if Time.get_ticks_msec() - last_shift_time > shift_time:
 				gearbox.shift_up()
 
 	if (
 		gearbox.selected_gear > 1 &&
-		engine.rpm < 0.5 * engine.max_rpm &&
+		engine.rpm < 0.5 * engine.parameters.max_rpm &&
 		previous_gear_torque > cur_torque
 	):
 		if Time.get_ticks_msec() - last_shift_time > shift_time:
