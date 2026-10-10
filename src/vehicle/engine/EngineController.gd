@@ -33,7 +33,6 @@ var parameters: EngineParameters
 var audio_player: AudioStreamPlayer
 var engine_sound: AudioStream
 var starter_sound: AudioStream
-var was_running: bool = false
 var fuel_tank: FuelTank = FuelTank.new()
 
 var rpm: float:
@@ -90,7 +89,6 @@ func initialize(
 	starter = starter_arg
 	limiter_torque = 0.0
 	reaction_torque = 0.0
-	was_running = false
 	combustion_running = false
 	drivetrain_connected = false
 	fuel_tank.initialise(parameters_arg, car)
@@ -224,8 +222,6 @@ func apply(
 
 		for listener in listeners:
 			listener.onStall(self)
-
-	was_running = angular_velocity > 0.0
 
 	consume_fuel(
 		throttle_input,
