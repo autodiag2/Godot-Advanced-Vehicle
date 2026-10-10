@@ -168,12 +168,12 @@ func apply(
 	print("output_torque=", output_torque, " reaction_torque=", reaction_torque)
 
 	if (
-		rpm >= parameters.max_rpm &&
+		rpm > parameters.max_rpm &&
 		net_torque > 0.0
 	):
 		limiter_torque = net_torque
 		net_torque = 0.0
-
+	
 	if delta > 0.0:
 		var next_angular_velocity := (
 			angular_velocity +
