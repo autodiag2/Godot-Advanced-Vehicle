@@ -10,6 +10,7 @@ func is_locked() -> bool:
 
 # result x reaction torque to apply on drivetrain
 # result y reaction torque to apply on engine
+
 func get_reaction_torques(
 	engine_av: float,
 	drivetrain_av: float,
@@ -17,7 +18,8 @@ func get_reaction_torques(
 	drivetrain_torque: float,
 	inertia_engine: float,
 	inertia_drivetrain: float,
-	clutch_input: float
+	clutch_input: float,
+	delta: float
 ) -> Vector2:
 	assert(not is_nan(engine_torque))
 	assert(not is_nan(drivetrain_av))
@@ -25,36 +27,42 @@ func get_reaction_torques(
 	assert(not is_nan(drivetrain_torque))
 	assert(not is_nan(inertia_engine))
 	assert(not is_nan(inertia_drivetrain))
-	assert(0.0 <= clutch_input)
-	assert(clutch_input <= 1.0)
-	var delta_torque := engine_torque - drivetrain_torque
-	var delta_av := engine_av - drivetrain_av
-	var clutch_torque_max := friction * (1.0 - clutch_input)
-	var result := Vector2.ZERO
-	
-	if absf(delta_av) < 0.5:
-		_locked = true
-		var total_inertia := inertia_engine + inertia_drivetrain
-		assert(0.0 < total_inertia)
+	assert(inertia_engine > 0.0)
+	assert(inertia_drivetrain > 0.0)
+	assert(delta >= 0.0)
+	assert(clutch_input >= 0.0 and clutch_input <= 1.0)
 
-		var angular_acceleration := delta_torque / total_inertia
-		var clutch_torque := (
-			drivetrain_torque +
-			inertia_drivetrain * angular_acceleration
-		)
+	if delta == 0.0:
+		return Vector2.ZERO
 
-		result.x = clutch_torque
-		result.y = -clutch_torque
-		#assert(absf(clutch_torque) <= clutch_torque_max)
-	else:
+	var relative_speed := engine_av - drivetrain_av
+	var max_clutch_torque := friction * (1.0 - clutch_input)
+
+	if max_clutch_torque <= 0.0 or relative_speed == 0.0:
 		_locked = false
-		var torque = clutch_torque_max
-		if 0.5 < delta_av:
-			result.x = torque
-			result.y = -torque
-		elif delta_av < -0.5:
-			result.x = -torque
-			result.y = torque
+		return Vector2.ZERO
 
-	assert(result.x == -result.y)
-	return result
+	var inverse_total_inertia := (
+		1.0 / inertia_engine +
+		1.0 / inertia_drivetrain
+	)
+
+	var torque_to_synchronize := (
+		relative_speed / delta +
+		engine_torque / inertia_engine -
+		drivetrain_torque / inertia_drivetrain
+	) / inverse_total_inertia
+
+	var direction := signf(relative_speed)
+	var clutch_torque := clampf(
+		torque_to_synchronize,
+		0.0 if direction > 0.0 else -max_clutch_torque,
+		max_clutch_torque if direction > 0.0 else 0.0
+	)
+
+	_locked = (
+		direction * torque_to_synchronize >= 0.0
+		and absf(torque_to_synchronize) <= max_clutch_torque
+	)
+
+	return Vector2(clutch_torque, -clutch_torque)

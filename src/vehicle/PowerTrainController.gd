@@ -94,7 +94,8 @@ func apply(
 		drivetrain_torque,
 		engine_inertia,
 		drivetrain_inertia,
-		clutch_input
+		clutch_input,
+		delta
 	)
 	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
 	print("clutch reaction(Tc)=", absf(reaction_torques.x), " on engine=", reaction_torques.y, " on gearbox=", reaction_torques.x)
