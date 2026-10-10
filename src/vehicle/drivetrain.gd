@@ -63,7 +63,7 @@ func calculate_inertia(depth: int = 3) -> float:
 	assert(0 <= depth)
 	var total_inertia := 0.0
 	
-	var drivetrain_inertia_partial := 30.0
+	var drivetrain_inertia_partial := 0.0
 	total_inertia += drivetrain_inertia_partial
 	total_inertia += gearbox.calculate_inertia()
 	return total_inertia

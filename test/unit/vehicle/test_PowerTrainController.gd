@@ -138,7 +138,27 @@ func test_average_rear_wheel_speed_is_calculated_from_wheels() -> void:
 		15.0
 	)
 
+func test_engaging_first_gear_at_idle_does_not_instantly_stall_engine() -> void:
+	var delta := 0.01
+	engine.start()
+	engine.angular_velocity = 800.0 / EngineController.RPM_PER_RADIAN_PER_SECOND
+	engine.combustion_running = true
+	engine.output_torque = 0.0
 
+	for i in range(10):
+		powertrain.apply(0.0, 0.0, delta)
+
+	assert_gt(engine.rpm, 0.0)
+
+	powertrain.drivetrain.gearbox.set_gear(1)
+
+	powertrain.apply(0.0, 0.0, delta)
+
+	assert_gt(
+		engine.rpm,
+		0.0,
+		"Engaging first gear should not instantly force engine RPM to zero."
+	)
 
 func test_average_front_wheel_speed_is_calculated_from_wheels() -> void:
 	powertrain.wheel_fl.set_spin(10.0)
