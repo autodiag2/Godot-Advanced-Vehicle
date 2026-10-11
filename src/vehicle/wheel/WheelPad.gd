@@ -12,6 +12,7 @@ func calculate_braking_factor(
 ) -> float:
 	assert(0.0 <= clamping_force)
 	assert(clamping_force <= 1.0)
+
 	return get_friction() * clamping_force
 
 

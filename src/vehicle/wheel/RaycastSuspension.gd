@@ -27,16 +27,19 @@ var spring_curr_length := 0.2
 
 
 func _ready() -> void:
+	assert(dynamics != null)
 	dynamics.setup(
 		wheel,
 		suspension
 	)
-	assert(dynamics != null)
 	assert(wheel != null)
 	assert(suspension != null)
 	wheel.set_view(wheelmesh as WheelView)
 
 func set_params(params: WheelSuspensionParameters) -> void:
+	assert(params != null)
+	assert(params.tire_model != null)
+	assert(0.0 < params.tire_model.radius)
 	self.parameters = params
 	wheel.setup(
 		params.tire_model,
