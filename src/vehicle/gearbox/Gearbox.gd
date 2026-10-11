@@ -29,13 +29,13 @@ func setup(parameters: DriveTrainParameters, differential_arg: Differential) -> 
 
 func apply_torque(torque: float, delta: float) -> float:
 	assert(delta >= 0.0)
-
-	print(
-		"neutral input_av=", input_av,
-		" torque=", torque,
-		" inertia=", params.gear_inertia,
-		" delta=", delta
-	)
+	if get_gearing() == 0.0:
+		print(
+			"neutral input_av=", input_av,
+			" torque=", torque,
+			" inertia=", params.gear_inertia,
+			" delta=", delta
+		)
 	if delta == 0.0:
 		return 0.0
 

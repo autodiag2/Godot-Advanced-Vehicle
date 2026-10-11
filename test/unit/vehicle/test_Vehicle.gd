@@ -362,3 +362,95 @@ func test_engine_does_not_exceed_rpm_limiter() -> void:
 		vehicle.engine.parameters.max_rpm + RPM_TOLERANCE,
 		"Engine RPM must remain bounded by the rev limiter"
 	)
+
+func test_vehicle_and_wheels_positions_remain_finite_under_physics_process() -> void:
+	vehicle.start()
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
+	vehicle.input_controller.throttle = 0.0
+	vehicle.input_controller.brake = 0.0
+	vehicle.input_controller.handbrake = 0.0
+	vehicle.input_controller.clutch = 0.0
+
+	await _step_physics(SETTLE_FRAMES)
+
+	var initial_vehicle_position := vehicle.global_position
+	var initial_wheel_positions := [
+		vehicle.wheel_fl.global_position,
+		vehicle.wheel_fr.global_position,
+		vehicle.wheel_bl.global_position,
+		vehicle.wheel_br.global_position,
+	]
+
+	await _step_physics(TEST_FRAMES)
+
+	_assert_finite(vehicle.global_position.x, "Vehicle position x")
+	_assert_finite(vehicle.global_position.y, "Vehicle position y")
+	_assert_finite(vehicle.global_position.z, "Vehicle position z")
+
+	var wheels := [
+		vehicle.wheel_fl,
+		vehicle.wheel_fr,
+		vehicle.wheel_bl,
+		vehicle.wheel_br,
+	]
+
+	for i in range(wheels.size()):
+		var wheel_position: Vector3 = wheels[i].global_position
+		_assert_finite(wheel_position.x, "Wheel %d position x" % i)
+		_assert_finite(wheel_position.y, "Wheel %d position y" % i)
+		_assert_finite(wheel_position.z, "Wheel %d position z" % i)
+
+	# Confirm physics processing actually updates the scene transforms.
+	assert_true(
+		vehicle.global_position.distance_to(initial_vehicle_position) > 0.0
+		or _wheel_positions_changed(wheels, initial_wheel_positions),
+		"Physics processing should update the vehicle or wheel positions"
+	)
+
+
+func _wheel_positions_changed(
+	wheels: Array,
+	initial_positions: Array
+) -> bool:
+	for i in range(wheels.size()):
+		if wheels[i].global_position.distance_to(initial_positions[i]) > 0.001:
+			return true
+	return false
+
+func _wait_combustion_running():
+	for i in range(10):
+		vehicle.engine.apply(0.0, 1.0, 0.0)
+	assert(vehicle.engine.combustion_running)
+
+func test_first_gear_zero_throttle_does_not_raise_engine_rpm() -> void:
+	vehicle.start()
+	_wait_combustion_running()
+	assert_true(
+		vehicle.powertrain.engine.combustion_running,
+		"Engine must be running before the test begins"
+	)
+	assert_false(
+		vehicle.powertrain.engine.starter.active,
+		"Starter must be disengaged before measuring RPM"
+	)
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
+	vehicle.input_controller.throttle = 0.0
+	vehicle.input_controller.brake = 0.0
+	vehicle.input_controller.handbrake = 0.0
+	vehicle.input_controller.clutch = 0.0
+
+	await _step_physics(SETTLE_FRAMES)
+
+	var initial_rpm: float = vehicle.powertrain.engine.rpm
+
+	await _step_physics(TEST_FRAMES)
+
+	var final_rpm: float = vehicle.powertrain.engine.rpm
+
+	_assert_finite(initial_rpm, "Initial engine RPM")
+	_assert_finite(final_rpm, "Final engine RPM")
+
+	assert_lte(
+		final_rpm, initial_rpm + RPM_TOLERANCE,
+		"Engine RPM should not rise significantly at zero throttle in first gear"
+	)

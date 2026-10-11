@@ -696,6 +696,23 @@ func _wait_combustion_running():
 		engine.apply(0.0, 1.0, 0.0)
 	assert(engine.combustion_running)
 
+func test_idle_control_does_not_raise_running_engine_above_target_rpm() -> void:
+	engine.start()
+	_wait_combustion_running()
+	engine.rpm = parameters.engine.rpm_idle - 100.0
+
+	var delta := 1.0 / 60.0
+	var target_rpm: float = parameters.engine.rpm_idle
+
+	for i in range(120):
+		engine.apply(0.0, delta)
+
+		assert_lte(
+			engine.rpm,
+			target_rpm + 0.01,
+			"Idle control must not accelerate a running engine above target idle RPM"
+		)
+
 func test_ensure_starter_stop_in_case_no_fuel():
 	engine.fuel_tank.fuel_litres = 0.0
 	engine.start()
