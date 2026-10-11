@@ -19,14 +19,10 @@ var speed_threshold := 0.1
 var view: WheelView
 
 func _init() -> void:
-	controller_debug_print_enabled = false
+	TAG_NAME = "WHEEL"
 
 func set_view(view_arg: WheelView):
 	self.view = view_arg
-
-func debug_print(...args) -> void:
-	args.push_front("WHEEL")
-	super.debug_print(args)
 
 func setup(
 	tire_arg: TireModel,
@@ -84,8 +80,6 @@ func update_force(
 ) -> Vector3:
 	assert(tire != null)
 	
-	debug_print("slip=", slip)
-
 	force = tire.update_forces(
 		slip,
 		normal_load,

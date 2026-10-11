@@ -74,9 +74,8 @@ func calculate_torque(delta: float) -> float:
 func get_av() -> float:
 	return gearbox.input_av
 
-func debug_print(...args) -> void:
-	args.push_front("DRIVETRAIN")
-	super.debug_print(args)
+func _init() -> void:
+	TAG_NAME = "DRIVETRAIN"
 
 # Return engine-side reaction torque
 func apply_torque(

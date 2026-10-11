@@ -334,6 +334,23 @@ func test_braking_does_not_create_engine_drive_torque() -> void:
 
 	assert_almost_eq(vehicle.wheel_bl.get_spin(), 0.0, 0.1)
 
+func test_tire_forces() -> void:
+	vehicle.set_print_debug(true)
+	vehicle.start()
+	
+	await _step_physics(SETTLE_FRAMES)
+
+	vehicle.input_controller.throttle = 0.0
+	vehicle.input_controller.brake = 0.0
+	vehicle.powertrain.drivetrain.gearbox.set_gear(1)
+
+	print(" =================== ")
+	await _step_physics(10)
+	print(" =================== ")
+
+	assert_gt(vehicle.wheel_bl.get_spin(), 0.0)
+
+
 
 func test_engine_does_not_exceed_rpm_limiter() -> void:
 	vehicle.start()

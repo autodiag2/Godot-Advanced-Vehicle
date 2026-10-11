@@ -5,6 +5,10 @@ var torque: float = 5.0
 var torque_ramp_rate: float = 1000.0
 var target_torque: float = 0.0
 var active: bool = false
+var parent := Controller.new()
+
+func _init() -> void:
+	parent.TAG_NAME = "STARTER"
 
 func start() -> void:
 	active = true
@@ -20,7 +24,7 @@ func get_torque(delta: float) -> float:
 	assert(0.0 <= delta)
 
 	var current_torque := target_torque if active else 0.0
-	print("current_torque=", current_torque)
+	parent.debug_print("current_torque=", current_torque)
 	return current_torque
 
 

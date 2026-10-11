@@ -148,7 +148,7 @@ func apply(
 
 	limiter_torque = 0.0
 
-	#print("starter.active=", starter.active, "fuel_tank.fuel_litres=", fuel_tank.fuel_litres, " rpm=", rpm)
+	debug_print("starter.active=", starter.active, "fuel_tank.fuel_litres=", fuel_tank.fuel_litres, " rpm=", rpm)
 	if (
 		starter.active &&
 		rpm >= parameters.rpm_idle
@@ -163,7 +163,7 @@ func apply(
 	var net_torque := (
 		output_torque - reaction_torque
 	)
-	print("output_torque=", output_torque, " reaction_torque=", reaction_torque)
+	debug_print("output_torque=", output_torque, " reaction_torque=", reaction_torque)
 
 	if (
 		rpm > parameters.max_rpm &&
@@ -266,7 +266,7 @@ func calculate_torque(
 		)
 
 	var starter_torque := starter.get_torque(delta)
-	print("engine: rpm= ", rpm, " parameters.rpm_idle=", parameters.rpm_idle, " calc: combustion=", combustion_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
+	debug_print("engine: rpm= ", rpm, " parameters.rpm_idle=", parameters.rpm_idle, " calc: combustion=", combustion_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
 	return (
 		combustion_torque +
 		starter_torque +

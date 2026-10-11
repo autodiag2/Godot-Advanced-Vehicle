@@ -1,5 +1,5 @@
 class_name Gearbox
-extends RefCounted
+extends Controller
 
 var parameters_drivetrain: DriveTrainParameters
 @export var params: GearboxParameters
@@ -21,6 +21,9 @@ var differential: Differential
 var input_av := 0.0
 var output_av := 0.0
 
+func _init() -> void:
+	TAG_NAME = "GEARBOX"
+
 func setup(parameters: DriveTrainParameters, differential_arg: Differential) -> void:
 	assert(parameters != null)
 	parameters_drivetrain = parameters
@@ -29,13 +32,8 @@ func setup(parameters: DriveTrainParameters, differential_arg: Differential) -> 
 
 func apply_torque(torque: float, delta: float) -> float:
 	assert(delta >= 0.0)
-	if get_gearing() == 0.0:
-		print(
-			"neutral input_av=", input_av,
-			" torque=", torque,
-			" inertia=", params.gear_inertia,
-			" delta=", delta
-		)
+	debug_print("apply: ", torque, " N.m during ", delta, " s")
+
 	if delta == 0.0:
 		return 0.0
 
@@ -51,13 +49,16 @@ func apply_torque(torque: float, delta: float) -> float:
 			differential.average_front_wheel_speed
 		) * 0.5
 
+	debug_print("adjusted output av = ", output_av, " rad/s")
 	if gearing == 0.0:
 		assert(params.gear_inertia > 0.0)
 		input_av += torque / params.gear_inertia * delta
+		debug_print("uncoupled av in=", input_av, " out=", output_av, " rad/s")
 		return torque
 
 	var previous_input_av := input_av
 	input_av = output_av * gearing
+	debug_print("adjusted av in=", input_av)
 
 	var input_angular_acceleration := (
 		input_av - previous_input_av
@@ -70,7 +71,7 @@ func apply_torque(torque: float, delta: float) -> float:
 
 	var output_torque := transmitted_torque * gearing
 	var net_output_torque := differential.apply_torque(output_torque, delta)
-
+	debug_print("net_output_torque=", net_output_torque, " N.m input net torque=", net_output_torque / gearing)
 	return net_output_torque / gearing
 
 func set_gear(gear: int):

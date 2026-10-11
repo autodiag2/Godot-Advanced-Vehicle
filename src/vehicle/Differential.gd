@@ -39,6 +39,9 @@ var type : DIFF_TYPE = DIFF_TYPE.LOCKED
 var drive_type := DriveTrainParameters.DRIVE_TYPE.RWD
 var locked_synchronization_rate := 10.0 # Hz
 
+func _init() -> void:
+	TAG_NAME = "DIFF"
+
 @warning_ignore("shadowed_variable")
 func initialise(parameters_arg: DiffParameters, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, drivetrain_parameters: DriveTrainParameters):
 	assert(parameters_arg != null)
@@ -51,10 +54,6 @@ func initialise(parameters_arg: DiffParameters, wheel_bl: RaycastSuspension, whe
 @warning_ignore("shadowed_variable")
 func set_type(type: DIFF_TYPE):
 	self.type = type
-
-func debug_print(...args) -> void:
-	args.push_front("DIFFERENTIAL")
-	super.debug_print(args)
 
 func calculate_inertia() -> float:
 	var wheels_inertia := 0.0

@@ -13,9 +13,8 @@ var rolling_resistance := 0.0
 
 var force := Vector3.ZERO
 
-func debug_print(...args) -> void:
-	args.push_front("WDYNAMICS")
-	super.debug_print(args)
+func _init() -> void:
+	TAG_NAME = "WDYNAMICS"
 
 func setup(
 	wheel_param: WheelController,

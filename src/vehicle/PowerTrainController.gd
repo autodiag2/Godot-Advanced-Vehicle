@@ -1,5 +1,5 @@
 class_name PowertrainController
-extends RefCounted
+extends Controller
 
 var 	engine: EngineController
 var clutch := Clutch.new()
@@ -82,11 +82,11 @@ func apply(
 	var engine_av := engine.angular_velocity
 	var engine_inertia := parameters.engine.moment
 
-	print("engine\t\tT=", engine_torque, "\tAV=", engine_av, "\tintertia=", engine_inertia)
+	debug_print("engine\t\tT=", engine_torque, "\tAV=", engine_av, "\tintertia=", engine_inertia)
 	var drivetrain_torque := drivetrain.calculate_torque(delta)
 	var drivetrain_av := drivetrain.get_av()
 	var drivetrain_inertia := drivetrain.calculate_inertia()
-	print("drivetrain\tT=", drivetrain_torque, "\tAV=", drivetrain_av, "\tintertia=", drivetrain_inertia)
+	debug_print("drivetrain\tT=", drivetrain_torque, "\tAV=", drivetrain_av, "\tintertia=", drivetrain_inertia)
 	var reaction_torques := clutch.get_reaction_torques(
 		engine_av,
 		drivetrain_av,
@@ -98,7 +98,7 @@ func apply(
 		delta
 	)
 	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
-	print("clutch reaction(Tc)=", absf(reaction_torques.x), " on engine=", reaction_torques.y, " on gearbox=", reaction_torques.x)
+	debug_print("clutch reaction(Tc)=", absf(reaction_torques.x), " on engine=", reaction_torques.y, " on gearbox=", reaction_torques.x)
 
 	engine.apply(throttle_input, delta, -reaction_torques.y)
 	
