@@ -114,6 +114,7 @@ func apply_torque(
 	var drive_torque_br := wheel_inertia_br * angular_acceleration
 
 	var net_torque := 0.0
+	debug_print("drive_torque_bl=", drive_torque_bl, " drive_torque_br=", drive_torque_br)
 	net_torque += wheel_bl.apply_torque(
 		drive_torque_bl,
 		delta

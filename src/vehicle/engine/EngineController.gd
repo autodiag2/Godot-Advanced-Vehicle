@@ -61,7 +61,7 @@ func remove_listener(listener: Listener) -> void:
 	listeners.erase(listener)
 
 func _init():
-	controller_debug_print_enabled = true
+	TAG_NAME = "ENGINE"
 
 func initialize(
 	parameters_arg: CarParameters,
@@ -266,7 +266,7 @@ func calculate_torque(
 		)
 
 	var starter_torque := starter.get_torque(delta)
-	debug_print("engine: rpm= ", rpm, " parameters.rpm_idle=", parameters.rpm_idle, " calc: combustion=", combustion_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
+	debug_print("engine: rpm= ", rpm, " parameters.rpm_idle=", parameters.rpm_idle, " calc: combustion=", combustion_torque, " idle_torque=", idle_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
 	return (
 		combustion_torque +
 		starter_torque +
