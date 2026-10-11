@@ -10,7 +10,6 @@ func is_locked() -> bool:
 
 # result x reaction torque to apply on drivetrain
 # result y reaction torque to apply on engine
-
 func get_reaction_torques(
 	engine_av: float,
 	drivetrain_av: float,

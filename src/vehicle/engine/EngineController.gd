@@ -266,7 +266,7 @@ func calculate_torque(
 		)
 
 	var starter_torque := starter.get_torque(delta)
-	print("engine: calc: combustion=", combustion_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
+	print("engine: rpm= ", rpm, " parameters.rpm_idle=", parameters.rpm_idle, " calc: combustion=", combustion_torque, " starter=", starter_torque, " idle=", idle_torque, " friction=", engine_friction_torque, " AV=", angular_velocity)
 	return (
 		combustion_torque +
 		starter_torque +

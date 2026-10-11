@@ -8,10 +8,12 @@ var handbrake: bool = false
 var clutch: float = 0.0
 
 func update(input_joystick: Control) -> void:
+	if not input_joystick:
+		push_warning("no input joystick")
+		return
 	var joystick_output := Vector2.ZERO
 
-	if input_joystick:
-		joystick_output = input_joystick.scene.output
+	joystick_output = input_joystick.scene.output
 
 	steering = -joystick_output.x
 

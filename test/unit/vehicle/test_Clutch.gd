@@ -492,7 +492,6 @@ func test_realism_fully_disengaged_clutch_does_not_change_shaft_speeds() -> void
 	assert_float_eq(engine_av, 100.0)
 	assert_float_eq(drivetrain_av, 0.0)
 
-
 func test_realism_clutch_capacity_boundary_controls_lock_state() -> void:
 	var synchronizing_torque := clutch.friction
 
