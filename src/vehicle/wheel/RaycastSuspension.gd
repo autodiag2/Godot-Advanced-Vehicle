@@ -22,10 +22,13 @@ var prev_pos := Vector3.ZERO
 
 var spring_curr_length := 0.2
 
-@onready var car = $'..'
+@onready var car: Vehicle = $'..'
 @onready var wheelmesh = $MeshInstance3D
+var parent:= Controller.new()
 
-
+func _init() -> void:
+	parent.TAG_NAME = "RAYCAST"
+	
 func _ready() -> void:
 	assert(dynamics != null)
 	dynamics.setup(
@@ -147,23 +150,26 @@ func apply_forces(opposite_comp, delta):
 		)
 
 		var normal := get_collision_normal()
-
+		
 		car.apply_force(
 			normal * suspension_load,
 			contact
 		)
-
+		parent.debug_print("apply force(", normal * suspension_load, contact, ")")
+		
 		car.apply_force(
 			global_transform.basis.x *
 			force_vec.x,
 			contact
 		)
+		parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
 
 		car.apply_force(
 			global_transform.basis.z *
 			force_vec.y,
 			contact
 		)
+		parent.debug_print("apply force(", global_transform.basis.z * force_vec.y, contact, ")")
 
 		return suspension.load_mm
 

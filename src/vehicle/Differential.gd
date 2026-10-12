@@ -109,7 +109,15 @@ func apply_torque(
 	var angular_acceleration := (
 		torque - wheel_bl_reaction - wheel_br_reaction
 	) / total_inertia
-
+	
+	debug_print(
+		"input_torque=", torque,
+		" reaction_bl=", wheel_bl_reaction,
+		" reaction_br=", wheel_br_reaction,
+		"inertia_bl=", wheel_inertia_bl,
+		"inertia_br=", wheel_inertia_br,
+		"total_inertia=", total_inertia
+	)
 	var drive_torque_bl := wheel_inertia_bl * angular_acceleration
 	var drive_torque_br := wheel_inertia_br * angular_acceleration
 

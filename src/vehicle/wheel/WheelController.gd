@@ -69,8 +69,8 @@ func update_slip(
 			wheel_velocity
 		) / slip_speed
 
-	debug_print("longitudinal_vel=", longitudinal_vel, " lateral_slip=", lateral_slip)
-	debug_print("slip.y=", slip.y)
+	debug_print("update_slip: longitudinal_vel=", longitudinal_vel, " lateral_slip=", lateral_slip)
+	debug_print("update_slip: slip.y=", slip.y)
 
 	return slip
 
@@ -85,12 +85,14 @@ func update_force(
 		normal_load,
 		surface_mu
 	)
-	debug_print("force=", force)
+	debug_print("update_force: force=", force)
 
 	return force
 
 func get_road_reaction_torque() -> float:
-	return force.y * tire.radius
+	var torque := force.y * tire.radius
+	debug_print("get_road_reaction_torque=", torque)
+	return torque
 
 func apply_torque(
 	net_torque: float,
@@ -114,6 +116,7 @@ func apply_torque(
 		if signf(net_torque) != signf(spin):
 			next_spin = 0.0
 
+	debug_print("apply_torque: next_spin=", next_spin, " torque=", net_torque)
 	set_spin(next_spin)
 
 	return net_torque

@@ -28,6 +28,7 @@ func set_print_debug(state: bool):
 	powertrain.drivetrain.differential.controller_debug_print_enabled = state
 	powertrain.drivetrain.gearbox.controller_debug_print_enabled = state
 	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+		wheel.parent.controller_debug_print_enabled = state
 		wheel.wheel.controller_debug_print_enabled = state
 		wheel.dynamics.controller_debug_print_enabled = state
 

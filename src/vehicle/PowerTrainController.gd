@@ -85,10 +85,10 @@ func apply(
 	var engine_av := engine.angular_velocity
 	var engine_inertia := parameters.engine.moment
 
-	debug_print("engine\t\tT=", engine_torque, "\tAV=", engine_av, "\tintertia=", engine_inertia)
 	var drivetrain_torque := drivetrain.calculate_torque(delta)
 	var drivetrain_av := drivetrain.get_av()
 	var drivetrain_inertia := drivetrain.calculate_inertia()
+	debug_print("engine\t\tT=", engine_torque, "\tAV=", engine_av, "\tintertia=", engine_inertia)
 	debug_print("drivetrain\tT=", drivetrain_torque, "\tAV=", drivetrain_av, "\tintertia=", drivetrain_inertia)
 	var reaction_torques := clutch.get_reaction_torques(
 		engine_av,
