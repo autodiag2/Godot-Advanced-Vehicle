@@ -175,12 +175,12 @@ func apply_forces(opposite_comp, delta):
 
 	spring_curr_length = suspension.spring_length
 
-	wheel.spin -= (
+	wheel.set_spin(wheel.spin - (
 		sign(wheel.spin) *
 		delta *
 		2.0 /
 		wheel.inertia
-	)
+	))
 
 	return 0.0
 
