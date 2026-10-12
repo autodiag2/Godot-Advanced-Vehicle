@@ -171,24 +171,25 @@ func apply_forces(opposite_comp, delta):
 		)
 		parent.debug_print("apply force(", normal * suspension_load, contact, ")")
 		
-		car.apply_force(
-			global_transform.basis.x *
-			force_vec.x,
-			contact
-		)
-		parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
-	
-		if previous_sign != null:
-			if ( signf(previous_sign) != signf(force_vec.y)):
-				parent.debug_print("OSCILLATION DETECTED prev=", previous_sign, " next=", force_vec.y)
+		if false:
+			car.apply_force(
+				global_transform.basis.x *
+				force_vec.x,
+				contact
+			)
+			parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
+		
+			if previous_sign != null:
+				if ( signf(previous_sign) != signf(force_vec.y)):
+					parent.debug_print("OSCILLATION DETECTED prev=", previous_sign, " next=", force_vec.y)
 
-		previous_sign = force_vec.y
-		car.apply_force(
-			global_transform.basis.z *
-			-absf(force_vec.y),
-			contact
-		)
-		parent.debug_print("apply force(", global_transform.basis.z * force_vec.y, contact, ")")
+			previous_sign = force_vec.y
+			car.apply_force(
+				global_transform.basis.z *
+				-absf(force_vec.y),
+				contact
+			)
+			parent.debug_print("apply force(", global_transform.basis.z * force_vec.y, contact, ")")
 
 		return suspension.load_mm
 
@@ -237,14 +238,34 @@ func calculate_torque(delta: float) -> float:
 
 # Apply torque to wheels and change it's spin
 func apply_torque(
-	net_torque,
-	delta
+	net_torque: float,
+	delta: float
 ):
 	var wheel_net_torqure := wheel.apply_torque(
 		net_torque,
 		0.0,
 		delta
 	)
+	
+	if is_colliding():
+		var contact : Vector3 = (
+			get_collision_point() -
+			car.global_transform.origin
+		)
+		if false:
+			car.apply_force(
+				global_transform.basis.x *
+				force_vec.x,
+				contact
+			)
+			parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
+
+		var force : float = net_torque / wheel.tire.radius
+		car.apply_force(
+			global_transform.basis.z *
+			-force,
+			contact
+		)
 
 	brake_disc.update_usage(
 		get_brake_torque(),
