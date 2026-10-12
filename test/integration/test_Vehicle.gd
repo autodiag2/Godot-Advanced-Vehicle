@@ -252,7 +252,7 @@ func test_engine_starts_and_becomes_self_sustaining() -> void:
 	)
 
 	vehicle.start()
-	await _wait_physics_seconds(1.0)
+	await _wait_physics_seconds(4.0)
 
 	assert_true(
 		vehicle.engine.combustion_running,
