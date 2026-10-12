@@ -36,7 +36,7 @@ func get_rolling_resistance(
 	normal_load: float,
 	longitudinal_velocity: float
 ) -> float:
-	assert(normal_load >= 0.0)
+	assert(0.0 <= normal_load)
 	if abs(longitudinal_velocity) < 0.01:
 		return 0.0
 

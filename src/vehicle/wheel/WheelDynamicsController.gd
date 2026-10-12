@@ -34,9 +34,16 @@ func update(
 ) -> Vector3:
 	surface_mu = surface_friction
 
+	debug_print("previous: longitudinal_velocity=", longitudinal_velocity, " lateral_velocity=", lateral_velocity)
 	longitudinal_velocity = -local_velocity.z
 	lateral_velocity = local_velocity.x
-
+	debug_print(
+		"SIGN CHECK: local_z=", local_velocity.z,
+		" longitudinal_velocity=", longitudinal_velocity,
+		" wheel_spin=", wheel.spin,
+		" wheel_radius=", wheel.tire.radius,
+		" wheel_peripheral_velocity=", wheel.spin * wheel.tire.radius
+	)
 	debug_print("longitudinal_velocity=", longitudinal_velocity)
 	var planar_velocity := Vector2(
 		local_velocity.x,
@@ -54,6 +61,7 @@ func update(
 			absf(planar_velocity.y)
 		)
 
+	#assert(0.0 <= longitudinal_velocity)
 	wheel.update_slip(
 		longitudinal_velocity,
 		lateral_slip

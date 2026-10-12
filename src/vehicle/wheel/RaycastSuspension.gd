@@ -74,6 +74,7 @@ func _process(delta: float) -> void:
 
 func _physics_process(delta: float) -> void:
 	if is_colliding():
+		@warning_ignore("confusable_local_declaration")
 		var tire_load := maxf(
 			suspension.load_newton,
 			0.0
@@ -109,6 +110,7 @@ func spawn():
 	prev_pos = global_transform.origin
 	wheel.set_spin(0.0)
 
+var previous_sign : float = 0.0
 func apply_forces(opposite_comp, delta):
 	force_vec = Vector3.ZERO
 		
@@ -118,6 +120,15 @@ func apply_forces(opposite_comp, delta):
 	) / delta * global_transform.basis
 
 	z_vel = -local_vel.z
+
+	var world_velocity : Vector3 = (global_transform.origin - prev_pos) / delta
+
+	parent.debug_print("XX car linear velocity=", car.linear_velocity)
+	parent.debug_print("XX car angular velocity=", car.angular_velocity)
+	parent.debug_print("XX raycast world velocity=", world_velocity)
+	parent.debug_print("XX raycast forward=", -global_transform.basis.z)
+	parent.debug_print("XX car forward=", -car.global_transform.basis.z)
+	parent.debug_print("XX raycast local velocity=", global_transform.basis * world_velocity)
 
 	prev_pos = global_transform.origin
 
@@ -163,10 +174,15 @@ func apply_forces(opposite_comp, delta):
 			contact
 		)
 		parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
+	
+		if previous_sign != null:
+			if ( signf(previous_sign) != signf(force_vec.y)):
+				parent.debug_print("OSCILLATION DETECTED prev=", previous_sign, " next=", force_vec.y)
 
+		previous_sign = force_vec.y
 		car.apply_force(
 			global_transform.basis.z *
-			force_vec.y,
+			-absf(force_vec.y),
 			contact
 		)
 		parent.debug_print("apply force(", global_transform.basis.z * force_vec.y, contact, ")")

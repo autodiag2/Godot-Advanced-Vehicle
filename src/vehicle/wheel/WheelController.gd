@@ -42,36 +42,35 @@ func setup(
 	slip = Vector2.ZERO
 	force = Vector3.ZERO
 
-
-func update_slip(
-	longitudinal_vel: float,
-	lateral_slip: float
-) -> Vector2:
+func update_slip(longitudinal_vel: float, lateral_slip: float) -> Vector2:
 	assert(speed_threshold > 0.0)
 
 	var wheel_velocity := spin * tire.radius
 
-	slip.x = lateral_slip
+	debug_print(
+		"SLIP INPUT: longitudinal_vel=", longitudinal_vel,
+		" spin=", spin,
+		" radius=", tire.radius,
+		" wheel_velocity=", wheel_velocity,
+		" speed_threshold=", speed_threshold
+	)
 
-	if (
-		absf(longitudinal_vel) < speed_threshold and
-		absf(wheel_velocity) < speed_threshold
-	):
+	slip.x = lateral_slip
+	if absf(longitudinal_vel) < speed_threshold and absf(wheel_velocity) < speed_threshold:
 		slip.y = 0.0
 	else:
-		var slip_speed := maxf(
-			absf(longitudinal_vel),
-			speed_threshold
-		)
+		var slip_speed := maxf(absf(longitudinal_vel), speed_threshold)
+		slip.y = (longitudinal_vel - wheel_velocity) / slip_speed
 
-		slip.y = (
-			longitudinal_vel -
-			wheel_velocity
-		) / slip_speed
+	debug_print(
+		"SLIP OUTPUT: longitudinal_vel=", longitudinal_vel,
+		" wheel_velocity=", wheel_velocity,
+		" slip_speed=", maxf(absf(longitudinal_vel), speed_threshold),
+		" raw_slip=", (longitudinal_vel - wheel_velocity) / maxf(absf(longitudinal_vel), speed_threshold),
+		" final_slip=", slip.y
+	)
 
-	debug_print("update_slip: longitudinal_vel=", longitudinal_vel, " lateral_slip=", lateral_slip)
-	debug_print("update_slip: slip.y=", slip.y)
-
+	debug_print("update_slip: slip=", slip)
 	return slip
 
 func update_force(
@@ -90,7 +89,7 @@ func update_force(
 	return force
 
 func get_road_reaction_torque() -> float:
-	var torque := force.y * tire.radius
+	var torque := 0.0 #force.y * tire.radius
 	debug_print("get_road_reaction_torque=", torque)
 	return torque
 
