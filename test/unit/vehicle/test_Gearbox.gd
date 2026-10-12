@@ -12,10 +12,10 @@ var gearbox: Gearbox
 var differential: TestDifferential
 var drivetrain_parameters: DriveTrainParameters
 var car_parameters: CarParameters
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
 
 
 func before_each() -> void:
@@ -26,10 +26,10 @@ func before_each() -> void:
 	drivetrain_parameters.gearbox.gear_ratios = [2.0]
 	drivetrain_parameters.gearbox.reverse_ratio = 2.0
 
-	wheel_bl = RaycastSuspension.new()
-	wheel_br = RaycastSuspension.new()
-	wheel_fl = RaycastSuspension.new()
-	wheel_fr = RaycastSuspension.new()
+	wheel_bl = WheelCorner.new()
+	wheel_br = WheelCorner.new()
+	wheel_fl = WheelCorner.new()
+	wheel_fr = WheelCorner.new()
 
 	wheel_bl.set_params(car_parameters.wheel_params_bl.duplicate(true))
 	wheel_br.set_params(car_parameters.wheel_params_br.duplicate(true))

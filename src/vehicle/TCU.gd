@@ -2,10 +2,10 @@ class_name TCU extends RefCounted
 
 var 	engine: EngineController
 var gearbox: Gearbox
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
 
 var parameters: CarParameters
 var shift_time := 700.0 # ms
@@ -14,10 +14,10 @@ func link(
 	parameters_arg: CarParameters,
 	engine_arg: EngineController,
 	gearbox_arg: Gearbox,
-	wheel_fl_arg: RaycastSuspension,
-	wheel_fr_arg: RaycastSuspension,
-	wheel_bl_arg: RaycastSuspension,
-	wheel_br_arg: RaycastSuspension
+	wheel_fl_arg: WheelCorner,
+	wheel_fr_arg: WheelCorner,
+	wheel_bl_arg: WheelCorner,
+	wheel_br_arg: WheelCorner
 ) -> void:
 	assert(parameters_arg != null)
 	parameters = parameters_arg

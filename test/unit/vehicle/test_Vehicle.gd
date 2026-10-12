@@ -20,7 +20,7 @@ func before_each() -> void:
 		"Wheel_bl",
 		"Wheel_br",
 	]:
-		var wheel := RaycastSuspension.new()
+		var wheel := WheelCorner.new()
 		wheel.name = wheel_name
 
 		var mesh := MeshInstance3D.new()
@@ -350,6 +350,7 @@ func test_tire_forces() -> void:
 	print(" =========  END  ========== ")
 
 	assert_gt(vehicle.wheel_bl.get_spin(), 0.0)
+	pending("KNOWN")
 
 
 

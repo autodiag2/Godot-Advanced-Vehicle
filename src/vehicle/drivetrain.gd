@@ -17,10 +17,10 @@ var differential := Differential.new()
 		parameters = value
 		gearbox.setup(value, gearbox.differential)
 
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
 
 
 func brake(clamping_factor: float):

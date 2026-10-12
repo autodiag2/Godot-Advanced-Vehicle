@@ -16,12 +16,13 @@ var force := Vector3.ZERO
 
 var speed_threshold := 0.1
 
-var view: WheelView
+var view: Node3D
 
 func _init() -> void:
 	TAG_NAME = "WHEEL"
 
-func set_view(view_arg: WheelView):
+func set_view(view_arg: Node3D):
+	assert(view_arg != null)
 	self.view = view_arg
 
 func setup(
@@ -74,6 +75,7 @@ func update_slip(longitudinal_vel: float, lateral_slip: float) -> Vector2:
 	return slip
 
 func view_update(delta: float):
+	assert(view != null)
 	view.rotate_x(-spin * delta)
 
 func update_force(

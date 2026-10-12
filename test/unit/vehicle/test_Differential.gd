@@ -3,22 +3,22 @@ extends GutTest
 
 var differential: Differential
 var parameters : DiffParameters
-var wheel_bl : RaycastSuspension
-var wheel_br : RaycastSuspension
-var wheel_fl : RaycastSuspension
-var wheel_fr : RaycastSuspension
+var wheel_bl : WheelCorner
+var wheel_br : WheelCorner
+var wheel_fl : WheelCorner
+var wheel_fr : WheelCorner
 
 func before_each():
 	differential = Differential.new()
 	var car_params : CarParameters = CarParameters.new()
 	parameters = car_params.drivetrain.rear_diff
-	wheel_fl = RaycastSuspension.new()
+	wheel_fl = WheelCorner.new()
 	wheel_fl.set_params(car_params.wheel_params_fl)
-	wheel_fr = RaycastSuspension.new()
+	wheel_fr = WheelCorner.new()
 	wheel_fr.set_params(car_params.wheel_params_fr)
-	wheel_bl = RaycastSuspension.new()
+	wheel_bl = WheelCorner.new()
 	wheel_bl.set_params(car_params.wheel_params_bl)
-	wheel_br = RaycastSuspension.new()
+	wheel_br = WheelCorner.new()
 	wheel_br.set_params(car_params.wheel_params_br)
 	differential.initialise(parameters, wheel_bl, wheel_br, wheel_fl, wheel_fr, car_params.drivetrain)
 

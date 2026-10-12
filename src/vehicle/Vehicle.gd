@@ -15,10 +15,10 @@ var powertrain := PowertrainController.new()
 var suspension := SuspensionSystemController.new()
 var motion_controller := VehicleMotionController.new()
 
-@onready var wheel_fl = $Wheel_fl as RaycastSuspension
-@onready var wheel_fr = $Wheel_fr as RaycastSuspension
-@onready var wheel_bl = $Wheel_bl as RaycastSuspension
-@onready var wheel_br = $Wheel_br as RaycastSuspension
+@onready var wheel_fl = $Wheel_fl as WheelCorner
+@onready var wheel_fr = $Wheel_fr as WheelCorner
+@onready var wheel_bl = $Wheel_bl as WheelCorner
+@onready var wheel_br = $Wheel_br as WheelCorner
 
 func set_print_debug(state: bool):
 	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:

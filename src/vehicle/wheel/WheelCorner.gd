@@ -1,7 +1,7 @@
 #
 # Wheel Assembly or Wheel Corner
 #
-class_name RaycastSuspension
+class_name WheelCorner
 extends RayCast3D
 
 var wheel := WheelController.new()
@@ -23,6 +23,7 @@ var prev_pos := Vector3.ZERO
 var spring_curr_length := 0.2
 
 @onready var car: Vehicle = $'..'
+@onready var wheel_view : Node3D = $MeshInstance3D
 
 var parent:= Controller.new()
 
@@ -38,7 +39,7 @@ func _ready() -> void:
 	assert(wheel != null)
 	assert(suspension != null)
 
-	wheel.set_view($MeshInstance3D as WheelView)
+	wheel.set_view(wheel_view)
 
 func set_params(params: WheelSuspensionParameters) -> void:
 	assert(params != null)

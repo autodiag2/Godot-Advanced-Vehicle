@@ -82,12 +82,12 @@ func _create_engine(
 	return engine
 
 
-func _create_wheels() -> Array[RaycastSuspension]:
-	var wheels : Array[RaycastSuspension] = [
-		RaycastSuspension.new(),
-		RaycastSuspension.new(),
-		RaycastSuspension.new(),
-		RaycastSuspension.new()
+func _create_wheels() -> Array[WheelCorner]:
+	var wheels : Array[WheelCorner] = [
+		WheelCorner.new(),
+		WheelCorner.new(),
+		WheelCorner.new(),
+		WheelCorner.new()
 	]
 
 	for suspension in wheels:

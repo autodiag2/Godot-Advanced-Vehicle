@@ -9,10 +9,10 @@ var compression: Array = [
 ]
 
 func apply_forces(
-	front_left_wheel: RaycastSuspension,
-	front_right_wheel: RaycastSuspension,
-	rear_left_wheel: RaycastSuspension,
-	rear_right_wheel: RaycastSuspension,
+	front_left_wheel: WheelCorner,
+	front_right_wheel: WheelCorner,
+	rear_left_wheel: WheelCorner,
+	rear_right_wheel: WheelCorner,
 	delta: float
 ) -> void:
 	var previous_compression := compression.duplicate()

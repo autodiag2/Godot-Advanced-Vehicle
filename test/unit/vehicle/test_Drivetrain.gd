@@ -11,10 +11,10 @@ var drivetrain: DriveTrain
 var powertrain: PowertrainController
 var car_view: RigidBody3D
 var engine_audio: AudioStreamPlayer
-var wheel_bl : RaycastSuspension
-var wheel_br : RaycastSuspension
-var wheel_fl : RaycastSuspension
-var wheel_fr : RaycastSuspension
+var wheel_bl : WheelCorner
+var wheel_br : WheelCorner
+var wheel_fl : WheelCorner
+var wheel_fr : WheelCorner
 func before_each() -> void:
 	drivetrain = DriveTrain.new()
 	var car_params := CarParameters.new()
@@ -35,13 +35,13 @@ func before_each() -> void:
 	var engine := EngineController.new()
 	engine.initialize(car_params, car_view, engine_audio)
 	powertrain = PowertrainController.new()
-	wheel_fl = RaycastSuspension.new()
+	wheel_fl = WheelCorner.new()
 	wheel_fl.set_params(car_params.wheel_params_fl)
-	wheel_fr = RaycastSuspension.new()
+	wheel_fr = WheelCorner.new()
 	wheel_fr.set_params(car_params.wheel_params_fr)
-	wheel_bl = RaycastSuspension.new()
+	wheel_bl = WheelCorner.new()
 	wheel_bl.set_params(car_params.wheel_params_bl)
-	wheel_br = RaycastSuspension.new()
+	wheel_br = WheelCorner.new()
 	wheel_br.set_params(car_params.wheel_params_br)
 	powertrain.initialize(car_params, engine, 
 		wheel_fl, 

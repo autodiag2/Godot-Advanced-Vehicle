@@ -21,8 +21,8 @@ func update(
 			steering_angle = target_steering
 
 func apply_to_wheels(
-	front_left_wheel: RaycastSuspension,
-	front_right_wheel: RaycastSuspension,
+	front_left_wheel: WheelCorner,
+	front_right_wheel: WheelCorner,
 	max_steering_angle: float
 ) -> void:
 	front_left_wheel.steer(

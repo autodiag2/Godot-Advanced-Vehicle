@@ -14,10 +14,10 @@ enum DIFF_STATE {
 }
 
 var parameters := DiffParameters.new()
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
 var average_front_wheel_speed: float:
 	get:
 		return (
@@ -43,7 +43,7 @@ func _init() -> void:
 	TAG_NAME = "DIFF"
 
 @warning_ignore("shadowed_variable")
-func initialise(parameters_arg: DiffParameters, wheel_bl: RaycastSuspension, wheel_br: RaycastSuspension, wheel_fl: RaycastSuspension, wheel_fr: RaycastSuspension, drivetrain_parameters: DriveTrainParameters):
+func initialise(parameters_arg: DiffParameters, wheel_bl: WheelCorner, wheel_br: WheelCorner, wheel_fl: WheelCorner, wheel_fr: WheelCorner, drivetrain_parameters: DriveTrainParameters):
 	assert(parameters_arg != null)
 	parameters = parameters_arg
 	self.wheel_bl = wheel_bl

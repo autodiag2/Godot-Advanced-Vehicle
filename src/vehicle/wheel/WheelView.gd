@@ -1,1 +1,0 @@
-class_name WheelView extends MeshInstance3D

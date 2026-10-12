@@ -5,11 +5,11 @@ var 	engine: EngineController
 var clutch := Clutch.new()
 var drivetrain := DriveTrain.new()
 var tcu: TCU = TCU.new()
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
-var wheels: Array[RaycastSuspension]:
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
+var wheels: Array[WheelCorner]:
 	get:
 		return [wheel_bl,wheel_br,wheel_fl,wheel_fr]
 	set(value):
@@ -43,10 +43,10 @@ func onGearboxGearChange(gear: int) -> void:
 func initialize(
 	parameters_arg: CarParameters,
 	engine_arg: EngineController,
-	wheel_fl_arg: RaycastSuspension,
-	wheel_fr_arg: RaycastSuspension,
-	wheel_bl_arg: RaycastSuspension,
-	wheel_br_arg: RaycastSuspension
+	wheel_fl_arg: WheelCorner,
+	wheel_fr_arg: WheelCorner,
+	wheel_bl_arg: WheelCorner,
+	wheel_br_arg: WheelCorner
 ) -> void:
 	assert(parameters_arg != null)
 	parameters = parameters_arg

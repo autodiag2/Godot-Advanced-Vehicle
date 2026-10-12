@@ -1,9 +1,9 @@
 extends Control
 
-var wheel_fl: RaycastSuspension
-var wheel_fr: RaycastSuspension
-var wheel_bl: RaycastSuspension
-var wheel_br: RaycastSuspension
+var wheel_fl: WheelCorner
+var wheel_fr: WheelCorner
+var wheel_bl: WheelCorner
+var wheel_br: WheelCorner
 
 func _ready() -> void:
 	pass
@@ -14,7 +14,7 @@ func onSetVehicle(vehicle: Vehicle):
 	wheel_fl = vehicle.wheel_fl
 	wheel_fr = vehicle.wheel_fr
 
-func get_tire_wear(wheel: RaycastSuspension) -> float:
+func get_tire_wear(wheel: WheelCorner) -> float:
 	if wheel.wheel.tire == null:
 		return 0.0
 	return wheel.wheel.tire.wear
