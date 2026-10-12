@@ -94,7 +94,7 @@ func update_force(
 	return force
 
 func get_road_reaction_torque() -> float:
-	var torque := 0.0 #force.y * tire.radius
+	var torque := force.y * tire.radius
 	debug_print("get_road_reaction_torque=", torque)
 	return torque
 

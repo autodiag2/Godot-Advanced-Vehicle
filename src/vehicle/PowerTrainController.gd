@@ -101,7 +101,7 @@ func apply(
 		delta
 	)
 
-	engine.apply(throttle_input, delta, -reaction_torques.y)
+	engine.apply(throttle_input, delta, reaction_torques.y)
 	
 	drivetrain.apply_torque(reaction_torques.x, delta)
 

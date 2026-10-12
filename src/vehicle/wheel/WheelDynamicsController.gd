@@ -79,6 +79,6 @@ func update(
 		longitudinal_velocity
 	)
 
-	force.y += rolling_resistance
+	#force.y += rolling_resistance
 
 	return force
