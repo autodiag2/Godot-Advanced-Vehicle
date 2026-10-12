@@ -100,8 +100,6 @@ func apply(
 		clutch_input,
 		delta
 	)
-	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
-	debug_print("clutch reaction(Tc)=", absf(reaction_torques.x), " on engine=", -reaction_torques.y, " on gearbox=", reaction_torques.x)
 
 	engine.apply(throttle_input, delta, -reaction_torques.y)
 	

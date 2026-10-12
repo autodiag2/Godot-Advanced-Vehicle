@@ -1,9 +1,12 @@
 class_name Clutch
-extends RefCounted
+extends Controller
 
 @export var friction := 250.0
 
 var _locked := false
+
+func _init() -> void:
+	TAG_NAME = "CLUTCH"
 
 func is_locked() -> bool:
 	return _locked
@@ -64,4 +67,7 @@ func get_reaction_torques(
 		and absf(torque_to_synchronize) <= max_clutch_torque
 	)
 
-	return Vector2(clutch_torque, -clutch_torque)
+	var reaction_torques := Vector2(clutch_torque, -clutch_torque)
+	assert(absf(reaction_torques.x) == absf(reaction_torques.y))
+	debug_print("clutch reaction(Tc)=", absf(reaction_torques.x), " on engine=", -reaction_torques.y, " on gearbox=", reaction_torques.x)
+	return reaction_torques
