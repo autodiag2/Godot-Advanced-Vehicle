@@ -21,6 +21,7 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_br = $Wheel_br as RaycastSuspension
 
 func set_print_debug(state: bool):
+	input_controller.controller_debug_print_enabled = state
 	engine.controller_debug_print_enabled = state
 	engine.starter.parent.controller_debug_print_enabled = state
 	powertrain.controller_debug_print_enabled = state
@@ -98,7 +99,8 @@ func _ready() -> void:
 	)
 	
 	set_parameters(parameters)
-
+	set_print_debug(true)
+	
 func start():
 	engine.start()
 
