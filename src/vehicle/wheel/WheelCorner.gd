@@ -113,6 +113,7 @@ func spawn():
 	wheel.set_spin(0.0)
 
 var previous_sign : float = 0.0
+var current_suspension_load : float = 0.0
 func apply_forces(opposite_comp, delta):
 	force_vec = Vector3.ZERO
 		
@@ -149,7 +150,7 @@ func apply_forces(opposite_comp, delta):
 			opposite_comp,
 			delta
 		)
-
+		current_suspension_load = suspension_load
 		force_vec = dynamics.update(
 			local_vel,
 			suspension_load,
@@ -222,13 +223,13 @@ func calculate_braked_torque_amount(torque: float) -> float:
 
 func get_reaction_torque() -> float:
 	var brake_torque := get_brake_torque()
-	var road_torque := wheel.get_road_reaction_torque()
+	var rolling_resistance := wheel.tire.get_rolling_resistance(current_suspension_load, z_vel)
 	var spin_sign := signf(wheel.spin)
 
 	if spin_sign == 0.0:
-		return road_torque
+		return rolling_resistance
 
-	return road_torque + spin_sign * brake_torque
+	return rolling_resistance + spin_sign * brake_torque
 
 func calculate_torque(delta: float) -> float:
 	assert(0.0 <= delta)

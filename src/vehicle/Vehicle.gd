@@ -22,10 +22,9 @@ var motion_controller := VehicleMotionController.new()
 
 func set_print_debug(state: bool):
 	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
-		#wheel.parent.controller_debug_print_enabled = state
+		wheel.parent.controller_debug_print_enabled = state
 		wheel.wheel.controller_debug_print_enabled = state
-		#wheel.dynamics.controller_debug_print_enabled = state
-	return
+		wheel.dynamics.controller_debug_print_enabled = state
 	powertrain.clutch.controller_debug_print_enabled = state
 	input_controller.controller_debug_print_enabled = state
 	engine.controller_debug_print_enabled = state
