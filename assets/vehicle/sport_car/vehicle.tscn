@@ -138,14 +138,14 @@ shape = SubResource("5")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.332292, -0.174233)
 shape = SubResource("BoxShape3D_vdwmd")
 
-[node name="sport_car" parent="Vehicle" unique_id=133820440 instance=ExtResource("10_sat6w")]
+[node name="assets" parent="Vehicle" unique_id=133820440 instance=ExtResource("10_sat6w")]
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, -0.672, -0.47664)
 
-[node name="Wheel_001" parent="Vehicle/sport_car" index="0" unique_id=922847559]
+[node name="Wheel_001" parent="Vehicle/assets" index="0" unique_id=922847559]
 visible = false
 
-[node name="Glass_004" parent="Vehicle/sport_car" index="5" unique_id=739953767]
+[node name="Glass_004" parent="Vehicle/assets" index="5" unique_id=739953767]
 mesh = SubResource("ArrayMesh_ut2q0")
 
 [editable path="Vehicle"]
-[editable path="Vehicle/sport_car"]
+[editable path="Vehicle/assets"]

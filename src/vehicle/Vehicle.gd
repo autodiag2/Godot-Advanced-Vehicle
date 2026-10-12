@@ -21,8 +21,12 @@ var motion_controller := VehicleMotionController.new()
 @onready var wheel_br = $Wheel_br as RaycastSuspension
 
 func set_print_debug(state: bool):
-	powertrain.clutch.controller_debug_print_enabled = state
+	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+		wheel.parent.controller_debug_print_enabled = state
+		wheel.wheel.controller_debug_print_enabled = state
+		wheel.dynamics.controller_debug_print_enabled = state
 	return
+	powertrain.clutch.controller_debug_print_enabled = state
 	input_controller.controller_debug_print_enabled = state
 	engine.controller_debug_print_enabled = state
 	engine.starter.parent.controller_debug_print_enabled = state
@@ -30,10 +34,6 @@ func set_print_debug(state: bool):
 	powertrain.drivetrain.controller_debug_print_enabled = state
 	powertrain.drivetrain.differential.controller_debug_print_enabled = state
 	powertrain.drivetrain.gearbox.controller_debug_print_enabled = state
-	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
-		wheel.parent.controller_debug_print_enabled = state
-		wheel.wheel.controller_debug_print_enabled = state
-		wheel.dynamics.controller_debug_print_enabled = state
 
 func spawn():
 	for wheel in [wheel_bl,wheel_br, wheel_fl, wheel_fr]:

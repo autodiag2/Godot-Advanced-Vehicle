@@ -23,7 +23,7 @@ var prev_pos := Vector3.ZERO
 var spring_curr_length := 0.2
 
 @onready var car: Vehicle = $'..'
-@onready var wheelmesh = $MeshInstance3D
+
 var parent:= Controller.new()
 
 func _init() -> void:
@@ -37,7 +37,8 @@ func _ready() -> void:
 	)
 	assert(wheel != null)
 	assert(suspension != null)
-	wheel.set_view(wheelmesh as WheelView)
+
+	wheel.set_view($MeshInstance3D as WheelView)
 
 func set_params(params: WheelSuspensionParameters) -> void:
 	assert(params != null)
@@ -69,8 +70,8 @@ func set_params(params: WheelSuspensionParameters) -> void:
 
 
 func _process(delta: float) -> void:
-	wheelmesh.rotate_x(-wheel.spin * delta)
-	wheelmesh.position.y = -spring_curr_length
+	wheel.view_update(delta)
+	wheel.view.position.y = -spring_curr_length
 
 func _physics_process(delta: float) -> void:
 	if is_colliding():

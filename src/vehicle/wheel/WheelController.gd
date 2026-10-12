@@ -73,6 +73,9 @@ func update_slip(longitudinal_vel: float, lateral_slip: float) -> Vector2:
 	debug_print("update_slip: slip=", slip)
 	return slip
 
+func view_update(delta: float):
+	view.rotate_x(-spin * delta)
+
 func update_force(
 	normal_load: float,
 	surface_mu: float
