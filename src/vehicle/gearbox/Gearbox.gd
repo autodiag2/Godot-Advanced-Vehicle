@@ -103,7 +103,7 @@ func calculate_torque(delta: float) -> float:
 
 	var torque := differential.calculate_torque(delta)
 
-	return torque / gearing
+	return absf(torque / gearing)
 
 func shift_up():
 	if selected_gear < params.gear_ratios.size():

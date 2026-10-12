@@ -232,7 +232,7 @@ func get_reaction_torque() -> float:
 
 func calculate_torque(delta: float) -> float:
 	assert(0.0 <= delta)
-	return get_reaction_torque()
+	return -get_reaction_torque()
 
 # Apply torque to wheels and change it's spin
 func apply_torque(
