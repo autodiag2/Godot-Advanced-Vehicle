@@ -57,22 +57,32 @@ func apply_torque(torque: float, delta: float) -> float:
 		return torque
 
 	var previous_input_av := input_av
-	input_av = output_av * gearing
+	input_av = maxf(0.0, output_av * gearing)
 	debug_print("adjusted av in=", input_av)
 
 	var input_angular_acceleration := (
 		input_av - previous_input_av
 	) / delta
-
+		
 	var transmitted_torque := (
 		torque -
 		params.gear_inertia * input_angular_acceleration
 	)
+	print("input_av=", input_av, " input_angular_acceleration=", input_angular_acceleration, " transmitted_torque=", transmitted_torque)
 
 	var output_torque := transmitted_torque * gearing
+	print("output_torque=", output_torque)
 	var net_output_torque := differential.apply_torque(output_torque, delta)
 	debug_print("net_output_torque=", net_output_torque, " N.m input net torque=", net_output_torque / gearing)
 	return net_output_torque / gearing
+
+func get_brake_torque() -> float:
+	var gearing := get_gearing()
+
+	if gearing == 0.0:
+		return 0.0
+
+	return differential.get_braking_torque() / gearing
 
 func set_gear(gear: int):
 	assert(params != null)
@@ -96,6 +106,7 @@ func calculate_inertia() -> float:
 		differential.calculate_inertia() / pow(gearing, 2)
 	)
 
+# input shaft torque always the same direction
 func calculate_torque() -> float:
 	var gearing := get_gearing()
 	if gearing == 0.0:
@@ -103,7 +114,9 @@ func calculate_torque() -> float:
 
 	var torque := differential.calculate_torque()
 
-	return absf(torque / gearing)
+	var in_torque := absf(torque / gearing)
+	var brake_torque := differential.get_braking_torque()
+	return in_torque - brake_torque
 
 func shift_up():
 	if selected_gear < params.gear_ratios.size():

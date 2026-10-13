@@ -231,8 +231,7 @@ func apply(
 
 func calculate_torque(
 	throttle_input: float,
-	engine_rpm: float = rpm,
-	combustion_enabled: bool = combustion_running
+	engine_rpm: float = rpm
 ) -> float:
 	assert(engine_rpm >= 0.0)
 	assert(throttle_input >= 0.0)
@@ -247,7 +246,7 @@ func calculate_torque(
 	var idle_torque := 0.0
 
 	if (
-		combustion_enabled &&
+		combustion_running &&
 		throttle_input == 0.0 &&
 		engine_rpm > 0.0 &&
 		engine_rpm < parameters.rpm_idle

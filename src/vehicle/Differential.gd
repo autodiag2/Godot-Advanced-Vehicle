@@ -74,6 +74,12 @@ func calculate_torque() -> float:
 		torque += wheel.calculate_torque()
 	return torque
 
+func get_braking_torque() -> float:
+	var torque := 0.0
+	for wheel in wheels:
+		torque += wheel.get_brake_torque()
+	return torque
+
 func apply_torque(
 	torque: float,
 	delta: float

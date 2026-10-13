@@ -223,17 +223,11 @@ func calculate_braked_torque_amount(torque: float) -> float:
 	return maxf(reduced_torque, 0.0)
 
 func get_reaction_torque() -> float:
-	var brake_torque := get_brake_torque()
 	var rolling_resistance := wheel.tire.get_rolling_resistance(current_suspension_load, z_vel)
-	var spin_sign := signf(wheel.spin)
-
-	if spin_sign == 0.0:
-		return rolling_resistance
-
-	return rolling_resistance + spin_sign * brake_torque
+	return rolling_resistance
 
 func calculate_torque() -> float:
-	return -get_reaction_torque()
+	return 0.0
 
 # Apply torque to wheels and change it's spin
 func apply_torque(
@@ -261,6 +255,7 @@ func apply_torque(
 			parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
 
 		var force : float = wheel_net_torqure / wheel.tire.radius
+
 		car.apply_force(
 			-global_transform.basis.z *
 			force,

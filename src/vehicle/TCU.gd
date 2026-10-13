@@ -31,6 +31,7 @@ func link(
 
 var last_shift_time := 0
 
+@warning_ignore("unused_parameter")
 func onGearboxGearChange(new_gear: int):
 	last_shift_time = Time.get_ticks_msec()
 
