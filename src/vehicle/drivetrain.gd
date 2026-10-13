@@ -68,8 +68,8 @@ func calculate_inertia(depth: int = 3) -> float:
 	total_inertia += gearbox.calculate_inertia()
 	return total_inertia
 	
-func calculate_torque(delta: float) -> float:
-	return gearbox.calculate_torque(delta)
+func calculate_torque() -> float:
+	return gearbox.calculate_torque()
 
 func get_av() -> float:
 	return gearbox.input_av

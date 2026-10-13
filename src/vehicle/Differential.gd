@@ -18,6 +18,11 @@ var wheel_fl: WheelCorner
 var wheel_fr: WheelCorner
 var wheel_bl: WheelCorner
 var wheel_br: WheelCorner
+var wheels: Array[WheelCorner]:
+	get():
+		return [wheel_bl, wheel_br, wheel_fl, wheel_fr]
+	set(value):
+		push_error("not implemented")
 var average_front_wheel_speed: float:
 	get:
 		return (
@@ -58,15 +63,15 @@ func set_type(type: DIFF_TYPE):
 func calculate_inertia() -> float:
 	var wheels_inertia := 0.0
 
-	for wheel in [wheel_bl, wheel_br, wheel_fl, wheel_fr]:
+	for wheel in wheels:
 		wheels_inertia += wheel.wheel.inertia
 
 	return wheels_inertia
 
-func calculate_torque(delta: float) -> float:
+func calculate_torque() -> float:
 	var torque := 0.0
-	for wheel in [wheel_bl,wheel_br,wheel_fl,wheel_fr]:
-		torque += wheel.calculate_torque(delta)
+	for wheel in wheels:
+		torque += wheel.calculate_torque()
 	return torque
 
 func apply_torque(

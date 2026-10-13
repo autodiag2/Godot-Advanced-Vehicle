@@ -20,8 +20,7 @@ func stop() -> void:
 	target_torque = 0.0
 
 
-func get_torque(delta: float) -> float:
-	assert(0.0 <= delta)
+func get_torque() -> float:
 
 	var current_torque := target_torque if active else 0.0
 	parent.debug_print("current_torque=", current_torque)

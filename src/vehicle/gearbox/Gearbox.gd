@@ -96,12 +96,12 @@ func calculate_inertia() -> float:
 		differential.calculate_inertia() / pow(gearing, 2)
 	)
 
-func calculate_torque(delta: float) -> float:
+func calculate_torque() -> float:
 	var gearing := get_gearing()
 	if gearing == 0.0:
 		return 0.0
 
-	var torque := differential.calculate_torque(delta)
+	var torque := differential.calculate_torque()
 
 	return absf(torque / gearing)
 

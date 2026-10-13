@@ -232,8 +232,7 @@ func get_reaction_torque() -> float:
 
 	return rolling_resistance + spin_sign * brake_torque
 
-func calculate_torque(delta: float) -> float:
-	assert(0.0 <= delta)
+func calculate_torque() -> float:
 	return -get_reaction_torque()
 
 # Apply torque to wheels and change it's spin
