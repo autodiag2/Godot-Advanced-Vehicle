@@ -100,7 +100,7 @@ func _ready() -> void:
 	)
 	
 	set_parameters(parameters)
-	set_print_debug(true)
+	set_print_debug(false)
 	
 func start():
 	engine.start()

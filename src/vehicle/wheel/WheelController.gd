@@ -100,12 +100,14 @@ func get_road_reaction_torque() -> float:
 
 func apply_torque(
 	net_torque: float,
+	brake_torque: float,
 	drive_inertia: float,
 	delta: float
 ) -> float:
 	assert(tire != null)
 	assert(drive_inertia >= 0.0)
 	assert(0.0 <= delta)
+	assert(0.0 <= brake_torque)
 
 	var total_inertia := inertia + drive_inertia
 	assert(total_inertia > 0.0)
@@ -113,17 +115,21 @@ func apply_torque(
 	if delta == 0.0:
 		return net_torque
 
-	var spin_acceleration := net_torque / total_inertia
-	var next_spin := spin + delta * spin_acceleration
+	var spin_direction := signf(spin)
+	var net_torque_less_brake := net_torque - brake_torque * spin_direction
+	var spin_acceleration := net_torque_less_brake / total_inertia
+	var next_spin := spin + spin_acceleration * delta
 
-	if signf(spin) != 0.0 and signf(next_spin) != signf(spin):
-		if signf(net_torque) != signf(spin):
+	if spin_direction != 0.0 and signf(next_spin) != spin_direction:
+		if signf(net_torque) != -spin_direction:
 			next_spin = 0.0
+		else:
+			next_spin = net_torque * delta / total_inertia
 
 	debug_print("apply_torque: next_spin=", next_spin, " torque=", net_torque)
 	set_spin(next_spin)
 
-	return net_torque
+	return net_torque_less_brake
 
 func set_spin(value: float) -> void:
 	previous_spin = spin

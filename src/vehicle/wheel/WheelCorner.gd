@@ -243,6 +243,7 @@ func apply_torque(
 ):
 	var wheel_net_torqure := wheel.apply_torque(
 		net_torque,
+		get_brake_torque(),
 		0.0,
 		delta
 	)
@@ -260,10 +261,10 @@ func apply_torque(
 			)
 			parent.debug_print("apply force(", global_transform.basis.x * force_vec.x, contact, ")")
 
-		var force : float = net_torque / wheel.tire.radius
+		var force : float = wheel_net_torqure / wheel.tire.radius
 		car.apply_force(
-			global_transform.basis.z *
-			-force,
+			-global_transform.basis.z *
+			force,
 			contact
 		)
 
