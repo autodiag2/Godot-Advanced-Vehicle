@@ -4,8 +4,19 @@
 [ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://assets/ui/tireinfo_app.tscn" id="2_6tyms"]
 [ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
 [ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://assets/ui/render_stats.tscn" id="4_4dmvl"]
+[ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="5_kks0w"]
+[ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/ui/gear_up.png" id="6_lkurn"]
+[ext_resource type="Script" uid="uid://377xjj66y52m" path="res://src/gui/gear_up.gd" id="7_l50n0"]
+[ext_resource type="Texture2D" uid="uid://dpkl8s5wlhhng" path="res://assets/ui/gear_down.png" id="8_6t5qj"]
+[ext_resource type="Script" uid="uid://dn205eygyaky3" path="res://src/gui/gear_down.gd" id="9_46dll"]
+[ext_resource type="Texture2D" uid="uid://ci00y7m4kyp0t" path="res://assets/ui/handbrake_released.png" id="10_a5p4c"]
+[ext_resource type="Texture2D" uid="uid://cvtrwygi5sdib" path="res://assets/ui/handbrake_pressed.png" id="11_q8b65"]
+[ext_resource type="Script" uid="uid://ux8e8chujrtu" path="res://src/gui/handbrake.gd" id="12_1yhnd"]
+[ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://src/gui/restart_scene.gd" id="13_o2lvu"]
+[ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://src/gui/restart_sim.gd" id="14_e5onl"]
+[ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
 
-[node name="Gui" type="Control"]
+[node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -14,7 +25,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bv3ap")
 
-[node name="Essentials" type="Panel" parent="."]
+[node name="Essentials" type="Panel" parent="." unique_id=1658974966]
 self_modulate = Color(1, 1, 1, 0.556863)
 custom_minimum_size = Vector2(200, 100)
 layout_mode = 1
@@ -25,7 +36,7 @@ offset_top = -141.0
 offset_right = 200.0
 grow_vertical = 0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Essentials"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Essentials" unique_id=1614417459]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -33,23 +44,24 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1063625288]
 layout_mode = 2
 text = "Gear"
 
-[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer" unique_id=644883117]
 layout_mode = 2
 text = "Speed"
 
-[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=2078353953]
 layout_mode = 2
 text = "Rpm"
 
-[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer"]
+[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1066805467]
 layout_mode = 2
 text = "Fuel"
 
-[node name="TireInfoApp" parent="." instance=ExtResource("2_6tyms")]
+[node name="TireInfoApp" parent="." unique_id=609235454 instance=ExtResource("2_6tyms")]
+layout_mode = 0
 anchors_preset = 0
 anchor_left = 0.0
 anchor_top = 0.0
@@ -61,20 +73,17 @@ offset_right = 164.0
 offset_bottom = 242.0
 grow_horizontal = 1
 grow_vertical = 1
-wheel_fl_path = NodePath("../../Wheel_fl")
-wheel_fr_path = NodePath("../../Wheel_fr")
-wheel_bl_path = NodePath("../../Wheel_bl")
-wheel_br_path = NodePath("../../Wheel_br")
 
-[node name="InputApp" parent="." instance=ExtResource("3_m5e8j")]
+[node name="InputApp" parent="." unique_id=1462281750 node_paths=PackedStringArray("joystick") instance=ExtResource("3_m5e8j")]
 layout_mode = 1
 anchors_preset = 3
 offset_left = -283.0
 offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
+joystick = NodePath("../../../../../../../../../@WindowWrapper@10784/@ScriptEditor@10783/@VBoxContainer@9998/@HBoxContainer@9999/@HBoxContainer@63767/@MenuButton@63764/@PopupMenu@63480/@PanelContainer@63473")
 
-[node name="RenderStats" parent="." instance=ExtResource("4_4dmvl")]
+[node name="RenderStats" parent="." unique_id=383076913 instance=ExtResource("4_4dmvl")]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -85,3 +94,103 @@ offset_left = -200.0
 offset_bottom = 100.0
 grow_horizontal = 0
 grow_vertical = 1
+
+[node name="Joystick" type="Control" parent="." unique_id=992922277]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -272.0
+offset_top = -136.5
+offset_bottom = 136.5
+grow_horizontal = 0
+grow_vertical = 2
+script = ExtResource("5_kks0w")
+metadata/_custom_type_script = "uid://sxtvje6r7qsq"
+
+[node name="Control" type="Control" parent="." unique_id=1354912812]
+clip_contents = true
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -199.5
+offset_right = 460.0
+offset_bottom = 199.5
+grow_vertical = 2
+
+[node name="gearUp" type="TouchScreenButton" parent="Control" unique_id=919763968 node_paths=PackedStringArray("car")]
+position = Vector2(-1, 3)
+scale = Vector2(0.20410158, 0.18652344)
+texture_normal = ExtResource("6_lkurn")
+visibility_mode = 1
+script = ExtResource("7_l50n0")
+car = NodePath("")
+
+[node name="gearDown" type="TouchScreenButton" parent="Control" unique_id=596716233 node_paths=PackedStringArray("car")]
+position = Vector2(-1, 191)
+scale = Vector2(0.20410158, 0.19726558)
+texture_normal = ExtResource("8_6t5qj")
+visibility_mode = 1
+script = ExtResource("9_46dll")
+car = NodePath("")
+
+[node name="handbrake" type="TouchScreenButton" parent="Control" unique_id=463020576]
+position = Vector2(210, 115)
+scale = Vector2(0.16796875, 0.1640625)
+texture_normal = ExtResource("10_a5p4c")
+texture_pressed = ExtResource("11_q8b65")
+visibility_mode = 1
+script = ExtResource("12_1yhnd")
+
+[node name="MenuLaunchBtn" type="Button" parent="." unique_id=681487839]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -89.0
+offset_right = 131.0
+offset_bottom = 124.0
+grow_horizontal = 2
+text = "Menu"
+script = ExtResource("13_o2lvu")
+
+[node name="Menu" type="Panel" parent="." unique_id=609022379]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="restart_sim" type="Button" parent="Menu" unique_id=1823073749]
+layout_mode = 1
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -49.875
+offset_right = 153.0
+offset_bottom = 49.875
+grow_vertical = 2
+text = "Restart sim"
+script = ExtResource("14_e5onl")
+
+[node name="close" type="Button" parent="Menu" unique_id=2117714760]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -58.5
+offset_top = -50.25
+offset_right = 58.5
+offset_bottom = 50.25
+grow_horizontal = 2
+grow_vertical = 2
+text = "Close"
+script = ExtResource("15_occxd")

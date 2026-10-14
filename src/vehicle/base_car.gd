@@ -2,7 +2,7 @@ class_name BaseCar
 extends RigidBody3D
 
 @export var car_params := CarParameters.new()
-@export var joystick: Control
+var joystick: Control
 const MPS_TO_KPH: float = 3.6
 
 class CarInputController:
@@ -919,3 +919,13 @@ func shift_up() -> void:
 
 func shift_down() -> void:
 	powertrain_controller.drivetrain.shift_down()
+
+func spawn():
+	pass
+
+func set_parameters(parameters: CarParameters):
+	self.car_params = parameters
+
+@warning_ignore("shadowed_variable")
+func set_joystick(joystick: Control):
+	self.joystick = joystick

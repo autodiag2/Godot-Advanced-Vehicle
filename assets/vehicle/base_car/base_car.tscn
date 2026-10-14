@@ -4,7 +4,6 @@
 [ext_resource type="Script" uid="uid://dcxp356dtbg48" path="res://src/camera.gd" id="3_5upga"]
 [ext_resource type="Script" uid="uid://dm7b3t34gjbbj" path="res://src/vehicle/wheel/wheel_suspension.gd" id="4_6hvcn"]
 [ext_resource type="Material" path="res://assets/vehicle/sport_car/tire.tres" id="5_cuc4d"]
-[ext_resource type="PackedScene" uid="uid://djbt3ltge1aat" path="res://assets/ui/gui.tscn" id="6_cp0hb"]
 
 [sub_resource type="CylinderMesh" id="10"]
 material = ExtResource("5_cuc4d")
@@ -13,7 +12,7 @@ bottom_radius = 0.3
 height = 0.2
 radial_segments = 16
 
-[node name="RigidBodyCar" type="RigidBody3D" unique_id=658429857]
+[node name="Vehicle" type="RigidBody3D" unique_id=658429857]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 collision_layer = 2
 mass = 700.0
@@ -64,10 +63,3 @@ skeleton = NodePath("")
 
 [node name="CamTarget" type="Marker3D" parent="." unique_id=2082997176]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.17515, 0)
-
-[node name="Gui" parent="." unique_id=1639139564 instance=ExtResource("6_cp0hb")]
-
-[node name="TireInfoApp" parent="Gui" index="1"]
-layout_mode = 0
-
-[editable path="Gui"]
