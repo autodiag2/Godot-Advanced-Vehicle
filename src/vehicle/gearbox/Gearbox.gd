@@ -49,7 +49,6 @@ func apply_torque(torque: float, delta: float) -> float:
 			differential.average_front_wheel_speed
 		) * 0.5
 
-	debug_print("adjusted output av = ", output_av, " rad/s")
 	if gearing == 0.0:
 		assert(params.gear_inertia > 0.0)
 		input_av += torque / params.gear_inertia * delta
@@ -57,23 +56,33 @@ func apply_torque(torque: float, delta: float) -> float:
 		return torque
 
 	var previous_input_av := input_av
-	input_av = maxf(0.0, output_av * gearing)
+	input_av = output_av * gearing
 	debug_print("adjusted av in=", input_av)
 
 	var input_angular_acceleration := (
 		input_av - previous_input_av
 	) / delta
-		
+
 	var transmitted_torque := (
 		torque -
 		params.gear_inertia * input_angular_acceleration
 	)
-	print("input_av=", input_av, " input_angular_acceleration=", input_angular_acceleration, " transmitted_torque=", transmitted_torque)
+
+	debug_print(
+		"input_av=", input_av,
+		" input_angular_acceleration=", input_angular_acceleration,
+		" transmitted_torque=", transmitted_torque
+	)
 
 	var output_torque := transmitted_torque * gearing
-	print("output_torque=", output_torque)
+	debug_print("output_torque=", output_torque)
+
 	var net_output_torque := differential.apply_torque(output_torque, delta)
-	debug_print("net_output_torque=", net_output_torque, " N.m input net torque=", net_output_torque / gearing)
+	debug_print(
+		"net_output_torque=", net_output_torque,
+		" N.m input net torque=", net_output_torque / gearing
+	)
+
 	return net_output_torque / gearing
 
 func get_brake_torque() -> float:
