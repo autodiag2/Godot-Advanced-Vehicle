@@ -234,10 +234,10 @@ func test_calculate_torque_at_full_throttle() -> void:
 	engine.start()
 	for i in range(10):
 		engine.apply(0.0, 2.0, 0.0)
+	engine.rpm = 4000.0
 	var torque := engine.calculate_torque(
 		1.0,
-		0.1,
-		4000.0
+		0.1
 	)
 
 	assert_lt(torque, 192.0 + 20.0)
@@ -247,20 +247,20 @@ func test_calculate_torque_at_half_throttle() -> void:
 	engine.start()
 	for i in range(10):
 		engine.apply(0.0, 2.0, 0.0)
+	engine.rpm = 4000.0
 	var torque := engine.calculate_torque(
 		0.5,
-		0.1,
-		4000.0
+		0.1
 	)
 
 	assert_lt(torque, 92.0 + 20.0)
 	assert_gt(torque, 92.0 - 20.0)
 
 func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
+	engine.rpm = 0.0
 	var torque := engine.calculate_torque(
 		0.0,
-		0.1,
-		0.0
+		0.1
 	)
 
 	assert_ne(
@@ -272,10 +272,10 @@ func test_calculate_torque_at_zero_rpm_has_engine_friction() -> void:
 func test_idle_control_produces_positive_torque_below_idle() -> void:
 	engine.start()
 	_wait_combustion_running()
+	engine.rpm = 400.0
 	var torque := engine.calculate_torque(
 		0.0,
-		0.1,
-		400.0
+		0.1
 	)
 
 	assert_gt(
@@ -285,10 +285,10 @@ func test_idle_control_produces_positive_torque_below_idle() -> void:
 
 
 func test_idle_control_is_zero_at_idle() -> void:
+	engine.rpm = parameters.engine.rpm_idle
 	var torque := engine.calculate_torque(
 		0.0,
-		0.1,
-		parameters.engine.rpm_idle
+		0.1
 	)
 
 	assert_eq(
@@ -697,14 +697,15 @@ func _wait_combustion_running():
 	assert(engine.combustion_running)
 
 func test_idle_control_does_not_raise_running_engine_above_target_rpm() -> void:
+	engine.controller_debug_print_enabled = true
 	engine.start()
 	_wait_combustion_running()
 	engine.rpm = parameters.engine.rpm_idle - 100.0
 
-	var delta := 0.5
+	var delta := 4.0
 	var target_rpm: float = parameters.engine.rpm_idle
 
-	for i in range(20):
+	for i in range(15):
 		engine.apply(0.0, delta)
 
 	assert_lte(
@@ -716,10 +717,10 @@ func test_idle_control_does_not_raise_running_engine_above_target_rpm() -> void:
 func test_ensure_starter_stop_in_case_no_fuel():
 	engine.fuel_tank.fuel_litres = 0.0
 	engine.start()
-	assert_gt(engine.starter.get_torque(0.1), 0.0)
+	assert_gt(engine.starter.get_torque(), 0.0)
 	for i in range(10):
 		engine.apply(0.0, 1.0, 0.0)
-	assert_float_eq(engine.starter.get_torque(0.1), 0.0)
+	assert_float_eq(engine.starter.get_torque(), 0.0)
 
 func test_stop_sound() -> void:
 	parameters.engine.sound = AudioStreamGenerator.new()
@@ -1098,11 +1099,10 @@ func test_running_engine_stops_combustion_when_rpm_reaches_zero() -> void:
 func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> void:
 	engine.rpm = parameters.engine.rpm_idle
 
+	engine.combustion_running = false
 	var torque := engine.calculate_torque(
 		1.0,
-		0.1,
-		engine.rpm,
-		false
+		0.1
 	)
 
 	assert_lt(
@@ -1112,18 +1112,17 @@ func test_throttle_has_no_combustion_torque_when_combustion_is_disabled() -> voi
 
 
 func test_idle_control_increases_as_rpm_falls_below_idle() -> void:
+	engine.rpm = 700.0
+	engine.combustion_running = true
 	var torque_at_700 := engine.calculate_torque(
 		0.0,
 		0.1,
-		700.0,
-		true
 	)
-
+	
+	engine.rpm = 400.0
 	var torque_at_400 := engine.calculate_torque(
 		0.0,
-		0.1,
-		400.0,
-		true
+		0.1
 	)
 
 	assert_gt(
@@ -1399,10 +1398,10 @@ func test_fuel_consumption_increases_with_engine_load() -> void:
 	engine.combustion_running = true
 
 	var fuel_before_low_load := engine.fuel_tank.fuel_litres
+	engine.rpm = 3000.0
 	engine.output_torque = engine.calculate_torque(
 		0.25,
-		0.1,
-		3000.0
+		0.1
 	)
 
 	engine.consume_fuel(
@@ -1418,10 +1417,10 @@ func test_fuel_consumption_increases_with_engine_load() -> void:
 	engine.fuel_tank.fuel_litres = fuel_before_low_load
 
 	var fuel_before_high_load := engine.fuel_tank.fuel_litres
+	engine.rpm = 3000.0
 	engine.output_torque = engine.calculate_torque(
 		0.75,
 		0.1,
-		3000.0
 	)
 
 	engine.consume_fuel(
@@ -1533,10 +1532,10 @@ func test_zero_reaction_torque_does_not_change_torque_calculation() -> void:
 	engine.combustion_running = true
 	engine.reaction_torque = 0.0
 
+	engine.rpm = 3000.0
 	var expected_torque := engine.calculate_torque(
 		1.0,
 		0.1,
-		3000.0
 	)
 
 	engine.apply(
