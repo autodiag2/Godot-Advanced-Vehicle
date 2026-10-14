@@ -283,9 +283,7 @@ func calculate_friction_torque(engine_rpm: float) -> float:
 	)
 
 	var friction_factor := (
-		FRICTION_IDLE_FACTOR +
-		(1.0 - FRICTION_IDLE_FACTOR) *
-		rpm_factor *
+		FRICTION_IDLE_FACTOR *
 		rpm_factor
 	)
 

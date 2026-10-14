@@ -87,8 +87,7 @@ func apply(
 	var drivetrain_torque := drivetrain.calculate_torque()
 	var drivetrain_av := drivetrain.get_av()
 	var drivetrain_inertia := drivetrain.calculate_inertia()
-	debug_print("engine\t\tT=", engine_torque, "\tAV=", engine_av, "\tintertia=", engine_inertia)
-	debug_print("drivetrain\tT=", drivetrain_torque, "\tAV=", drivetrain_av, "\tintertia=", drivetrain_inertia)
+
 	var reaction_torques := clutch.get_reaction_torques(
 		engine_av,
 		drivetrain_av,
@@ -99,10 +98,10 @@ func apply(
 		clutch_input,
 		delta
 	)
-
+	
 	engine.apply(throttle_input, delta, reaction_torques.y)
 	
-	drivetrain.apply_torque(reaction_torques.x, delta)
+	drivetrain.apply_torque(-reaction_torques.x, delta)
 
 func brake(clamping_factor: float):
 	assert(0.0 <= clamping_factor)

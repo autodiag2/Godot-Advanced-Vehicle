@@ -227,7 +227,7 @@ func get_reaction_torque() -> float:
 	return rolling_resistance
 
 func calculate_torque() -> float:
-	return 0.0
+	return -get_reaction_torque()
 
 # Apply torque to wheels and change it's spin
 func apply_torque(

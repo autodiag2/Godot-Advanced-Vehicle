@@ -34,8 +34,8 @@ func get_reaction_torques(
 	assert(delta >= 0.0)
 	assert(clutch_input >= 0.0 and clutch_input <= 1.0)
 
-	debug_print("engine av=", engine_av, " T=", engine_torque, " I=", inertia_engine)
-	debug_print("drivetrain av=", drivetrain_av, " T=", drivetrain_torque, " I=", inertia_drivetrain)
+	print("engine av=", engine_av, " T=", engine_torque, " I=", inertia_engine)
+	print("drivetrain av=", drivetrain_av, " T=", drivetrain_torque, " I=", inertia_drivetrain)
 
 	if delta == 0.0:
 		return Vector2.ZERO
@@ -66,9 +66,9 @@ func get_reaction_torques(
 
 	_locked = absf(torque_to_synchronize) <= max_clutch_torque
 
-	var reaction_torques := Vector2(clutch_torque, -clutch_torque)
+	var reaction_torques := Vector2(-clutch_torque, clutch_torque)
 
-	debug_print(
+	print(
 		"clutch reaction(Tc)=", absf(clutch_torque),
 		" on engine=", reaction_torques.y,
 		" on gearbox=", reaction_torques.x,
