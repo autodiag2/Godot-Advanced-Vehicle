@@ -1,8 +1,8 @@
 class_name CurveTireModel
 extends BaseTireModel
 
-const buildup = preload("res://scenes/vehicle/tire_models/buildup_curve.tres")
-const falloff = preload("res://scenes/vehicle/tire_models/falloff_curve.tres")
+const buildup = preload("res://src/vehicle/wheel/tire/buildup_curve.tres")
+const falloff = preload("res://src/vehicle/wheel/tire/falloff_curve.tres")
 
 const MIN_PEAK_SA_START_DEG = 3.0
 const MAX_PEAK_SA_START_DEG = 12.0

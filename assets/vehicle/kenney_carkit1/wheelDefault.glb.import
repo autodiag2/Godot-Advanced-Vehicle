@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://vls3meliu3jk"
-path="res://.godot/imported/sport_car.glb-29122e97902e58e72b4bbb8c09a9c60e.scn"
+uid="uid://bwmpep5o2d7fr"
+path="res://.godot/imported/wheelDefault.glb-dce097dac2b466621f7acec2c2a9c212.scn"
 
 [deps]
 
-source_file="res://models/sport_car.glb"
-dest_files=["res://.godot/imported/sport_car.glb-29122e97902e58e72b4bbb8c09a9c60e.scn"]
+source_file="res://assets/vehicle/kenney_carkit1/wheelDefault.glb"
+dest_files=["res://.godot/imported/wheelDefault.glb-dce097dac2b466621f7acec2c2a9c212.scn"]
 
 [params]
 
@@ -24,12 +24,12 @@ nodes/use_node_type_suffixes=true
 meshes/ensure_tangents=true
 meshes/generate_lods=true
 meshes/create_shadow_meshes=true
-meshes/light_baking=1
-meshes/lightmap_texel_size=0.2
+meshes/light_baking=0
+meshes/lightmap_texel_size=0.1
 meshes/force_disable_compression=false
 skins/use_named_skins=true
 animation/import=true
-animation/fps=30
+animation/fps=15
 animation/trimming=false
 animation/remove_immutable_tracks=true
 animation/import_rest_as_RESET=false

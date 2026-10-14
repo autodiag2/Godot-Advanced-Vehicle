@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://dacyugrkjb2o4"]
+[gd_scene format=3 uid="uid://dacyugrkjb2o4"]
 
-[ext_resource type="Script" path="res://scenes/gui/tireinfo_app.gd" id="1"]
+[ext_resource type="Script" uid="uid://b0eehbwoe8qrg" path="res://src/gui/tireinfo_app.gd" id="1"]
 
 [node name="TireInfoApp" type="Control"]
 layout_mode = 3

@@ -1,6 +1,6 @@
-[gd_scene load_steps=2 format=3 uid="uid://25r3bi1ijyc7"]
+[gd_scene format=3 uid="uid://25r3bi1ijyc7"]
 
-[ext_resource type="Script" path="res://scenes/gui/render_stats.gd" id="1_qfdjj"]
+[ext_resource type="Script" uid="uid://bc8nrnt6lqwgj" path="res://src/gui/render_stats.gd" id="1_qfdjj"]
 
 [node name="RenderStats" type="Control"]
 custom_minimum_size = Vector2(200, 150)
