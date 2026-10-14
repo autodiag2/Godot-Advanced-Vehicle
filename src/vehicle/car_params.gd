@@ -33,7 +33,7 @@ enum DRIVE_TYPE{
 @export var throttle_model := Curve.new()
 @export var engine_brake := 10.0
 @export var engine_moment := 0.25
-@export var engine_bsfc := 0.3
+@export var engine_bsfc : EngineBSFCMap = EngineBSFCMap.new()
 @export var engine_sound: AudioStream
 @export var clutch_friction := 500.0
 

@@ -25,7 +25,7 @@ project/assembly_name="Advanced Vehicle Demo"
 
 [editor_plugins]
 
-enabled=PackedStringArray("res://addons/virtual_joystick/plugin.cfg")
+enabled=PackedStringArray("res://addons/engine_bsfc_map_editor/plugin.cfg", "res://addons/gut/plugin.cfg", "res://addons/virtual_joystick/plugin.cfg")
 
 [input]
 

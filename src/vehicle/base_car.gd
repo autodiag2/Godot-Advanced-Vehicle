@@ -137,6 +137,7 @@ class EngineController:
 	const PETROL_KG_PER_LITRE: float = 0.7489
 	const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 	const NEWTON_METRE_RPM_TO_KW: int = 9549
+	const NO_LOAD_BSFC_LOAD: float = 0.10
 
 	var rpm: float = 0.0
 	var angular_velocity: float = 0.0
@@ -144,11 +145,14 @@ class EngineController:
 	var net_torque: float = 0.0
 	var reaction_torque: float = 0.0
 	var fuel_litres: float = 0.0
+	var parameters: CarParameters
 
+	@warning_ignore("shadowed_variable")
 	func initialize(
 		parameters: CarParameters,
 		car: RigidBody3D
 	) -> void:
+		self.parameters = parameters
 		fuel_litres = (
 			parameters.fuel_tank_size *
 			parameters.fuel_percentage *
@@ -192,6 +196,32 @@ class EngineController:
 			output_torque = 0.0
 			rpm -= 500.0
 
+	func calculate_engine_load(throttle_input: float) -> float:
+		var engine_torque := calculate_torque(rpm, throttle_input, parameters)
+		var rpm_factor: float = clamp(
+			rpm /
+			parameters.max_engine_rpm,
+			0.0,
+			1.0
+		)
+
+		var torque_curve_factor: float = (
+			parameters.torque_curve.sample_baked(
+				rpm_factor
+			)
+		)
+		var maximum_torque: float = (
+			torque_curve_factor *
+			parameters.max_torque
+		)
+		
+		return clampf(
+			engine_torque /
+			maximum_torque,
+			0.0,
+			1.0
+		)
+	
 	func calculate_torque(
 		engine_rpm: float,
 		throttle_input: float,
@@ -240,11 +270,20 @@ class EngineController:
 
 	func consume_fuel(
 		parameters: CarParameters,
+		throttle_input: float,
 		car: RigidBody3D,
 		delta: float
 	) -> void:
+		var engine_load := calculate_engine_load(throttle_input)
+		var bsfc: float = parameters.engine_bsfc.sample(
+			rpm,
+			maxf(
+				engine_load,
+				NO_LOAD_BSFC_LOAD
+			)
+		)
 		var fuel_consumed: float = (
-			parameters.engine_bsfc *
+			bsfc *
 			max(output_torque, 0.0) *
 			rpm *
 			delta /
@@ -886,6 +925,7 @@ func _physics_process(delta: float) -> void:
 
 	engine_controller.consume_fuel(
 		car_params,
+		input_controller.throttle,
 		self,
 		delta
 	)
