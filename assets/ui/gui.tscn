@@ -74,14 +74,13 @@ offset_bottom = 242.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="InputApp" parent="." unique_id=1462281750 node_paths=PackedStringArray("joystick") instance=ExtResource("3_m5e8j")]
+[node name="InputApp" parent="." unique_id=1462281750 instance=ExtResource("3_m5e8j")]
 layout_mode = 1
 anchors_preset = 3
 offset_left = -283.0
 offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
-joystick = NodePath("../../../../../../../../../@WindowWrapper@10784/@ScriptEditor@10783/@VBoxContainer@9998/@HBoxContainer@9999/@HBoxContainer@63767/@MenuButton@63764/@PopupMenu@63480/@PanelContainer@63473")
 
 [node name="RenderStats" parent="." unique_id=383076913 instance=ExtResource("4_4dmvl")]
 layout_mode = 1
@@ -122,21 +121,19 @@ offset_right = 460.0
 offset_bottom = 199.5
 grow_vertical = 2
 
-[node name="gearUp" type="TouchScreenButton" parent="Control" unique_id=919763968 node_paths=PackedStringArray("car")]
+[node name="gearUp" type="TouchScreenButton" parent="Control" unique_id=919763968]
 position = Vector2(-1, 3)
 scale = Vector2(0.20410158, 0.18652344)
 texture_normal = ExtResource("6_lkurn")
 visibility_mode = 1
 script = ExtResource("7_l50n0")
-car = NodePath("")
 
-[node name="gearDown" type="TouchScreenButton" parent="Control" unique_id=596716233 node_paths=PackedStringArray("car")]
+[node name="gearDown" type="TouchScreenButton" parent="Control" unique_id=596716233]
 position = Vector2(-1, 191)
 scale = Vector2(0.20410158, 0.19726558)
 texture_normal = ExtResource("8_6t5qj")
 visibility_mode = 1
 script = ExtResource("9_46dll")
-car = NodePath("")
 
 [node name="handbrake" type="TouchScreenButton" parent="Control" unique_id=463020576]
 position = Vector2(210, 115)
