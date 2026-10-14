@@ -1,6 +1,6 @@
 [gd_scene format=4 uid="uid://dqqcf60u11tfq"]
 
-[ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://assets/vehicle/base_car/base_car.tscn" id="1_rpk6a"]
+[ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://assets/vehicle/base_car/vehicle.tscn" id="1_rpk6a"]
 [ext_resource type="Resource" uid="uid://c5fohh17me33f" path="res://assets/vehicle/sport_car/parameters.tres" id="2_b77au"]
 [ext_resource type="AudioStream" path="res://assets/engine/sport_car/engine.tres" id="3_u8x6m"]
 [ext_resource type="Texture2D" uid="uid://xcvloq7plggh" path="res://assets/vehicle/sport_car/sport_car_colorpalette8x8.png" id="7_cvq8b"]

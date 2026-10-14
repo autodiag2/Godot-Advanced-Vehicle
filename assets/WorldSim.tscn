@@ -1,15 +1,15 @@
 [gd_scene format=3 uid="uid://c543cs6o1wpxs"]
 
 [ext_resource type="Script" uid="uid://odpf6ebpprpf" path="res://src/WorldSim.gd" id="1_yt4am"]
-[ext_resource type="PackedScene" path="res://assets/world/factory_test/world.tscn" id="2_65wg5"]
-[ext_resource type="PackedScene" uid="uid://dqqcf60u11tfq" path="res://assets/vehicle/sport_car/vehicle.tscn" id="3_dd4ve"]
+[ext_resource type="PackedScene" uid="uid://bsjfmyg722aw2" path="res://assets/world/factory_test/world.tscn" id="2_65wg5"]
+[ext_resource type="PackedScene" uid="uid://exyybiakl0yk" path="res://assets/vehicle/base_car/vehicle.tscn" id="3_65wg5"]
 [ext_resource type="PackedScene" uid="uid://djbt3ltge1aat" path="res://assets/ui/gui.tscn" id="4_2wc62"]
 [ext_resource type="Script" uid="uid://bf7tq3qn7evti" path="res://src/CarBridge.gd" id="5_65wg5"]
 
 [node name="WorldSim" type="Node3D" unique_id=1534604356]
 script = ExtResource("1_yt4am")
 default_world = ExtResource("2_65wg5")
-default_vehicle = ExtResource("3_dd4ve")
+default_vehicle = ExtResource("3_65wg5")
 hud_scene = ExtResource("4_2wc62")
 
 [node name="VehicleRoot" type="Node3D" parent="." unique_id=1529883845]

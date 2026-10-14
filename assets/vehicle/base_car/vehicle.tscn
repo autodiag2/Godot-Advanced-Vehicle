@@ -1,12 +1,13 @@
 [gd_scene format=3 uid="uid://exyybiakl0yk"]
 
-[ext_resource type="Script" uid="uid://c8y4l6a7xg0lf" path="res://src/vehicle/base_car.gd" id="1_n8n57"]
-[ext_resource type="Script" uid="uid://dcxp356dtbg48" path="res://src/camera.gd" id="3_5upga"]
-[ext_resource type="Script" uid="uid://dm7b3t34gjbbj" path="res://src/vehicle/wheel/wheel_suspension.gd" id="4_6hvcn"]
-[ext_resource type="Material" path="res://assets/vehicle/sport_car/tire.tres" id="5_cuc4d"]
+[ext_resource type="Script" uid="uid://c8y4l6a7xg0lf" path="res://src/vehicle/base_car.gd" id="1_7ai54"]
+[ext_resource type="Resource" uid="uid://bb6b3fvhw2fs6" path="res://assets/vehicle/base_car/parameters.tres" id="2_57qns"]
+[ext_resource type="Script" uid="uid://dcxp356dtbg48" path="res://src/camera.gd" id="8_qkbal"]
+[ext_resource type="Script" uid="uid://dm7b3t34gjbbj" path="res://src/vehicle/wheel/wheel_suspension.gd" id="9_te4h0"]
+[ext_resource type="Material" path="res://assets/vehicle/sport_car/tire.tres" id="10_3i7n0"]
 
 [sub_resource type="CylinderMesh" id="10"]
-material = ExtResource("5_cuc4d")
+material = ExtResource("10_3i7n0")
 top_radius = 0.3
 bottom_radius = 0.3
 height = 0.2
@@ -16,16 +17,17 @@ radial_segments = 16
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 collision_layer = 2
 mass = 700.0
-script = ExtResource("1_n8n57")
+script = ExtResource("1_7ai54")
+car_params = ExtResource("2_57qns")
 
 [node name="Camera3D" type="Camera3D" parent="." unique_id=1169673767]
 transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.6, 4.4)
-script = ExtResource("3_5upga")
+script = ExtResource("8_qkbal")
 follow_this_path = NodePath("../CamTarget")
 
 [node name="Wheel_br" type="RayCast3D" parent="." unique_id=120082465]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, 1.5)
-script = ExtResource("4_6hvcn")
+script = ExtResource("9_te4h0")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wheel_br" unique_id=1636136347]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
@@ -34,7 +36,7 @@ skeleton = NodePath("")
 
 [node name="Wheel_bl" type="RayCast3D" parent="." unique_id=966643157]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, 1.5)
-script = ExtResource("4_6hvcn")
+script = ExtResource("9_te4h0")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wheel_bl" unique_id=2090559202]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
@@ -43,7 +45,7 @@ skeleton = NodePath("")
 
 [node name="Wheel_fr" type="RayCast3D" parent="." unique_id=1542317129]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.8, 0, -1.4)
-script = ExtResource("4_6hvcn")
+script = ExtResource("9_te4h0")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wheel_fr" unique_id=1177243204]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
@@ -52,7 +54,7 @@ skeleton = NodePath("")
 
 [node name="Wheel_fl" type="RayCast3D" parent="." unique_id=879177529]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.8, 0, -1.4)
-script = ExtResource("4_6hvcn")
+script = ExtResource("9_te4h0")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Wheel_fl" unique_id=222086225]
 transform = Transform3D(-4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0, 1, 0, 0, 0)
