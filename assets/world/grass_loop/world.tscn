@@ -72,6 +72,6 @@ path_rotation_accurate = false
 environment = SubResource("Environment_1y4ai")
 
 [node name="VehicleSpawn" type="Node3D" parent="." unique_id=1737424327]
-transform = Transform3D(0.1677151, 0, 0.9858355, 0, 1, 0, -0.9858355, 0, 0.1677151, -4.3696437, 5.047956, 4.970877)
+transform = Transform3D(0.1677151, 0, 0.9858355, 0, 1, 0, -0.9858355, 0, 0.1677151, -4.3696437, 7.417107, 4.970877)
 
 [editable path="Track"]

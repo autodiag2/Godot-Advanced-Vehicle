@@ -25,6 +25,9 @@ var world_scenes: Array[PackedScene] = []
 var vehicle_scenes: Array[PackedScene] = []
 var load_generation := 0
 
+func reload() -> void:
+	_replace_world(current_world_scene)
+	_replace_vehicle(current_vehicle_scene)
 
 func _ready() -> void:
 	_load_world_scenes()
@@ -33,6 +36,8 @@ func _ready() -> void:
 	if hud_scene != null:
 		hud = hud_scene.instantiate()
 		ui_root.add_child(hud)
+		var restart_sim = hud.find_child("restart_sim", true, false)
+		restart_sim.onInitWorldSim(self)
 
 	if default_world != null:
 		current_world_scene = default_world
