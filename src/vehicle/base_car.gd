@@ -284,13 +284,14 @@ class EngineController:
 		)
 		var fuel_consumed: float = (
 			bsfc *
-			max(output_torque, 0.0) *
+			maxf(output_torque, 0.0) *
 			rpm *
 			delta /
 			(
-				3600.0 *
+				60000.0 *
 				PETROL_KG_PER_LITRE *
-				NEWTON_METRE_RPM_TO_KW
+				NEWTON_METRE_RPM_TO_KW *
+				1000.0
 			)
 		)
 
