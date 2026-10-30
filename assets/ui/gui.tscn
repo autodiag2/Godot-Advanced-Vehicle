@@ -14,6 +14,8 @@
 [ext_resource type="Script" uid="uid://ux8e8chujrtu" path="res://src/gui/handbrake.gd" id="12_1yhnd"]
 [ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://src/gui/restart_scene.gd" id="13_o2lvu"]
 [ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://src/gui/restart_sim.gd" id="14_e5onl"]
+[ext_resource type="Texture2D" uid="uid://dxsu5vwalvfqs" path="res://assets/ui/close_icon.png" id="14_l50n0"]
+[ext_resource type="Script" uid="uid://dgs5pbjd2jry" path="res://assets/ui/automatic_transmission.gd" id="15_lkurn"]
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
@@ -164,30 +166,53 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="restart_sim" type="Button" parent="Menu" unique_id=1823073749]
-layout_mode = 1
-anchors_preset = 4
-anchor_top = 0.5
-anchor_bottom = 0.5
-offset_top = -49.875
-offset_right = 153.0
-offset_bottom = 49.875
-grow_vertical = 2
-text = "Restart sim"
-script = ExtResource("14_e5onl")
-
 [node name="close" type="Button" parent="Menu" unique_id=2117714760]
+layout_mode = 1
+offset_right = 1317.0
+offset_bottom = 1254.0
+scale = Vector2(0.1, 0.1)
+text = "Close"
+icon = ExtResource("14_l50n0")
+script = ExtResource("15_occxd")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu" unique_id=689788081]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -58.5
-offset_top = -50.25
-offset_right = 58.5
-offset_bottom = 50.25
+offset_left = -115.0
+offset_top = -43.0
+offset_right = 115.0
+offset_bottom = 43.0
 grow_horizontal = 2
 grow_vertical = 2
-text = "Close"
-script = ExtResource("15_occxd")
+
+[node name="Label" type="Label" parent="Menu/VBoxContainer" unique_id=406582411]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "Settings"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="Menu/VBoxContainer" unique_id=930575672]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu/VBoxContainer/MarginContainer" unique_id=1065653861]
+layout_mode = 2
+
+[node name="automatic_transmission" type="CheckButton" parent="Menu/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1013068116]
+layout_mode = 2
+theme_override_constants/h_separation = 18
+text = "Automatic gearbox"
+script = ExtResource("15_lkurn")
+
+[node name="restart_sim" type="Button" parent="Menu/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1823073749]
+layout_mode = 2
+text = "Restart sim"
+script = ExtResource("14_e5onl")

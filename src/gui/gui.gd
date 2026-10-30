@@ -6,6 +6,7 @@ extends Control
 @onready var rpmlabel = $Essentials/VBoxContainer/RpmLabel
 @onready var fuellabel = $Essentials/VBoxContainer/FuelLabel
 @onready var TireInfoApp = $TireInfoApp
+@onready var automatic_transmission = $Menu/VBoxContainer/MarginContainer/VBoxContainer/automatic_transmission
 
 var vehicle: BaseCar
 
@@ -14,6 +15,7 @@ func set_vehicle(vehicle: BaseCar) -> void:
 	assert(vehicle != null)
 	self.vehicle = vehicle
 	TireInfoApp.onSetVehicle(vehicle)
+	automatic_transmission.onSetVehicle(vehicle)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta: float) -> void:
