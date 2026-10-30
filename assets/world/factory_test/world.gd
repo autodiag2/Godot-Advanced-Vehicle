@@ -1,4 +1,4 @@
-extends Node3D
+extends World
 
-@export var level_name := "Factory Test"
-@export var preview: Texture2D
+func _init() -> void:
+	level_name = "Factory Test"

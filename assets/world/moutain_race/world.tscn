@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://chq3jqqc1d4ll"]
+
+[ext_resource type="Script" uid="uid://cmpspvb3shc3n" path="res://assets/world/moutain_race/world.gd" id="1_x36gy"]
+
+[node name="MountainRaceWorld" type="Node3D" unique_id=398695203]
+script = ExtResource("1_x36gy")

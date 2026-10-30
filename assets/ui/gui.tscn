@@ -195,21 +195,21 @@ layout_mode = 2
 text = "Restart sim"
 script = ExtResource("14_e5onl")
 
-[node name="LevelMenu" type="Control" parent="Menu/VBoxContainer" unique_id=1676771046]
+[node name="LevelMenu" type="VBoxContainer" parent="Menu/VBoxContainer" unique_id=1612624682]
 layout_mode = 2
 script = ExtResource("16_46dll")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Menu/VBoxContainer/LevelMenu" unique_id=2043763777]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-offset_bottom = 62.0
-grow_horizontal = 2
-
-[node name="Preview" type="TextureRect" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=1872844268]
 layout_mode = 2
 
 [node name="LevelLabel" type="Label" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=2091809275]
+layout_mode = 2
+
+[node name="PreviewFrame" type="PanelContainer" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=1436526743]
+layout_mode = 2
+
+[node name="TextureRect" type="TextureRect" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer/PreviewFrame" unique_id=1530000478]
+custom_minimum_size = Vector2(700, 200)
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=700037029]
