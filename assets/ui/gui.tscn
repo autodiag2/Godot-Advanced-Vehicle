@@ -12,11 +12,12 @@
 [ext_resource type="Texture2D" uid="uid://ci00y7m4kyp0t" path="res://assets/ui/handbrake_released.png" id="10_a5p4c"]
 [ext_resource type="Texture2D" uid="uid://cvtrwygi5sdib" path="res://assets/ui/handbrake_pressed.png" id="11_q8b65"]
 [ext_resource type="Script" uid="uid://ux8e8chujrtu" path="res://src/gui/handbrake.gd" id="12_1yhnd"]
-[ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://src/gui/restart_scene.gd" id="13_o2lvu"]
+[ext_resource type="Script" uid="uid://ifqs8v58fcbh" path="res://src/gui/menu_open.gd" id="13_o2lvu"]
 [ext_resource type="Script" uid="uid://ddw7lrun4nlkk" path="res://src/gui/restart_sim.gd" id="14_e5onl"]
 [ext_resource type="Texture2D" uid="uid://dxsu5vwalvfqs" path="res://assets/ui/close_icon.png" id="14_l50n0"]
 [ext_resource type="Script" uid="uid://dgs5pbjd2jry" path="res://assets/ui/automatic_transmission.gd" id="15_lkurn"]
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
+[ext_resource type="Texture2D" uid="uid://bu3afm1jh5i75" path="res://assets/ui/menu_icon.png" id="16_6t5qj"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
@@ -84,18 +85,6 @@ offset_top = -158.0
 grow_horizontal = 0
 grow_vertical = 0
 
-[node name="RenderStats" parent="." unique_id=383076913 instance=ExtResource("4_4dmvl")]
-layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_top = 0.0
-anchor_right = 1.0
-anchor_bottom = 0.0
-offset_left = -200.0
-offset_bottom = 100.0
-grow_horizontal = 0
-grow_vertical = 1
-
 [node name="Joystick" type="Control" parent="." unique_id=992922277]
 clip_contents = true
 layout_mode = 1
@@ -145,20 +134,9 @@ texture_pressed = ExtResource("11_q8b65")
 visibility_mode = 1
 script = ExtResource("12_1yhnd")
 
-[node name="MenuLaunchBtn" type="Button" parent="." unique_id=681487839]
-layout_mode = 1
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -89.0
-offset_right = 131.0
-offset_bottom = 124.0
-grow_horizontal = 2
-text = "Menu"
-script = ExtResource("13_o2lvu")
-
 [node name="Menu" type="Panel" parent="." unique_id=609022379]
 visible = false
+z_index = 16
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -216,3 +194,22 @@ script = ExtResource("15_lkurn")
 layout_mode = 2
 text = "Restart sim"
 script = ExtResource("14_e5onl")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1192285137]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -314.0
+offset_bottom = 150.0
+grow_horizontal = 0
+alignment = 2
+
+[node name="TouchScreenButton" type="TouchScreenButton" parent="HBoxContainer" unique_id=340578041]
+position = Vector2(4, 22)
+scale = Vector2(0.08, 0.08)
+texture_normal = ExtResource("16_6t5qj")
+script = ExtResource("13_o2lvu")
+
+[node name="RenderStats" parent="HBoxContainer" unique_id=383076913 instance=ExtResource("4_4dmvl")]
+layout_mode = 2
