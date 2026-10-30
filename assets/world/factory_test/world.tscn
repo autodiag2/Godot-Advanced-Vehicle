@@ -1,5 +1,7 @@
 [gd_scene format=3 uid="uid://bsjfmyg722aw2"]
 
+[ext_resource type="Script" uid="uid://cc7dawjv42dqh" path="res://assets/world/factory_test/world.gd" id="1_bh54a"]
+
 [sub_resource type="StandardMaterial3D" id="Material_track"]
 albedo_color = Color(0.12, 0.12, 0.12, 1)
 roughness = 0.9
@@ -60,6 +62,7 @@ ambient_light_sky_contribution = 0.2
 ambient_light_energy = 0.69
 
 [node name="World" type="Node3D" unique_id=1656723443]
+script = ExtResource("1_bh54a")
 
 [node name="Track" type="StaticBody3D" parent="." unique_id=1259886034]
 

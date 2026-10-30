@@ -17,23 +17,30 @@ const VEHICLE_SPAWN := "VehicleSpawn"
 var current_world: Node
 var current_vehicle_container: Node
 var current_vehicle: BaseCar
+var current_world_scene: PackedScene
+var current_vehicle_scene: PackedScene
 var hud: Control
 var setup_screen: Control
 var world_scenes: Array[PackedScene] = []
 var vehicle_scenes: Array[PackedScene] = []
+var load_generation := 0
+
 
 func _ready() -> void:
 	_load_world_scenes()
 	_load_vehicle_scenes()
+
 	if hud_scene != null:
 		hud = hud_scene.instantiate()
 		ui_root.add_child(hud)
 
 	if default_world != null:
-		load_world(default_world)
+		current_world_scene = default_world
+		_replace_world(default_world)
 
 	if default_vehicle != null:
-		load_vehicle(default_vehicle)
+		current_vehicle_scene = default_vehicle
+		_replace_vehicle(default_vehicle)
 
 	if setup_scene != null:
 		show_setup_screen()
@@ -67,6 +74,7 @@ func _load_vehicle_scenes() -> void:
 
 func load_world(world: Variant) -> void:
 	var scene: PackedScene
+
 	if world is String:
 		var path: String
 		if world.begins_with(WORLD_PATH):
@@ -79,17 +87,16 @@ func load_world(world: Variant) -> void:
 		scene = world
 	else:
 		assert(false, "Invalid world type")
-	
+
 	assert(scene != null)
 
-	if current_world != null:
-		current_world.queue_free()
-		current_world = null
+	current_world_scene = scene
+	load_generation += 1
+	_replace_world(scene)
 
-	current_world = scene.instantiate()
-	world_root.add_child(current_world)
+	if current_vehicle_scene != null:
+		_replace_vehicle(current_vehicle_scene)
 
-	_position_vehicle_on_world()
 
 func load_vehicle(vehicle: Variant) -> void:
 	var scene: PackedScene
@@ -109,11 +116,23 @@ func load_vehicle(vehicle: Variant) -> void:
 
 	assert(scene != null)
 
-	var parameters_path := scene.resource_path.get_base_dir() + "/parameters.tres"
-	var car_parameters := load(parameters_path) as CarParameters
-	if ( car_parameters == null ):
-		push_warning("Vehicle should contains parameters.tres")
-		car_parameters = CarParameters.new()
+	current_vehicle_scene = scene
+	load_generation += 1
+	_replace_vehicle(scene)
+
+
+func _replace_world(scene: PackedScene) -> void:
+	if current_world != null:
+		current_world.queue_free()
+		current_world = null
+
+	current_world = scene.instantiate()
+	world_root.add_child(current_world)
+
+
+func _replace_vehicle(scene: PackedScene) -> void:
+	load_generation += 1
+	var generation := load_generation
 
 	if current_vehicle != null:
 		current_vehicle.queue_free()
@@ -131,8 +150,17 @@ func load_vehicle(vehicle: Variant) -> void:
 		car = current_vehicle_container.find_child("Vehicle", true, false) as BaseCar
 
 	assert(car != null)
+
 	current_vehicle = car
-	current_vehicle.set_parameters(car_parameters)
+
+	var parameters_path := scene.resource_path.get_base_dir() + "/parameters.tres"
+	var car_parameters := load(parameters_path) as CarParameters
+
+	if car_parameters == null:
+		push_warning("Vehicle should contain parameters.tres")
+		car_parameters = CarParameters.new()
+
+	car.set_parameters(car_parameters)
 
 	if hud != null:
 		var joystick := hud.find_child("Joystick", true, false) as Control
@@ -142,31 +170,52 @@ func load_vehicle(vehicle: Variant) -> void:
 		if hud.has_method("set_vehicle"):
 			hud.set_vehicle(car)
 
-	_position_vehicle_on_world()
+	_position_vehicle_on_world(generation)
 
-func _position_vehicle_on_world() -> void:
-	if current_world == null:
+
+func _position_vehicle_on_world(generation: int) -> void:
+	if current_world == null or current_vehicle == null:
 		return
 
-	if current_vehicle == null:
-		return
-
-	var vehicle_spawn := current_world.find_child(
+	var vehicle := current_vehicle
+	var world := current_world
+	var vehicle_spawn := world.find_child(
 		VEHICLE_SPAWN,
 		true,
 		false
-	) as Node
+	) as Node3D
+
+	vehicle.freeze = true
 
 	if vehicle_spawn == null:
-		current_vehicle.global_position = Vector3.ZERO
-		current_vehicle.global_position.y = 10.0
-		push_warning("World must contain a " + VEHICLE_SPAWN + " Node3D (default 0,100.0,0)")
+		vehicle.global_position = Vector3(0.0, 10.0, 0.0)
+		push_warning("World must contain a " + VEHICLE_SPAWN + " Node3D")
 	else:
-		current_vehicle.global_position = vehicle_spawn.global_position
-	current_vehicle.linear_velocity = Vector3.ZERO
-	current_vehicle.angular_velocity = Vector3.ZERO
-	current_vehicle.sleeping = false
-	current_vehicle.spawn()
+		vehicle.global_transform = vehicle_spawn.global_transform
+
+	vehicle.linear_velocity = Vector3.ZERO
+	vehicle.angular_velocity = Vector3.ZERO
+	vehicle.reset_physics_interpolation()
+
+	await get_tree().physics_frame
+
+	if generation != load_generation:
+		return
+
+	if not is_instance_valid(vehicle) or not is_instance_valid(world):
+		return
+
+	if vehicle_spawn != null and is_instance_valid(vehicle_spawn):
+		vehicle.global_transform = vehicle_spawn.global_transform
+	else:
+		vehicle.global_position = Vector3(0.0, 10.0, 0.0)
+
+	vehicle.linear_velocity = Vector3.ZERO
+	vehicle.angular_velocity = Vector3.ZERO
+	vehicle.reset_physics_interpolation()
+	vehicle.freeze = false
+	vehicle.spawn()
+
 
 func show_setup_screen() -> void:
 	if setup_screen != null:
@@ -197,6 +246,23 @@ func setup_world(world: Variant) -> void:
 
 
 func setup(world: Variant, vehicle_scene: PackedScene) -> void:
-	load_world(world)
-	load_vehicle(vehicle_scene)
+	var scene: PackedScene
+
+	if world is String:
+		var path: String
+		if world.begins_with(WORLD_PATH):
+			path = world
+		else:
+			path = "%s/%s/world.tscn" % [WORLD_PATH, world]
+		scene = load(path) as PackedScene
+	elif world is PackedScene:
+		scene = world
+
+	assert(scene != null)
+
+	current_world_scene = scene
+	current_vehicle_scene = vehicle_scene
+	load_generation += 1
+	_replace_world(scene)
+	_replace_vehicle(vehicle_scene)
 	hide_setup_screen()

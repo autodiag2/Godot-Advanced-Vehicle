@@ -83,6 +83,11 @@ func _physics_process(delta: float) -> void:
 
 
 func apply_forces(opposite_comp, delta):
+	
+	if is_colliding() and get_collider() == null:
+		push_warning("aborting due to collider == null")
+		return
+
 	############# Local forward velocity #############
 	force_vec = Vector3.ZERO
 	

@@ -1,5 +1,6 @@
 [gd_scene format=3 uid="uid://x5af4u1lm676"]
 
+[ext_resource type="Script" uid="uid://cpuhiyovv3re4" path="res://assets/world/grass_loop/world.gd" id="1_j7kue"]
 [ext_resource type="PackedScene" path="res://assets/world/grass_loop/track.tscn" id="2"]
 
 [sub_resource type="FastNoiseLite" id="FastNoiseLite_otdr6"]
@@ -36,6 +37,7 @@ sky = SubResource("Sky_2up1w")
 tonemap_mode = 2
 
 [node name="world" type="Node3D" unique_id=1519250936]
+script = ExtResource("1_j7kue")
 
 [node name="Ground" type="MeshInstance3D" parent="." unique_id=625255136]
 transform = Transform3D(10, 0, 0, 0, 1, 0, 0, 0, 10, 0, 1.70018, 0)
@@ -68,5 +70,8 @@ path_rotation_accurate = false
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=2011483657]
 environment = SubResource("Environment_1y4ai")
+
+[node name="VehicleSpawn" type="Node3D" parent="." unique_id=1737424327]
+transform = Transform3D(0.1677151, 0, 0.9858355, 0, 1, 0, -0.9858355, 0, 0.1677151, -4.3696437, 5.047956, 4.970877)
 
 [editable path="Track"]

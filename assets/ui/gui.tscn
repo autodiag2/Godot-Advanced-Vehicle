@@ -18,6 +18,7 @@
 [ext_resource type="Script" uid="uid://dgs5pbjd2jry" path="res://assets/ui/automatic_transmission.gd" id="15_lkurn"]
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
 [ext_resource type="Texture2D" uid="uid://bu3afm1jh5i75" path="res://assets/ui/menu_icon.png" id="16_6t5qj"]
+[ext_resource type="Script" uid="uid://bruvy704gbd2i" path="res://assets/ui/level_menu.gd" id="16_46dll"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
@@ -135,7 +136,6 @@ visibility_mode = 1
 script = ExtResource("12_1yhnd")
 
 [node name="Menu" type="Panel" parent="." unique_id=609022379]
-visible = false
 z_index = 16
 layout_mode = 1
 anchors_preset = 15
@@ -194,6 +194,39 @@ script = ExtResource("15_lkurn")
 layout_mode = 2
 text = "Restart sim"
 script = ExtResource("14_e5onl")
+
+[node name="LevelMenu" type="Control" parent="Menu/VBoxContainer" unique_id=1676771046]
+layout_mode = 2
+script = ExtResource("16_46dll")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Menu/VBoxContainer/LevelMenu" unique_id=2043763777]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 62.0
+grow_horizontal = 2
+
+[node name="Preview" type="TextureRect" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=1872844268]
+layout_mode = 2
+
+[node name="LevelLabel" type="Label" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=2091809275]
+layout_mode = 2
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer" unique_id=700037029]
+layout_mode = 2
+alignment = 1
+
+[node name="PreviousButton" type="Button" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer/HBoxContainer" unique_id=1810282340]
+layout_mode = 2
+text = "Previous"
+
+[node name="PlayButton" type="Button" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer/HBoxContainer" unique_id=242442689]
+layout_mode = 2
+text = "Load"
+
+[node name="NextButton" type="Button" parent="Menu/VBoxContainer/LevelMenu/VBoxContainer/HBoxContainer" unique_id=1093880234]
+layout_mode = 2
+text = "Next"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="." unique_id=1192285137]
 layout_mode = 1
