@@ -61,3 +61,25 @@ func _process(_delta):
 		car.car_params.max_torque *
 		100
 	)
+
+	var psi := 30.0
+	bridge.setTpmsSensor(
+		"fl",
+		psi,
+		car.wheel_fl.tire_model.tire_temp
+	)
+	bridge.setTpmsSensor(
+		"fr",
+		psi,
+		car.wheel_fl.tire_model.tire_temp
+	)
+	bridge.setTpmsSensor(
+		"rl",
+		psi,
+		car.wheel_bl.tire_model.tire_temp
+	)
+	bridge.setTpmsSensor(
+		"rr",
+		psi,
+		car.wheel_br.tire_model.tire_temp
+	)
