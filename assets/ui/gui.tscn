@@ -1,7 +1,6 @@
 [gd_scene format=3 uid="uid://djbt3ltge1aat"]
 
 [ext_resource type="Script" uid="uid://cjl1t5ebx6upv" path="res://src/gui/gui.gd" id="1_bv3ap"]
-[ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
 [ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="5_kks0w"]
 [ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/ui/gear_up.png" id="6_lkurn"]
 [ext_resource type="Script" uid="uid://377xjj66y52m" path="res://src/gui/gear_up.gd" id="7_l50n0"]
@@ -29,14 +28,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bv3ap")
-
-[node name="InputApp" parent="." unique_id=1462281750 instance=ExtResource("3_m5e8j")]
-layout_mode = 1
-anchors_preset = 3
-offset_left = -283.0
-offset_top = -158.0
-grow_horizontal = 0
-grow_vertical = 0
 
 [node name="Joystick" type="Control" parent="." unique_id=992922277]
 layout_mode = 1
