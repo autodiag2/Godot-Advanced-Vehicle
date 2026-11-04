@@ -134,7 +134,8 @@ func _create_selection_info_panel() -> void:
 	info_container.add_child(info_label)
 	ignition_fault_toggle = CheckButton.new()
 	ignition_fault_toggle.text = "Ignition fault"
-	ignition_fault_toggle.custom_minimum_size = Vector2(250.0, 42.0)
+	ignition_fault_toggle.custom_minimum_size = Vector2(0.0, 48.0)
+	ignition_fault_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	ignition_fault_toggle.add_theme_font_size_override("font_size", 13)
 	ignition_fault_toggle.toggled.connect(_on_ignition_fault_toggled)
 	info_container.add_child(ignition_fault_toggle)
@@ -743,7 +744,18 @@ func _process(delta: float) -> void:
 		)
 
 	_update_selection_info()
+	_layout_selection_info_panel()
 	_refresh_highlights()
+
+
+func _layout_selection_info_panel() -> void:
+	if not is_instance_valid(info_panel):
+		return
+	var viewport_size := get_viewport().get_visible_rect().size
+	var panel_width := maxf(180.0, minf(280.0, viewport_size.x - 24.0))
+	info_panel.custom_minimum_size = Vector2(panel_width, 142.0)
+	info_panel.size = Vector2(panel_width, 142.0)
+	info_panel.position = Vector2(12.0, 12.0)
 
 
 func _refresh_highlights() -> void:
