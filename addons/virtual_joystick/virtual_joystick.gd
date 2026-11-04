@@ -2,8 +2,8 @@ class_name VirtualJoystick
 
 extends Control
 
-const REPOSITION_AREA_SCALE: float = 3.0
-const REPOSITION_HOLD_DURATION: float = 0.24
+const REPOSITION_AREA_SCALE: float = 5.0
+const REPOSITION_HOLD_DURATION: float = 0.10
 const REPOSITION_DRAG_THRESHOLD: float = 8.0
 
 ## A simple virtual joystick for touchscreens, with useful options.
@@ -165,7 +165,7 @@ func _move_tip(new_position: Vector2) -> void:
 
 func _is_point_inside_joystick_area(point: Vector2) -> bool:
 	var base_radius := _get_base_radius()
-	var center := _base.global_position + base_radius
+	var center : Vector2 = _base.global_position + base_radius
 	var half_extent := base_radius * REPOSITION_AREA_SCALE
 	return (
 		absf(point.x - center.x) <= half_extent.x and
