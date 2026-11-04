@@ -208,7 +208,6 @@ class EngineController:
 		output_torque = simulator.advance(
 			delta,
 			throttle_input,
-			requested_mean_torque,
 			reaction_torque
 		)
 		rpm = simulator.rpm
@@ -282,11 +281,7 @@ class EngineController:
 			rpm,
 			engine_parameters.idle_rpm
 		)
-		simulator.rpm = rpm
-		simulator.angular_velocity = (
-			rpm /
-			RPM_PER_RADIAN_PER_SECOND
-		)
+		simulator.set_rpm(rpm)
 
 	func consume_fuel(
 		parameters: CarParameters,
@@ -965,9 +960,7 @@ func _physics_process(delta: float) -> void:
 		engine_controller.fuel_litres = 0.0
 		engine_controller.output_torque = 0.0
 		engine_controller.rpm = 0.0
-		engine_controller.simulator.rpm = 0.0
-		engine_controller.simulator.angular_velocity = 0.0
-		engine_controller.simulator.output_torque = 0.0
+		engine_controller.simulator.stop()
 		engine_controller.stop_sound(
 			engine_audio_player
 		)

@@ -16,6 +16,11 @@ enum FuelType {
 
 @export_category("Fuel and combustion")
 @export var fuel_type: FuelType = FuelType.PETROL
+@export_range(0.1, 1.0, 0.01) var diesel_premixed_fraction: float = 0.2
+@export_range(4.0, 50.0, 1.0) var diesel_injection_duration_deg: float = 20.0
+@export_range(0.0, 20.0, 0.5) var diesel_ignition_delay_deg: float = 3.0
+@export_range(1.0, 12.0, 0.1) var wiebe_a: float = 6.9
+@export_range(0.5, 5.0, 0.1) var wiebe_shape: float = 2.0
 @export var bsfc_map: EngineBSFCMap
 @export_range(0.1, 1.0, 0.01) var volumetric_efficiency: float = 0.88
 @export_range(0.1, 1.0, 0.01) var combustion_efficiency: float = 0.34
@@ -25,6 +30,16 @@ enum FuelType {
 @export_range(250.0, 450.0, 1.0) var intake_temperature_k: float = 300.0
 @export_range(0.5, 1.5, 0.01) var specific_heat_ratio: float = 1.34
 @export_range(0.0, 200.0, 0.5) var exhaust_pressure_kpa: float = 105.0
+@export_range(30.0, 150.0, 1.0) var intake_pressure_kpa: float = 95.0
+@export_range(250.0, 700.0, 1.0) var wall_temperature_k: float = 430.0
+@export_range(0.0, 719.0, 1.0) var intake_valve_open_deg: float = 350.0
+@export_range(0.0, 719.0, 1.0) var intake_valve_close_deg: float = 550.0
+@export_range(0.0, 719.0, 1.0) var exhaust_valve_open_deg: float = 145.0
+@export_range(0.0, 719.0, 1.0) var exhaust_valve_close_deg: float = 365.0
+@export_range(10.0, 60.0, 0.5) var intake_valve_diameter_mm: float = 34.0
+@export_range(10.0, 60.0, 0.5) var exhaust_valve_diameter_mm: float = 28.0
+@export_range(1.0, 18.0, 0.5) var max_valve_lift_mm: float = 9.0
+@export_range(0.1, 1.0, 0.01) var valve_discharge_coefficient: float = 0.72
 @export_range(0.0, 1.0, 0.01) var torque_pulse_strength: float = 0.45
 @export_range(0.1, 1.5, 0.01) var fuel_density_kg_per_litre: float = 0.745
 @export_range(20.0, 50.0, 0.1) var lower_heating_value_mj_per_kg: float = 43.0
