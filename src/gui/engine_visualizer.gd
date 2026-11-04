@@ -15,18 +15,43 @@ var engine_parameters: EngineParameters
 
 func _ready() -> void:
 	title = "Engine Laboratory"
-	min_size = Vector2i(860, 650)
+	min_size = Vector2i(320, 280)
 	size = Vector2i(1100, 850)
 	always_on_top = true
 	transient = true
 	exclusive = false
 	popup_window = false
+	borderless = true
 	unresizable = false
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
+	var telemetry: GridContainer = $Frame/Content/Telemetry
+	for label in [identity_label, rpm_label, torque_label, pressure_label]:
+		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_update_engine()
+
+
+func present() -> void:
+	if not visible:
+		var available_size := get_tree().root.size
+		var mobile_layout := OS.has_feature("mobile") or available_size.x < 760
+		var target_size := Vector2i(
+			maxi(300, mini(1100, int(float(available_size.x) * 0.96))),
+			maxi(280, mini(850, int(float(available_size.y) * 0.92)))
+		)
+		size = target_size
+		min_size = Vector2i(
+			mini(860, target_size.x),
+			mini(650, target_size.y)
+		)
+		unresizable = mobile_layout
+		$ResizeGrip.visible = not mobile_layout
+		if mobile_layout:
+			$Frame/Content/Footer.text = "DRAG MODEL TO ROTATE  ·  TAP PART TO SELECT"
+		popup_centered()
+	grab_focus()
 
 
 func set_vehicle(value: BaseCar) -> void:
