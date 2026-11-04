@@ -32,20 +32,20 @@ var pointer_start_position := Vector2.ZERO
 var pointer_moved: bool = false
 var fluid_shader: Shader
 var fluid_time: float = 0.0
+var lighting_initialized: bool = false
 
 const POINTER_DRAG_THRESHOLD: float = 8.0
 
 
 func _ready() -> void:
 	set_process(false)
-	_build_lighting()
 
 
 func configure(engine_simulator: EngineSimulator, parameters: EngineParameters) -> void:
 	simulator = engine_simulator
 	engine_parameters = parameters
 	if visualization_active and is_node_ready():
-		_build_engine()
+		_prepare_visualization()
 
 
 func set_visualization_active(active: bool) -> void:
@@ -53,7 +53,14 @@ func set_visualization_active(active: bool) -> void:
 		return
 	visualization_active = active
 	set_process(active)
-	if active and simulator != null and engine_parameters != null:
+	if active:
+		_prepare_visualization()
+
+
+func _prepare_visualization() -> void:
+	if not lighting_initialized:
+		_build_lighting()
+	if simulator != null and engine_parameters != null:
 		_build_engine()
 
 
@@ -109,7 +116,7 @@ func _build_lighting() -> void:
 	)
 	add_child(floor)
 	_create_selection_info_panel()
-
+	lighting_initialized = true
 
 
 func _create_selection_info_panel() -> void:
