@@ -2,6 +2,10 @@ class_name VirtualJoystick
 
 extends Control
 
+const REPOSITION_AREA_SCALE: float = 3.0
+const REPOSITION_HOLD_DURATION: float = 0.24
+const REPOSITION_DRAG_THRESHOLD: float = 8.0
+
 ## A simple virtual joystick for touchscreens, with useful options.
 ## Github: https://github.com/MarcoFazioRandom/Virtual-Joystick-Godot
 
@@ -53,6 +57,9 @@ var output := Vector2.ZERO
 # PRIVATE VARIABLES
 
 var _touch_index : int = -1
+var _reposition_touch_index: int = -1
+var _reposition_touch_position := Vector2.ZERO
+var _reposition_hold_elapsed: float = 0.0
 
 @onready var _base := $Base
 @onready var _tip := $Base/Tip
@@ -76,28 +83,78 @@ func _ready() -> void:
 	if visibility_mode == Visibility_mode.WHEN_TOUCHED:
 		hide()
 
+func _process(delta: float) -> void:
+	if _reposition_touch_index == -1:
+		return
+	_reposition_hold_elapsed += delta
+	if _reposition_hold_elapsed >= REPOSITION_HOLD_DURATION:
+		_activate_reposition(
+			_reposition_touch_index,
+			_reposition_touch_position
+		)
+
+
 func _input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			if _is_point_inside_joystick_area(event.position) and _touch_index == -1:
-				if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING or (joystick_mode == Joystick_mode.FIXED and _is_point_inside_base(event.position)):
-					if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING:
-						_move_base(event.position)
-					if visibility_mode == Visibility_mode.WHEN_TOUCHED:
-						show()
-					_touch_index = event.index
-					_tip.modulate = pressed_color
-					_update_joystick(event.position)
-					get_viewport().set_input_as_handled()
-		elif event.index == _touch_index:
-			_reset()
-			if visibility_mode == Visibility_mode.WHEN_TOUCHED:
-				hide()
-			get_viewport().set_input_as_handled()
+			if (
+				_touch_index == -1 and
+				_reposition_touch_index == -1 and
+				_is_point_inside_joystick_area(event.position)
+			):
+				if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING:
+					_move_base(event.position)
+					_begin_touch(event.index, event.position)
+				elif _is_point_inside_base(event.position):
+					_begin_touch(event.index, event.position)
+				else:
+					_reposition_touch_index = event.index
+					_reposition_touch_position = event.position
+					_reposition_hold_elapsed = 0.0
+				get_viewport().set_input_as_handled()
+		else:
+			if event.index == _touch_index:
+				_reset()
+				if visibility_mode == Visibility_mode.WHEN_TOUCHED:
+					hide()
+				get_viewport().set_input_as_handled()
+			elif event.index == _reposition_touch_index:
+				_cancel_reposition()
+				get_viewport().set_input_as_handled()
 	elif event is InputEventScreenDrag:
 		if event.index == _touch_index:
 			_update_joystick(event.position)
 			get_viewport().set_input_as_handled()
+		elif event.index == _reposition_touch_index:
+			if event.position.distance_to(_reposition_touch_position) >= REPOSITION_DRAG_THRESHOLD:
+				var origin := _reposition_touch_position
+				_activate_reposition(event.index, origin)
+				_update_joystick(event.position)
+			else:
+				_reposition_touch_position = event.position
+			get_viewport().set_input_as_handled()
+
+
+func _begin_touch(touch_index: int, touch_position: Vector2) -> void:
+	if visibility_mode == Visibility_mode.WHEN_TOUCHED:
+		show()
+	_touch_index = touch_index
+	_tip.modulate = pressed_color
+	_update_joystick(touch_position)
+
+
+func _activate_reposition(touch_index: int, touch_position: Vector2) -> void:
+	_move_base(touch_position)
+	_base_default_position = _base.position
+	_reposition_touch_index = -1
+	_reposition_hold_elapsed = 0.0
+	_begin_touch(touch_index, touch_position)
+
+
+func _cancel_reposition() -> void:
+	_reposition_touch_index = -1
+	_reposition_touch_position = Vector2.ZERO
+	_reposition_hold_elapsed = 0.0
 
 func _move_base(new_position: Vector2) -> void:
 	_base.global_position = new_position - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
@@ -106,9 +163,13 @@ func _move_tip(new_position: Vector2) -> void:
 	_tip.global_position = new_position - _tip.pivot_offset * _base.get_global_transform_with_canvas().get_scale()
 
 func _is_point_inside_joystick_area(point: Vector2) -> bool:
-	var x: bool = point.x >= global_position.x and point.x <= global_position.x + (size.x * get_global_transform_with_canvas().get_scale().x)
-	var y: bool = point.y >= global_position.y and point.y <= global_position.y + (size.y * get_global_transform_with_canvas().get_scale().y)
-	return x and y
+	var base_radius := _get_base_radius()
+	var center := _base.global_position + base_radius
+	var half_extent := base_radius * REPOSITION_AREA_SCALE
+	return (
+		absf(point.x - center.x) <= half_extent.x and
+		absf(point.y - center.y) <= half_extent.y
+	)
 
 func _get_base_radius() -> Vector2:
 	return _base.size * _base.get_global_transform_with_canvas().get_scale() / 2
