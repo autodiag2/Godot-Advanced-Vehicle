@@ -1,5 +1,6 @@
+
 class_name EngineVisualizer
-extends PopupPanel
+extends Window
 
 var vehicle: BaseCar
 var simulator: EngineSimulator
@@ -17,10 +18,17 @@ var engine_parameters: EngineParameters
 func _ready() -> void:
 	title = "Engine Laboratory"
 	min_size = Vector2i(860, 650)
+	size = Vector2i(1100, 850)
+	always_on_top = true
+	transient = true
+	exclusive = false
+	popup_window = false
+	unresizable = false
 	speed_slider.value = Engine.time_scale
 	speed_slider.value_changed.connect(_on_speed_changed)
 	$Frame/Content/Controls/ResetButton.pressed.connect(_on_reset_speed)
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
+	close_requested.connect(_on_close)
 	_update_engine()
 
 
