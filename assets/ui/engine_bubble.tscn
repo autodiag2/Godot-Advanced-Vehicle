@@ -31,10 +31,15 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
-[node name="EngineBubble" type="PopupPanel"]
-size = Vector2i(1020, 760)
+[node name="EngineBubble" type="Window"]
+size = Vector2i(1100, 850)
+min_size = Vector2i(860, 650)
+always_on_top = true
 transient = true
 exclusive = false
+popup_window = false
+unresizable = false
+borderless = false
 script = ExtResource("1")
 
 [node name="Frame" type="PanelContainer" parent="."]
@@ -124,14 +129,14 @@ theme_override_constants/margin_bottom = 4
 
 [node name="EngineViewport" type="SubViewportContainer" parent="Frame/Content/ViewportContainer/ViewportMargin"]
 layout_mode = 2
-custom_minimum_size = Vector2(970, 500)
+custom_minimum_size = Vector2(1040, 590)
 size_flags_horizontal = 3
 size_flags_vertical = 3
 stretch = true
 
 [node name="EngineViewport" type="SubViewport" parent="Frame/Content/ViewportContainer/ViewportMargin/EngineViewport"]
 own_world_3d = true
-size = Vector2i(970, 500)
+size = Vector2i(1040, 590)
 render_target_update_mode = 3
 
 [node name="EngineCutaway" parent="Frame/Content/ViewportContainer/ViewportMargin/EngineViewport/EngineViewport" instance=ExtResource("2")]
