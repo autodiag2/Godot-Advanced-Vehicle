@@ -63,17 +63,20 @@ theme_override_constants/separation = 12
 
 [node name="TitleStack" type="VBoxContainer" parent="Frame/Content/Heading"]
 layout_mode = 2
+mouse_filter = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
 [node name="Title" type="Label" parent="Frame/Content/Heading/TitleStack"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.91, 0.95, 1, 1)
 text = "ENGINE LAB"
 
 [node name="Subtitle" type="Label" parent="Frame/Content/Heading/TitleStack"]
 layout_mode = 2
+mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
 text = "CRANK-ANGLE THERMODYNAMICS  /  LIVE CUTAWAY"
