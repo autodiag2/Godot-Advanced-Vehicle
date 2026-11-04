@@ -15,13 +15,13 @@ var selected_wheel_index: int = 0
 var wheel_buttons: Array[Button] = []
 var wheel_button_styles: Array[StyleBoxFlat] = []
 
-@onready var main_content: BoxContainer = $Frame/Content/MainContent
-@onready var wheel_title: Label = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/WheelTitle
-@onready var condition_label: Label = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/ConditionLabel
-@onready var wear_label: Label = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/WearLabel
-@onready var temperature_label: Label = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureLabel
-@onready var temperature_bar: ColorRect = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureBar
-@onready var statistics_label: Label = $Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details/StatisticsLabel
+@onready var main_content: BoxContainer = $Frame/Content/MainScroll/MainContent
+@onready var wheel_title: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WheelTitle
+@onready var condition_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/ConditionLabel
+@onready var wear_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WearLabel
+@onready var temperature_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureLabel
+@onready var temperature_bar: ColorRect = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureBar
+@onready var statistics_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/StatisticsLabel
 
 
 func _ready() -> void:
@@ -34,10 +34,10 @@ func _ready() -> void:
 	popup_window = false
 	borderless = true
 	wheel_buttons = [
-		$Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow/FrontLeft,
-		$Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow/FrontRight,
-		$Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow/RearLeft,
-		$Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow/RearRight,
+		$Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow/FrontLeft as Button,
+		$Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow/FrontRight as Button,
+		$Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow/RearLeft as Button,
+		$Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow/RearRight as Button,
 	]
 	for index in range(wheel_buttons.size()):
 		wheel_buttons[index].pressed.connect(_select_wheel.bind(index))
