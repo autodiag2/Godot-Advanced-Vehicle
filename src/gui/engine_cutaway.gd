@@ -16,8 +16,8 @@ var camera_distance: float = 5.2
 var camera_yaw: float = 0.0
 var camera_pitch: float = 0.18
 var rotating_view: bool = false
-var cylinder_areas: Array[Area3D] = []
-var crankshaft_area: Area3D
+var crankshaft_pick_radius: float = 0.14
+var crankshaft_pick_half_length: float = 0.5
 var crankshaft_mesh: MeshInstance3D
 var hovered_cylinder_index: int = -1
 var selected_cylinder_index: int = -1
@@ -132,15 +132,138 @@ func _create_selection_info_panel() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+	if event is InputEventMouseMotion:
+		_update_hover(event.position)
+		if rotating_view:
+			_rotate_camera(event.relative)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		_update_hover(event.position)
+		if event.pressed:
+			_select_hovered_part()
 		rotating_view = event.pressed
-	elif event is InputEventMouseMotion and rotating_view:
-		_rotate_camera(event.relative)
 	elif event is InputEventScreenTouch:
+		_update_hover(event.position)
+		if event.pressed:
+			_select_hovered_part()
 		rotating_view = event.pressed
 	elif event is InputEventScreenDrag:
+		_update_hover(event.position)
 		_rotate_camera(event.relative)
 
+
+func _pick_interactable(screen_position: Vector2) -> Dictionary:
+	if camera == null or model_root == null:
+		return {}
+	var world_origin := camera.project_ray_origin(screen_position)
+	var world_direction := camera.project_ray_normal(screen_position)
+	var ray_origin := model_root.to_local(world_origin)
+	var ray_direction := (
+		model_root.to_local(world_origin + world_direction) - ray_origin
+	).normalized()
+	var nearest_distance := 1.0e20
+	var nearest_hit: Dictionary = {}
+
+	for cylinder_index in range(cylinder_parts.size()):
+		var part: Dictionary = cylinder_parts[cylinder_index]
+		var distance := _ray_cylinder_distance(
+			ray_origin,
+			ray_direction,
+			part.pick_center,
+			float(part.pick_radius),
+			float(part.pick_half_length),
+			false
+		)
+		if distance < nearest_distance:
+			nearest_distance = distance
+			nearest_hit = {
+				"kind": "cylinder",
+				"index": cylinder_index,
+			}
+
+	var crankshaft_distance := _ray_cylinder_distance(
+		ray_origin,
+		ray_direction,
+		Vector3(0.0, crank_center_y, 0.0),
+		crankshaft_pick_radius,
+		crankshaft_pick_half_length,
+		true
+	)
+	if crankshaft_distance < nearest_distance:
+		nearest_hit = {"kind": "crankshaft"}
+	return nearest_hit
+
+
+func _ray_cylinder_distance(
+	ray_origin: Vector3,
+	ray_direction: Vector3,
+	center: Vector3,
+	radius: float,
+	half_length: float,
+	axis_is_x: bool
+) -> float:
+	var perpendicular_origin: Vector2
+	var perpendicular_direction: Vector2
+	var axial_origin: float
+	var axial_direction: float
+	var axial_center: float
+	if axis_is_x:
+		perpendicular_origin = Vector2(
+			ray_origin.y - center.y,
+			ray_origin.z - center.z
+		)
+		perpendicular_direction = Vector2(ray_direction.y, ray_direction.z)
+		axial_origin = ray_origin.x
+		axial_direction = ray_direction.x
+		axial_center = center.x
+	else:
+		perpendicular_origin = Vector2(
+			ray_origin.x - center.x,
+			ray_origin.z - center.z
+		)
+		perpendicular_direction = Vector2(ray_direction.x, ray_direction.z)
+		axial_origin = ray_origin.y
+		axial_direction = ray_direction.y
+		axial_center = center.y
+
+	var quadratic_a := perpendicular_direction.length_squared()
+	if quadratic_a < 0.000001:
+		return 1.0e20
+	var quadratic_b := 2.0 * perpendicular_origin.dot(perpendicular_direction)
+	var quadratic_c := perpendicular_origin.length_squared() - radius * radius
+	var discriminant := quadratic_b * quadratic_b - 4.0 * quadratic_a * quadratic_c
+	if discriminant < 0.0:
+		return 1.0e20
+	var root := sqrt(discriminant)
+	var near_distance := (-quadratic_b - root) / (2.0 * quadratic_a)
+	var far_distance := (-quadratic_b + root) / (2.0 * quadratic_a)
+	for distance in [near_distance, far_distance]:
+		if distance < 0.0:
+			continue
+		var axial_position := axial_origin + axial_direction * distance
+		if absf(axial_position - axial_center) <= half_length:
+			return distance
+	return 1.0e20
+
+
+func _update_hover(screen_position: Vector2) -> void:
+	var hit := _pick_interactable(screen_position)
+	var next_cylinder := -1
+	var next_crankshaft := false
+	if hit.get("kind", "") == "cylinder":
+		next_cylinder = int(hit.index)
+	elif hit.get("kind", "") == "crankshaft":
+		next_crankshaft = true
+	if next_cylinder != hovered_cylinder_index or next_crankshaft != hovered_crankshaft:
+		hovered_cylinder_index = next_cylinder
+		hovered_crankshaft = next_crankshaft
+		_refresh_highlights()
+
+
+func _select_hovered_part() -> void:
+	selected_cylinder_index = hovered_cylinder_index
+	selected_crankshaft = hovered_crankshaft
+	_update_selection_info()
+	_refresh_highlights()
 
 func _rotate_camera(relative: Vector2) -> void:
 	camera_yaw -= relative.x * 0.008
@@ -210,8 +333,6 @@ func _build_engine() -> void:
 	hover_material = _make_material(Color(0.95, 0.68, 0.2, 0.28), 0.1, 2.2)
 	hover_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	fluid_shader = _create_fluid_shader()
-	cylinder_areas.clear()
-	crankshaft_area = null
 	crankshaft_mesh = null
 
 	_add_box(
@@ -241,20 +362,7 @@ func _build_engine() -> void:
 	)
 	crankshaft_mesh.rotation.z = PI * 0.5
 	crankshaft_mesh.position.y = crank_center_y
-	crankshaft_area = Area3D.new()
-	crankshaft_area.input_ray_pickable = true
-	crankshaft_area.position = Vector3(0.0, crank_center_y, 0.0)
-	crankshaft_area.rotation.z = PI * 0.5
-	var crankshaft_collision := CollisionShape3D.new()
-	var crankshaft_shape := CylinderShape3D.new()
-	crankshaft_shape.radius = 0.14
-	crankshaft_shape.height = width + 0.8
-	crankshaft_collision.shape = crankshaft_shape
-	crankshaft_area.add_child(crankshaft_collision)
-	model_root.add_child(crankshaft_area)
-	crankshaft_area.mouse_entered.connect(_on_crankshaft_mouse_entered)
-	crankshaft_area.mouse_exited.connect(_on_crankshaft_mouse_exited)
-	crankshaft_area.input_event.connect(_on_crankshaft_area_input)
+	crankshaft_pick_half_length = (width + 0.8) * 0.5
 
 	var bearing_count := maxi(cylinder_count + 1, 2)
 	for bearing_index in range(bearing_count):
@@ -288,26 +396,6 @@ func _build_engine() -> void:
 			0.0
 		)
 
-		var cylinder_area := Area3D.new()
-		cylinder_area.input_ray_pickable = true
-		cylinder_area.position = liner.position
-		var cylinder_collision := CollisionShape3D.new()
-		var cylinder_shape := CylinderShape3D.new()
-		cylinder_shape.radius = bore_radius * 1.28
-		cylinder_shape.height = stroke + 0.42
-		cylinder_collision.shape = cylinder_shape
-		cylinder_area.add_child(cylinder_collision)
-		model_root.add_child(cylinder_area)
-		cylinder_area.mouse_entered.connect(
-			_on_cylinder_mouse_entered.bind(cylinder_index)
-		)
-		cylinder_area.mouse_exited.connect(
-			_on_cylinder_mouse_exited.bind(cylinder_index)
-		)
-		cylinder_area.input_event.connect(
-			_on_cylinder_area_input.bind(cylinder_index)
-		)
-		cylinder_areas.append(cylinder_area)
 
 		var liner_rim := _add_torus(
 			model_root,
@@ -474,6 +562,9 @@ func _build_engine() -> void:
 			"pressure_label": pressure_label,
 			"liner": liner,
 			"liner_rim": liner_rim,
+			"pick_center": liner.position,
+			"pick_radius": bore_radius * 1.28,
+			"pick_half_length": (stroke + 0.42) * 0.5,
 			"fluid_volume": fluid_volume,
 			"fluid_material": fluid_material,
 			"flame_fill": 0.0,
@@ -626,66 +717,6 @@ func _process(delta: float) -> void:
 
 	_update_selection_info()
 	_refresh_highlights()
-
-
-func _on_cylinder_mouse_entered(cylinder_index: int) -> void:
-	hovered_cylinder_index = cylinder_index
-	_refresh_highlights()
-
-
-func _on_cylinder_mouse_exited(cylinder_index: int) -> void:
-	if hovered_cylinder_index == cylinder_index:
-		hovered_cylinder_index = -1
-	_refresh_highlights()
-
-
-func _on_cylinder_area_input(
-	_camera: Camera3D,
-	event: InputEvent,
-	_event_position: Vector3,
-	_normal: Vector3,
-	_shape_index: int,
-	cylinder_index: int
-) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		selected_cylinder_index = cylinder_index
-		selected_crankshaft = false
-		_update_selection_info()
-		_refresh_highlights()
-	elif event is InputEventScreenTouch and event.pressed:
-		selected_cylinder_index = cylinder_index
-		selected_crankshaft = false
-		_update_selection_info()
-		_refresh_highlights()
-
-
-func _on_crankshaft_mouse_entered() -> void:
-	hovered_crankshaft = true
-	_refresh_highlights()
-
-
-func _on_crankshaft_mouse_exited() -> void:
-	hovered_crankshaft = false
-	_refresh_highlights()
-
-
-func _on_crankshaft_area_input(
-	_camera: Camera3D,
-	event: InputEvent,
-	_event_position: Vector3,
-	_normal: Vector3,
-	_shape_index: int
-) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		selected_cylinder_index = -1
-		selected_crankshaft = true
-		_update_selection_info()
-		_refresh_highlights()
-	elif event is InputEventScreenTouch and event.pressed:
-		selected_cylinder_index = -1
-		selected_crankshaft = true
-		_update_selection_info()
-		_refresh_highlights()
 
 
 func _refresh_highlights() -> void:
