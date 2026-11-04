@@ -32,11 +32,11 @@ func present() -> void:
 			maxi(300, mini(480, int(float(available_size.x) * 0.96))),
 			maxi(200, mini(245, int(float(available_size.y) * 0.9)))
 		)
-		size = target_size
 		min_size = Vector2i(
 			mini(390, target_size.x),
 			mini(210, target_size.y)
 		)
+		size = target_size
 		unresizable = mobile_layout
 		$ResizeGrip.visible = not mobile_layout
 		popup_centered()
