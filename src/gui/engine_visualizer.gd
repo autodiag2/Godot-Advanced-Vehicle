@@ -31,7 +31,7 @@ func _ready() -> void:
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
 	engine_viewport_container.resized.connect(_resize_engine_viewport)
 	for label in [identity_label, rpm_label, torque_label, pressure_label]:
-		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_update_engine()
 
 
@@ -75,7 +75,7 @@ func _process(_delta: float) -> void:
 		return
 
 	var maximum_pressure := 0.0
-	for cylinder_index in range(engine_parameters.cylinder_count):
+	for cylinder_index in range(engine_parameters.get_cylinder_count()):
 		maximum_pressure = maxf(
 			maximum_pressure,
 			simulator.get_cylinder_pressure_kpa(cylinder_index)
@@ -89,7 +89,7 @@ func _process(_delta: float) -> void:
 		pow(engine_parameters.bore_mm, 2.0) *
 		0.25 *
 		engine_parameters.stroke_mm *
-		float(engine_parameters.cylinder_count) /
+		float(engine_parameters.get_cylinder_count()) /
 		1000000.0
 	)
 
