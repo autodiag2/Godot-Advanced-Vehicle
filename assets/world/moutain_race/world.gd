@@ -26,6 +26,7 @@ const RIVER_POINTS := [
 const TRACK_WIDTH := 12.0
 const SHOULDER_WIDTH := 4.0
 const TRACK_SAMPLES := 440
+const TRACK_SPATIAL_CELL_SIZE := 16.0
 const TERRAIN_SIZE := 300.0
 const TERRAIN_RESOLUTION := 151
 const TRACK_SURFACE_OFFSET := 0.45
@@ -57,6 +58,10 @@ var track_centers: Array[Vector3] = []
 var track_tangents: Array[Vector3] = []
 var track_sides: Array[Vector3] = []
 var river_centers: Array[Vector3] = []
+var track_spatial_bins: Dictionary = {}
+var tree_trunk_transforms: Array[Transform3D] = []
+var tree_crown_transforms: Array[Transform3D] = []
+var rock_transforms: Array[Transform3D] = []
 
 var track_mesh_instance: MeshInstance3D
 var terrain_mesh_instance: MeshInstance3D
@@ -84,6 +89,7 @@ func _ready() -> void:
 
 	_create_materials()
 	_build_track_samples()
+	_build_track_spatial_bins()
 	_build_terrain()
 	_build_lake_and_river()
 	_build_track()
@@ -161,6 +167,47 @@ func _build_track_samples() -> void:
 		track_sides.append(side)
 
 
+func _build_track_spatial_bins() -> void:
+	track_spatial_bins.clear()
+
+	for index in range(track_centers.size()):
+		var center: Vector3 = track_centers[index]
+		var cell := Vector2i(
+			floori(center.x / TRACK_SPATIAL_CELL_SIZE),
+			floori(center.z / TRACK_SPATIAL_CELL_SIZE)
+		)
+		var bucket: Array = track_spatial_bins.get(cell, [])
+		bucket.append(index)
+		track_spatial_bins[cell] = bucket
+
+
+func _nearest_track_sample(x: float, z: float) -> Vector2:
+	var nearest_distance_squared := 1.0e9
+	var nearest_height := 0.0
+	var cell := Vector2i(
+		floori(x / TRACK_SPATIAL_CELL_SIZE),
+		floori(z / TRACK_SPATIAL_CELL_SIZE)
+	)
+
+	for cell_z in range(-1, 2):
+		for cell_x in range(-1, 2):
+			var bucket: Array = track_spatial_bins.get(
+				cell + Vector2i(cell_x, cell_z),
+				[]
+			)
+			for sample_value in bucket:
+				var sample_index: int = sample_value
+				var center: Vector3 = track_centers[sample_index]
+				var dx := x - center.x
+				var dz := z - center.z
+				var distance_squared := dx * dx + dz * dz
+				if distance_squared < nearest_distance_squared:
+					nearest_distance_squared = distance_squared
+					nearest_height = center.y
+
+	return Vector2(nearest_distance_squared, nearest_height)
+
+
 func _catmull_rom(
 	p0: Vector3,
 	p1: Vector3,
@@ -228,17 +275,13 @@ func _terrain_height(x: float, z: float) -> float:
 		shore_t = shore_t * shore_t * (3.0 - 2.0 * shore_t)
 		h = lerpf(lake_floor, h, shore_t)
 
-	var nearest_distance := 1.0e9
-	var nearest_height := 0.0
+	var nearest_track := _nearest_track_sample(x, z)
+	var nearest_distance_squared := nearest_track.x
+	var nearest_height := nearest_track.y
+	var track_blend_radius := TRACK_WIDTH * 0.5 + SHOULDER_WIDTH + 1.5
 
-	for center in track_centers:
-		var distance := Vector2(x - center.x, z - center.z).length()
-
-		if distance < nearest_distance:
-			nearest_distance = distance
-			nearest_height = center.y
-
-	if nearest_distance < TRACK_WIDTH * 0.5 + SHOULDER_WIDTH + 1.5:
+	if nearest_distance_squared < track_blend_radius * track_blend_radius:
+		var nearest_distance := sqrt(nearest_distance_squared)
 		var blend := clampf(
 			(nearest_distance - TRACK_WIDTH * 0.5) / (SHOULDER_WIDTH + 1.5),
 			0.0,
@@ -287,6 +330,14 @@ func _build_terrain() -> void:
 
 	var half := TERRAIN_SIZE * 0.5
 	var step := TERRAIN_SIZE / float(TERRAIN_RESOLUTION - 1)
+	var terrain_heights := PackedFloat32Array()
+	terrain_heights.resize(TERRAIN_RESOLUTION * TERRAIN_RESOLUTION)
+
+	for z_index in range(TERRAIN_RESOLUTION):
+		for x_index in range(TERRAIN_RESOLUTION):
+			var x := -half + x_index * step
+			var z := -half + z_index * step
+			terrain_heights[z_index * TERRAIN_RESOLUTION + x_index] = _terrain_height(x, z)
 
 	for z_index in range(TERRAIN_RESOLUTION - 1):
 		for x_index in range(TERRAIN_RESOLUTION - 1):
@@ -294,11 +345,13 @@ func _build_terrain() -> void:
 			var z0 := -half + z_index * step
 			var x1 := x0 + step
 			var z1 := z0 + step
+			var row := z_index * TERRAIN_RESOLUTION
+			var next_row := row + TERRAIN_RESOLUTION
 
-			var a := Vector3(x0, _terrain_height(x0, z0), z0)
-			var b := Vector3(x1, _terrain_height(x1, z0), z0)
-			var c := Vector3(x0, _terrain_height(x0, z1), z1)
-			var d := Vector3(x1, _terrain_height(x1, z1), z1)
+			var a := Vector3(x0, terrain_heights[row + x_index], z0)
+			var b := Vector3(x1, terrain_heights[row + x_index + 1], z0)
+			var c := Vector3(x0, terrain_heights[next_row + x_index], z1)
+			var d := Vector3(x1, terrain_heights[next_row + x_index + 1], z1)
 
 			_add_triangle(st, a, c, b)
 			_add_triangle(st, b, c, d)
@@ -576,11 +629,21 @@ func _basis_from_forward(forward: Vector3) -> Basis:
 	return Basis(right, up, -direction)
 
 
+
 func _build_guardrails() -> void:
 	var post_mesh := CylinderMesh.new()
 	post_mesh.top_radius = 0.10
 	post_mesh.bottom_radius = 0.13
 	post_mesh.height = GUARDRAIL_HEIGHT
+
+	var upper_mesh := BoxMesh.new()
+	upper_mesh.size = Vector3(0.18, 0.22, 1.0)
+	var lower_mesh := BoxMesh.new()
+	lower_mesh.size = Vector3(0.14, 0.16, 1.0)
+
+	var post_transforms: Array[Transform3D] = []
+	var upper_transforms: Array[Transform3D] = []
+	var lower_transforms: Array[Transform3D] = []
 
 	for i in range(0, TRACK_SAMPLES, GUARDRAIL_STEP):
 		var next := (i + GUARDRAIL_STEP) % TRACK_SAMPLES
@@ -599,40 +662,40 @@ func _build_guardrails() -> void:
 
 			var direction := finish - start
 			var length := direction.length()
+			var basis := _basis_from_forward(direction)
+			var midpoint := (start + finish) * 0.5
+
+			for z_offset in [-length * 0.5 + 0.1, length * 0.5 - 0.1]:
+				var local_position := Vector3(
+					0.0,
+					GUARDRAIL_HEIGHT * 0.5,
+					z_offset
+				)
+				post_transforms.append(
+					Transform3D(
+						basis,
+						midpoint + basis * local_position
+					)
+				)
+
+			upper_transforms.append(
+				Transform3D(
+					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
+					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT - 0.15, 0.0)
+				)
+			)
+			lower_transforms.append(
+				Transform3D(
+					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
+					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT * 0.45, 0.0)
+				)
+			)
 
 			var segment_root := Node3D.new()
 			segment_root.name = "GuardrailSegment"
-			segment_root.position = (start + finish) * 0.5
-			segment_root.basis = _basis_from_forward(direction)
+			segment_root.position = midpoint
+			segment_root.basis = basis
 			add_child(segment_root)
-
-			for z_offset in [-length * 0.5 + 0.1, length * 0.5 - 0.1]:
-				var post := MeshInstance3D.new()
-				post.name = "GuardrailPost"
-				post.mesh = post_mesh
-				post.material_override = guardrail_material
-				post.position = Vector3(0.0, GUARDRAIL_HEIGHT * 0.5, z_offset)
-				segment_root.add_child(post)
-
-			var upper_mesh := BoxMesh.new()
-			upper_mesh.size = Vector3(0.18, 0.22, length + 0.3)
-
-			var upper_rail := MeshInstance3D.new()
-			upper_rail.name = "UpperGuardrail"
-			upper_rail.mesh = upper_mesh
-			upper_rail.material_override = guardrail_material
-			upper_rail.position = Vector3(0.0, GUARDRAIL_HEIGHT - 0.15, 0.0)
-			segment_root.add_child(upper_rail)
-
-			var lower_mesh := BoxMesh.new()
-			lower_mesh.size = Vector3(0.14, 0.16, length + 0.3)
-
-			var lower_rail := MeshInstance3D.new()
-			lower_rail.name = "LowerGuardrail"
-			lower_rail.mesh = lower_mesh
-			lower_rail.material_override = guardrail_material
-			lower_rail.position = Vector3(0.0, GUARDRAIL_HEIGHT * 0.45, 0.0)
-			segment_root.add_child(lower_rail)
 
 			var body := StaticBody3D.new()
 			body.name = "GuardrailCollision"
@@ -648,6 +711,34 @@ func _build_guardrails() -> void:
 			collision.shape = box_shape
 			collision.position = Vector3(0.0, GUARDRAIL_HEIGHT * 0.5, 0.0)
 			body.add_child(collision)
+
+	_create_multimesh_instance("GuardrailPosts", post_mesh, guardrail_material, post_transforms)
+	_create_multimesh_instance("UpperGuardrails", upper_mesh, guardrail_material, upper_transforms)
+	_create_multimesh_instance("LowerGuardrails", lower_mesh, guardrail_material, lower_transforms)
+
+
+func _create_multimesh_instance(
+	node_name: String,
+	mesh: Mesh,
+	material: Material,
+	transforms: Array[Transform3D]
+) -> void:
+	if transforms.is_empty():
+		return
+
+	var multimesh := MultiMesh.new()
+	multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	multimesh.mesh = mesh
+	multimesh.instance_count = transforms.size()
+
+	for i in range(transforms.size()):
+		multimesh.set_instance_transform(i, transforms[i])
+
+	var instance := MultiMeshInstance3D.new()
+	instance.name = node_name
+	instance.multimesh = multimesh
+	instance.material_override = material
+	add_child(instance)
 
 
 func _build_spawn_marker() -> void:
@@ -735,33 +826,24 @@ func _build_spawn_marker() -> void:
 func _add_tree_at(x: float, z: float) -> void:
 	var y := _terrain_height(x, z)
 	var trunk_height := rng.randf_range(3.5, 6.0)
+	tree_trunk_transforms.append(
+		Transform3D(
+			Basis().scaled(Vector3(1.0, trunk_height, 1.0)),
+			Vector3(x, y + trunk_height * 0.5, z)
+		)
+	)
 
-	var trunk := MeshInstance3D.new()
-	var trunk_mesh := CylinderMesh.new()
-	trunk_mesh.top_radius = 0.16
-	trunk_mesh.bottom_radius = 0.28
-	trunk_mesh.height = trunk_height
-	trunk.mesh = trunk_mesh
-	trunk.material_override = tree_trunk_material
-	trunk.position = Vector3(x, y + trunk_height * 0.5, z)
-	add_child(trunk)
-
-	var crown := MeshInstance3D.new()
-	var crown_mesh := PrismMesh.new()
-	crown_mesh.size = Vector3(
+	var crown_size := Vector3(
 		rng.randf_range(3.5, 6.0),
 		rng.randf_range(7.0, 12.0),
 		rng.randf_range(3.5, 6.0)
 	)
-	crown.mesh = crown_mesh
-	crown.material_override = tree_material
-	crown.position = Vector3(
-		x,
-		y + trunk_height + crown_mesh.size.y * 0.35,
-		z
+	tree_crown_transforms.append(
+		Transform3D(
+			Basis().scaled(crown_size),
+			Vector3(x, y + trunk_height + crown_size.y * 0.35, z)
+		)
 	)
-	add_child(crown)
-
 
 func _build_scenery() -> void:
 	for i in range(0, TRACK_SAMPLES, ROADSIDE_TREE_STEP):
@@ -819,24 +901,39 @@ func _build_scenery() -> void:
 		if _distance_to_river(x, z) < RIVER_WIDTH + 1.5:
 			continue
 
-		var rock := MeshInstance3D.new()
-		var rock_mesh := SphereMesh.new()
-		rock_mesh.radius = rng.randf_range(0.5, 2.2)
-		rock_mesh.height = rock_mesh.radius * rng.randf_range(0.7, 1.6)
-		rock.mesh = rock_mesh
-		rock.material_override = rock_material
-		rock.position = Vector3(
-			x,
-			_terrain_height(x, z) + rock_mesh.height * 0.35,
-			z
-		)
-		rock.scale = Vector3(
+
+		var radius := rng.randf_range(0.5, 2.2)
+		var height := radius * rng.randf_range(0.7, 1.6)
+		var y := _terrain_height(x, z)
+		var rock_scale := Vector3(
 			rng.randf_range(0.7, 1.8),
 			rng.randf_range(0.5, 1.3),
 			rng.randf_range(0.7, 1.8)
 		)
-		add_child(rock)
+		rock_transforms.append(
+			Transform3D(
+				Basis().scaled(Vector3(
+					radius * rock_scale.x,
+					height * 0.5 * rock_scale.y,
+					radius * rock_scale.z
+				)),
+				Vector3(x, y + height * 0.35, z)
+			)
+		)
 
+	var trunk_mesh := CylinderMesh.new()
+	trunk_mesh.top_radius = 0.16
+	trunk_mesh.bottom_radius = 0.28
+	trunk_mesh.height = 1.0
+	var crown_mesh := PrismMesh.new()
+	crown_mesh.size = Vector3.ONE
+	var rock_mesh := SphereMesh.new()
+	rock_mesh.radius = 1.0
+	rock_mesh.height = 2.0
+
+	_create_multimesh_instance("TreeTrunks", trunk_mesh, tree_trunk_material, tree_trunk_transforms)
+	_create_multimesh_instance("TreeCrowns", crown_mesh, tree_material, tree_crown_transforms)
+	_create_multimesh_instance("Rocks", rock_mesh, rock_material, rock_transforms)
 
 func _build_grass() -> void:
 	var grass_mesh := CylinderMesh.new()
@@ -995,15 +1092,7 @@ func _add_box(
 
 
 func _distance_to_track(x: float, z: float) -> float:
-	var best := 1.0e9
-
-	for center in track_centers:
-		var distance := Vector2(x - center.x, z - center.z).length()
-
-		if distance < best:
-			best = distance
-
-	return best
+	return sqrt(_nearest_track_sample(x, z).x)
 
 
 func _build_environment() -> void:
