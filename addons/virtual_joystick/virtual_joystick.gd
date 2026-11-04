@@ -160,7 +160,7 @@ func _cancel_reposition() -> void:
 	_reposition_hold_elapsed = 0.0
 
 func _move_base(new_position: Vector2) -> void:
-	var half_extent := _get_base_radius() * REPOSITION_AREA_SCALE
+	var half_extent := _get_base_radius() * (REPOSITION_AREA_SCALE - 1.0)
 	var clamped_center := Vector2(
 		clampf(new_position.x, _initial_base_center.x - half_extent.x, _initial_base_center.x + half_extent.x),
 		clampf(new_position.y, _initial_base_center.y - half_extent.y, _initial_base_center.y + half_extent.y)
