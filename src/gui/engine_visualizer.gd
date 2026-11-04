@@ -30,9 +30,23 @@ func _ready() -> void:
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
 	engine_viewport_container.resized.connect(_resize_engine_viewport)
+	visibility_changed.connect(_on_visibility_changed)
+	set_process(false)
+	engine_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
 	for label in [identity_label, rpm_label, torque_label, pressure_label]:
 		label.autowrap_mode = TextServer.AUTOWRAP_OFF
-	_update_engine()
+	_on_visibility_changed()
+
+
+func _on_visibility_changed() -> void:
+	var active := is_visible()
+	set_process(active)
+	engine_viewport.render_target_update_mode = (
+		SubViewport.UPDATE_WHEN_PARENT_VISIBLE
+		if active
+		else SubViewport.UPDATE_DISABLED
+	)
+	engine_cutaway.set_visualization_active(active)
 
 
 func _resize_engine_viewport() -> void:
