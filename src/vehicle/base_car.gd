@@ -150,7 +150,6 @@ class EngineController:
 	var bsfc_map: EngineBSFCMap
 	var simulator := EngineSimulator.new()
 	var audio_synthesizer := EngineAudioSynthesizer.new()
-	var is_running := true
 	var effective_throttle: float = 0.0
 
 	@warning_ignore("shadowed_variable")
@@ -160,7 +159,6 @@ class EngineController:
 	) -> void:
 		self.parameters = parameters
 		engine_parameters = parameters.engine
-		is_running = true
 		effective_throttle = 0.0
 
 		if engine_parameters == null:
@@ -205,14 +203,7 @@ class EngineController:
 		throttle_input: float,
 		delta: float
 	) -> void:
-		if not is_running:
-			output_torque = 0.0
-			rpm = 0.0
-			angular_velocity = 0.0
-			net_torque = 0.0
-			return
-
-		effective_throttle = _get_effective_throttle(throttle_input)
+		effective_throttle = clampf(throttle_input, 0.0, 1.0)
 		output_torque = simulator.advance(
 			delta,
 			effective_throttle,
@@ -221,42 +212,20 @@ class EngineController:
 		rpm = simulator.rpm
 		angular_velocity = simulator.angular_velocity
 		net_torque = output_torque + reaction_torque
-		if rpm <= engine_parameters.stall_rpm:
-			stall()
-
-
-	func _get_effective_throttle(driver_throttle: float) -> float:
-		var throttle := clampf(driver_throttle, 0.0, 1.0)
-		if throttle > 0.01 or rpm >= engine_parameters.idle_rpm * 1.15:
-			return throttle
-		var idle_error := (
-			engine_parameters.idle_rpm - rpm
-		) / maxf(engine_parameters.idle_rpm, 1.0)
-		return maxf(
-			throttle,
-			clampf(0.18 + idle_error * 0.65, 0.0, 0.72)
-		)
 
 
 	func apply_impact_rpm_drop(rpm_drop: float) -> void:
-		if not is_running or rpm_drop <= 0.0:
+		if rpm_drop <= 0.0:
 			return
 		simulator.set_rpm(maxf(rpm - rpm_drop, 0.0))
 		rpm = simulator.rpm
 		angular_velocity = simulator.angular_velocity
-		if rpm <= engine_parameters.stall_rpm:
-			stall()
 
 
-	func stall() -> void:
-		if not is_running:
-			return
-		is_running = false
-		output_torque = 0.0
-		net_torque = 0.0
-		rpm = 0.0
-		angular_velocity = 0.0
-		simulator.stop()
+	func clamp_to_idle(_parameters: CarParameters) -> void:
+		rpm = maxf(rpm, engine_parameters.idle_rpm)
+		simulator.set_rpm(rpm)
+
 
 	func calculate_engine_load(throttle_input: float) -> float:
 		var engine_torque := calculate_torque(
@@ -326,8 +295,6 @@ class EngineController:
 		car: RigidBody3D,
 		delta: float
 	) -> void:
-		if not is_running:
-			return
 		var engine_load := calculate_engine_load(throttle_input)
 		var bsfc: float = bsfc_map.sample(
 			rpm,
@@ -380,9 +347,6 @@ class EngineController:
 		_parameters: CarParameters,
 		audio_player: AudioStreamPlayer
 	) -> void:
-		if not is_running:
-			stop_sound(audio_player)
-			return
 		audio_synthesizer.update(
 			simulator,
 			audio_player,
@@ -1029,6 +993,8 @@ func _physics_process(delta: float) -> void:
 			delta
 		)
 
+	engine_controller.clamp_to_idle(car_params)
+
 	engine_controller.consume_fuel(
 		car_params,
 		engine_controller.effective_throttle,
@@ -1038,7 +1004,10 @@ func _physics_process(delta: float) -> void:
 
 	if engine_controller.fuel_litres <= 0.0:
 		engine_controller.fuel_litres = 0.0
-		engine_controller.stall()
+		engine_controller.output_torque = 0.0
+		engine_controller.rpm = 0.0
+		engine_controller.angular_velocity = 0.0
+		engine_controller.simulator.stop()
 		engine_controller.stop_sound(
 			engine_audio_player
 		)
