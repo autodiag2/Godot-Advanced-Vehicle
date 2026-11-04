@@ -20,6 +20,7 @@
 [ext_resource type="Script" uid="uid://bruvy704gbd2i" path="res://assets/ui/level_menu.gd" id="16_46dll"]
 [ext_resource type="Texture2D" path="res://assets/ui/engine_icon.png" id="17_engine"]
 [ext_resource type="Texture2D" path="res://assets/ui/sim_speed_icon.png" id="18_speed"]
+[ext_resource type="Texture2D" path="res://assets/ui/wheels_icon.svg" id="19_wheels"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
@@ -220,5 +221,11 @@ visibility_mode = 0
 position = Vector2(214, 22)
 scale = Vector2(0.38, 0.38)
 texture_normal = ExtResource("18_speed")
+visibility_mode = 0
+
+[node name="WheelsButton" type="TouchScreenButton" parent="HBoxContainer"]
+position = Vector2(318, 22)
+scale = Vector2(0.75, 0.75)
+texture_normal = ExtResource("19_wheels")
 visibility_mode = 0
 
