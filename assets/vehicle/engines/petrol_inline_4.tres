@@ -5,6 +5,5 @@
 
 [resource]
 script = ExtResource("1")
-cylinder_count = 4
 firing_order = PackedInt32Array(1, 3, 4, 2)
 bsfc_map = ExtResource("2")

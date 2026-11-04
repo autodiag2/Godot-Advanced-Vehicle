@@ -6,7 +6,7 @@
 [ext_resource type="Script" uid="uid://dssspfnea8d08" path="res://src/vehicle/car_params.gd" id="4_e8di3"]
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="5_lmrok"]
 [ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve_tire_model.gd" id="6_2c550"]
-[ext_resource type="Resource" path="res://assets/vehicle/engines/petrol_inline_4.tres" id="engine_preset"]
+[ext_resource type="Resource" uid="uid://bkab5l12nklbh" path="res://assets/vehicle/engines/petrol_inline_4.tres" id="engine_preset"]
 
 [sub_resource type="Resource" id="Resource_qkkty"]
 script = ExtResource("1_s3ows")

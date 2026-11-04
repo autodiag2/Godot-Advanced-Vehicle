@@ -17,10 +17,10 @@ var spring_speed_mm_per_seconds:float = 0
 var spring_load_newton:float = 0
 
 ############# Tire stuff #############
-var wheel_mass = 15.0
-var tire_radius = 0.3
-var tire_width = 0.2
-var ackermann = 0.15
+var wheel_mass : float = 15.0
+var tire_radius := 0.3
+var tire_width := 0.2
+var ackermann := 0.15
 
 var tire_wear: float = 0.0
 
