@@ -171,7 +171,6 @@ func _layout_cockpit_hud() -> void:
 func set_vehicle(value: BaseCar) -> void:
 	assert(value != null)
 	vehicle = value
-	TireInfoApp.onSetVehicle(vehicle)
 	automatic_transmission.onSetVehicle(vehicle)
 	if is_instance_valid(engine_popup):
 		engine_popup.set_vehicle(vehicle)
