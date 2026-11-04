@@ -327,11 +327,16 @@ func _advance_cylinder(
 			parameters.intake_valve_diameter_mm / 1000.0 *
 			intake_lift
 		)
+		var intake_source_pressure := maxf(intake_pressure, old_pressure)
+		var intake_sink_pressure := minf(intake_pressure, old_pressure)
+		var intake_source_temperature := intake_temperature
+		if old_pressure > intake_pressure:
+			intake_source_temperature = old_temperature
 		var intake_flow := _orifice_mass_flow(
 			intake_area,
-			intake_pressure,
-			old_pressure,
-			intake_temperature,
+			intake_source_pressure,
+			intake_sink_pressure,
+			intake_source_temperature,
 			AIR_GAS_CONSTANT,
 			1.4
 		)
@@ -346,13 +351,18 @@ func _advance_cylinder(
 			parameters.exhaust_valve_diameter_mm / 1000.0 *
 			exhaust_lift
 		)
+		var exhaust_source_pressure := maxf(old_pressure, exhaust_pressure)
+		var exhaust_sink_pressure := minf(old_pressure, exhaust_pressure)
+		var exhaust_source_temperature := old_temperature
+		if exhaust_pressure > old_pressure:
+			exhaust_source_temperature = exhaust_temperature
 		var exhaust_flow := _orifice_mass_flow(
 			exhaust_area,
-			old_pressure,
-			exhaust_pressure,
-			old_temperature,
+			exhaust_source_pressure,
+			exhaust_sink_pressure,
+			exhaust_source_temperature,
 			AIR_GAS_CONSTANT,
-			_get_gamma(old_temperature, old_burned_fraction)
+			_get_gamma(exhaust_source_temperature, old_burned_fraction)
 		)
 		if old_pressure >= exhaust_pressure:
 			exhaust_out_mass = exhaust_flow * delta

@@ -196,15 +196,10 @@ class EngineController:
 		simulator.initialize(engine_parameters, rpm)
 
 	func update(
-		parameters: CarParameters,
+		_parameters: CarParameters,
 		throttle_input: float,
 		delta: float
 	) -> void:
-		var requested_mean_torque := calculate_torque(
-			rpm,
-			throttle_input,
-			parameters
-		)
 		output_torque = simulator.advance(
 			delta,
 			throttle_input,

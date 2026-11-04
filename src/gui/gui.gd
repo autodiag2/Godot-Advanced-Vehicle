@@ -1,5 +1,6 @@
 extends Control
 
+const ENGINE_BUBBLE_SCENE: PackedScene = preload("res://assets/ui/engine_bubble.tscn")
 
 @onready var speedlabel = $Essentials/VBoxContainer/Speedlabel
 @onready var gearlabel = $Essentials/VBoxContainer/GearLabel
@@ -22,7 +23,7 @@ func _ready() -> void:
 	engine_button.text = "Engine"
 	engine_button.custom_minimum_size = Vector2(120.0, 30.0)
 	essentials_container.add_child(engine_button)
-	engine_popup = EngineVisualizer.new()
+	engine_popup = ENGINE_BUBBLE_SCENE.instantiate() as EngineVisualizer
 	add_child(engine_popup)
 	engine_button.pressed.connect(_show_engine_popup)
 
