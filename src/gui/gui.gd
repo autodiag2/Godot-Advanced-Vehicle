@@ -23,7 +23,7 @@ func _ready() -> void:
 	essentials_panel.offset_top = -207.0
 	essentials_panel.custom_minimum_size = Vector2(200.0, 207.0)
 	speed_button = Button.new()
-	speed_button.text = "Speed (%.2fx)" % Engine.time_scale
+	speed_button.text = "Play speed (%.2fx)" % Engine.time_scale
 	speed_button.custom_minimum_size = Vector2(120.0, 30.0)
 	essentials_container.add_child(speed_button)
 	engine_button = Button.new()
