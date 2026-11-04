@@ -1,0 +1,302 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/gui/wheels_visualizer.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_frame"]
+bg_color = Color(0.025, 0.035, 0.055, 1)
+border_color = Color(0.2, 0.31, 0.45, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 16.0
+content_margin_top = 14.0
+content_margin_right = 16.0
+content_margin_bottom = 12.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.012, 0.019, 0.032, 1)
+border_color = Color(0.13, 0.2, 0.3, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="WheelsBubble" type="Window"]
+visible = false
+size = Vector2i(940, 660)
+min_size = Vector2i(320, 280)
+always_on_top = true
+transient = true
+exclusive = false
+popup_window = false
+unresizable = false
+borderless = true
+script = ExtResource("1")
+
+[node name="Frame" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_frame")
+
+[node name="Content" type="VBoxContainer" parent="Frame"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Heading" type="HBoxContainer" parent="Frame/Content"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="TitleStack" type="VBoxContainer" parent="Frame/Content/Heading"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 2
+
+[node name="Title" type="Label" parent="Frame/Content/Heading/TitleStack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.91, 0.95, 1, 1)
+text = "WHEELS LAB"
+
+[node name="Subtitle" type="Label" parent="Frame/Content/Heading/TitleStack"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
+text = "TIRE CONDITION  /  PRESSURE  /  TEMPERATURE  /  TREAD WEAR"
+
+[node name="CloseButton" type="Button" parent="Frame/Content/Heading"]
+layout_mode = 2
+custom_minimum_size = Vector2(42, 36)
+text = "×"
+
+[node name="MainScroll" type="ScrollContainer" parent="Frame/Content"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="MainContent" type="BoxContainer" parent="Frame/Content/MainScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="DiagramPanel" type="PanelContainer" parent="Frame/Content/MainScroll/MainContent"]
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DiagramMargin" type="MarginContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="Diagram" type="VBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="FrontLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
+text = "FRONT  ↑"
+horizontal_alignment = 1
+
+[node name="FrontRow" type="HBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="FrontLeft" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
+custom_minimum_size = Vector2(104, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "FL"
+
+[node name="FrontRight" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
+custom_minimum_size = Vector2(104, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "FR"
+
+[node name="Chassis" type="PanelContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ChassisLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/Chassis"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
+text = "VEHICLE  /  TOP VIEW"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RearRow" type="HBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="RearLeft" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
+custom_minimum_size = Vector2(104, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "RL"
+
+[node name="RearRight" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
+custom_minimum_size = Vector2(104, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+text = "RR"
+
+[node name="RearLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
+text = "REAR  ↓"
+horizontal_alignment = 1
+
+[node name="DetailsPanel" type="PanelContainer" parent="Frame/Content/MainScroll/MainContent"]
+custom_minimum_size = Vector2(340, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="DetailsMargin" type="MarginContainer" parent="Frame/Content/MainScroll/MainContent/DetailsPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 14
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 14
+
+[node name="Details" type="VBoxContainer" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="WheelTitle" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 19
+theme_override_colors/font_color = Color(0.91, 0.95, 1, 1)
+text = "FRONT LEFT  ·  FL"
+
+[node name="ConditionLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.34, 0.9, 0.48, 1)
+text = "CONDITION  100.0%"
+
+[node name="WearLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.77, 0.85, 0.96, 1)
+text = "TREAD WEAR  0.0%"
+
+[node name="PressureLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.25, 0.88, 0.42, 1)
+text = "TIRE PRESSURE  32.0 PSI  ·  RECOMMENDED (30–35)"
+
+[node name="PressureSlider" type="HSlider" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 60.0
+step = 0.5
+value = 32.0
+
+[node name="TemperatureLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 15
+theme_override_colors/font_color = Color(0.77, 0.85, 0.96, 1)
+text = "TEMPERATURE  20.0 °C"
+
+[node name="TemperatureBar" type="ColorRect" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+custom_minimum_size = Vector2(0, 18)
+layout_mode = 2
+color = Color(0, 0.7, 0.8, 1)
+
+[node name="StatisticsLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.65, 0.76, 0.88, 1)
+text = "TIRE WIDTH       205 mm\nTIRE RADIUS      300 mm\nWHEEL SPEED      0 rpm\nNORMAL LOAD      0 N\nLATERAL SLIP     0.0%\nLONGITUDINAL SLIP 0.0%"
+autowrap_mode = 3
+
+[node name="Footer" type="VBoxContainer" parent="Frame/Content"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="ActionButtons" type="BoxContainer" parent="Frame/Content/Footer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ReplaceSelectedButton" type="Button" parent="Frame/Content/Footer/ActionButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "REPLACE SELECTED"
+
+[node name="ReplaceAllButton" type="Button" parent="Frame/Content/Footer/ActionButtons"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "REPLACE ALL WHEELS"
+
+[node name="HelpLabel" type="Label" parent="Frame/Content/Footer"]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+theme_override_font_sizes/font_size = 10
+theme_override_colors/font_color = Color(0.42, 0.52, 0.65, 1)
+text = "Replacement resets tire wear and temperature."
+
+[node name="ResizeGrip" type="Control" parent="."]
+anchors_preset = 15
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -28.0
+offset_top = -28.0
+offset_right = -4.0
+offset_bottom = -4.0
+mouse_filter = 0
+mouse_default_cursor_shape = 12
+
+[node name="GripMark" type="Label" parent="ResizeGrip"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1.0
+offset_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.38, 0.62, 0.82, 1)
+text = "◢"
+horizontal_alignment = 2
+vertical_alignment = 2

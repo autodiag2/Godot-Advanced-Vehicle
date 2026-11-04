@@ -1,9 +1,6 @@
 [gd_scene format=3 uid="uid://djbt3ltge1aat"]
 
 [ext_resource type="Script" uid="uid://cjl1t5ebx6upv" path="res://src/gui/gui.gd" id="1_bv3ap"]
-[ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://assets/ui/tireinfo_app.tscn" id="2_6tyms"]
-[ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
-[ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://assets/ui/render_stats.tscn" id="4_4dmvl"]
 [ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="5_kks0w"]
 [ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/ui/gear_up.png" id="6_lkurn"]
 [ext_resource type="Script" uid="uid://377xjj66y52m" path="res://src/gui/gear_up.gd" id="7_l50n0"]
@@ -19,6 +16,9 @@
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
 [ext_resource type="Texture2D" uid="uid://bu3afm1jh5i75" path="res://assets/ui/menu_icon.png" id="16_6t5qj"]
 [ext_resource type="Script" uid="uid://bruvy704gbd2i" path="res://assets/ui/level_menu.gd" id="16_46dll"]
+[ext_resource type="Texture2D" uid="uid://ci0qv2dq786lm" path="res://assets/ui/engine_icon.png" id="17_engine"]
+[ext_resource type="Texture2D" uid="uid://dujidfxhtu70" path="res://assets/ui/sim_speed_icon.png" id="18_speed"]
+[ext_resource type="Texture2D" uid="uid://cyxskqedk60gp" path="res://assets/ui/wheels_icon.svg" id="19_wheels"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
@@ -29,65 +29,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bv3ap")
 
-[node name="Essentials" type="Panel" parent="." unique_id=1658974966]
-self_modulate = Color(1, 1, 1, 0.556863)
-custom_minimum_size = Vector2(200, 100)
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -141.0
-offset_right = 200.0
-grow_vertical = 0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Essentials" unique_id=1614417459]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1063625288]
-layout_mode = 2
-text = "Gear"
-
-[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer" unique_id=644883117]
-layout_mode = 2
-text = "Speed"
-
-[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=2078353953]
-layout_mode = 2
-text = "Rpm"
-
-[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1066805467]
-layout_mode = 2
-text = "Fuel"
-
-[node name="TireInfoApp" parent="." unique_id=609235454 instance=ExtResource("2_6tyms")]
-layout_mode = 0
-anchors_preset = 0
-anchor_left = 0.0
-anchor_top = 0.0
-anchor_right = 0.0
-anchor_bottom = 0.0
-offset_left = 0.0
-offset_top = 0.0
-offset_right = 164.0
-offset_bottom = 242.0
-grow_horizontal = 1
-grow_vertical = 1
-
-[node name="InputApp" parent="." unique_id=1462281750 instance=ExtResource("3_m5e8j")]
-layout_mode = 1
-anchors_preset = 3
-offset_left = -283.0
-offset_top = -158.0
-grow_horizontal = 0
-grow_vertical = 0
-
 [node name="Joystick" type="Control" parent="." unique_id=992922277]
-clip_contents = true
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -136,6 +78,7 @@ visibility_mode = 1
 script = ExtResource("12_1yhnd")
 
 [node name="Menu" type="Panel" parent="." unique_id=609022379]
+visible = false
 z_index = 16
 layout_mode = 1
 anchors_preset = 15
@@ -145,27 +88,27 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="close" type="Button" parent="Menu" unique_id=2117714760]
+custom_minimum_size = Vector2(56, 56)
 layout_mode = 1
-offset_right = 1317.0
+offset_right = 1271.0
 offset_bottom = 1254.0
 scale = Vector2(0.1, 0.1)
-text = "Close"
 icon = ExtResource("14_l50n0")
 script = ExtResource("15_occxd")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Menu" unique_id=689788081]
+clip_contents = true
 layout_mode = 1
-anchors_preset = 8
+anchors_preset = 7
 anchor_left = 0.5
-anchor_top = 0.5
+anchor_top = 1.0
 anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -115.0
-offset_top = -43.0
-offset_right = 115.0
-offset_bottom = 43.0
+anchor_bottom = 1.0
+offset_left = -350.0
+offset_top = -366.0
+offset_right = 350.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 
 [node name="Label" type="Label" parent="Menu/VBoxContainer" unique_id=406582411]
 layout_mode = 2
@@ -181,7 +124,7 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Menu/VBoxContainer/MarginContainer" unique_id=1065653861]
+[node name="VBoxContainer" type="HBoxContainer" parent="Menu/VBoxContainer/MarginContainer" unique_id=1065653861]
 layout_mode = 2
 
 [node name="automatic_transmission" type="CheckButton" parent="Menu/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1013068116]
@@ -233,7 +176,7 @@ layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -314.0
+offset_left = -418.0
 offset_bottom = 150.0
 grow_horizontal = 0
 alignment = 2
@@ -244,5 +187,17 @@ scale = Vector2(0.08, 0.08)
 texture_normal = ExtResource("16_6t5qj")
 script = ExtResource("13_o2lvu")
 
-[node name="RenderStats" parent="HBoxContainer" unique_id=383076913 instance=ExtResource("4_4dmvl")]
-layout_mode = 2
+[node name="EngineButton" type="TouchScreenButton" parent="HBoxContainer" unique_id=876518383]
+position = Vector2(110, 22)
+scale = Vector2(0.38, 0.38)
+texture_normal = ExtResource("17_engine")
+
+[node name="SpeedButton" type="TouchScreenButton" parent="HBoxContainer" unique_id=372779323]
+position = Vector2(214, 22)
+scale = Vector2(0.38, 0.38)
+texture_normal = ExtResource("18_speed")
+
+[node name="WheelsButton" type="TouchScreenButton" parent="HBoxContainer" unique_id=395483244]
+position = Vector2(318, 22)
+scale = Vector2(0.75, 0.75)
+texture_normal = ExtResource("19_wheels")

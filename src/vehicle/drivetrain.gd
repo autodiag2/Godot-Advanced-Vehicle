@@ -35,32 +35,40 @@ var avg_front_spin := 0.0
 var drive_inertia := 10.0
 var reaction_torque := 0.0
 
-func automatic_shifting(cur_torque, lower_gear_torque, higher_gear_torque, rpm, max_rpm, brake_input, speed):
+func automatic_shifting(cur_torque, lower_gear_torque, higher_gear_torque, rpm, max_rpm, brake_input, speed, throttle_input):
 	if !drivetrain_params.automatic:
 		return
 		
-	var reversing = false
-	var shift_time = 700
-	
-	if selected_gear == -1:
-		reversing = true
+	var shift_time := 700
 
 	if higher_gear_torque > cur_torque and selected_gear > 0:
 		if rpm > 0.85 * max_rpm:
 			if Time.get_ticks_msec() - last_shift_time > shift_time:
 				shift_up()
-	
+
 	if selected_gear > 1 and rpm < 0.5 * max_rpm and lower_gear_torque > cur_torque:
 		if Time.get_ticks_msec() - last_shift_time > shift_time:
 			shift_down()
-	
-	if abs(selected_gear) <= 1 and abs(speed) < 3.0 and brake_input > 0.2:
-		if not reversing:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_down()
-		else:
-			if Time.get_ticks_msec() - last_shift_time > shift_time:
-				shift_up()
+
+	if absf(speed) >= 0.35:
+		return
+	if Time.get_ticks_msec() - last_shift_time <= shift_time:
+		return
+
+	var target_gear := selected_gear
+	if selected_gear > 0 and brake_input > 0.2:
+		target_gear = -1
+	elif selected_gear == -1 and brake_input > 0.2:
+		target_gear = 1
+	elif selected_gear == 0:
+		if throttle_input > 0.2:
+			target_gear = 1
+		elif brake_input > 0.2:
+			target_gear = -1
+
+	if target_gear != selected_gear:
+		set_selected_gear(target_gear)
+		last_shift_time = Time.get_ticks_msec()
 
 
 func set_selected_gear(gear):

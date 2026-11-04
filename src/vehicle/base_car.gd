@@ -14,7 +14,7 @@ class CarInputController:
 	var handbrake: bool = false
 	var clutch: float = 0.0
 
-	func update(input_joystick: Control) -> void:
+	func update(input_joystick: Control, selected_gear: int) -> void:
 		var joystick_output := Vector2.ZERO
 
 		if input_joystick:
@@ -22,12 +22,12 @@ class CarInputController:
 
 		steering = -joystick_output.x
 
-		if joystick_output.y < 0.0:
-			throttle = -joystick_output.y
-			brake = 0.0
+		if selected_gear == -1:
+			throttle = maxf(joystick_output.y, 0.0)
+			brake = maxf(-joystick_output.y, 0.0)
 		else:
-			throttle = 0.0
-			brake = joystick_output.y
+			throttle = maxf(-joystick_output.y, 0.0)
+			brake = maxf(joystick_output.y, 0.0)
 
 		handbrake = Input.is_action_pressed("Handbrake")
 		clutch = Input.get_action_strength("Clutch")
@@ -131,10 +131,10 @@ class BrakeController:
 		return brake_torques
 
 
+
 class EngineController:
 	extends RefCounted
 
-	const PETROL_KG_PER_LITRE: float = 0.7489
 	const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 	const NEWTON_METRE_RPM_TO_KW: int = 9549
 	const NO_LOAD_BSFC_LOAD: float = 0.10
@@ -146,6 +146,11 @@ class EngineController:
 	var reaction_torque: float = 0.0
 	var fuel_litres: float = 0.0
 	var parameters: CarParameters
+	var engine_parameters: EngineParameters
+	var bsfc_map: EngineBSFCMap
+	var simulator := EngineSimulator.new()
+	var audio_synthesizer := EngineAudioSynthesizer.new()
+	var effective_throttle: float = 0.0
 
 	@warning_ignore("shadowed_variable")
 	func initialize(
@@ -153,75 +158,105 @@ class EngineController:
 		car: RigidBody3D
 	) -> void:
 		self.parameters = parameters
+		engine_parameters = parameters.engine
+		effective_throttle = 0.0
+
+		if engine_parameters == null:
+			engine_parameters = EngineParameters.new()
+			engine_parameters.max_torque_nm = parameters.max_torque
+			engine_parameters.max_rpm = parameters.max_engine_rpm
+			engine_parameters.idle_rpm = parameters.rpm_idle
+			engine_parameters.inertia_kg_m2 = parameters.engine_moment
+			engine_parameters.friction_torque_nm = 12.0
+		else:
+			parameters.max_torque = engine_parameters.max_torque_nm
+			parameters.max_engine_rpm = engine_parameters.max_rpm
+			parameters.rpm_idle = engine_parameters.idle_rpm
+			parameters.engine_moment = engine_parameters.inertia_kg_m2
+
+		if engine_parameters.torque_curve != null:
+			parameters.torque_curve = engine_parameters.torque_curve
+		if engine_parameters.throttle_model != null:
+			parameters.throttle_model = engine_parameters.throttle_model
+
+		bsfc_map = engine_parameters.bsfc_map
+		if bsfc_map == null or bsfc_map.rows.size() < 2:
+			bsfc_map = parameters.engine_bsfc
+		if bsfc_map == null or bsfc_map.rows.size() < 2:
+			bsfc_map = _create_fallback_bsfc_map()
+
 		fuel_litres = (
 			parameters.fuel_tank_size *
 			parameters.fuel_percentage *
 			0.01
 		)
-
 		car.mass += (
 			fuel_litres *
-			PETROL_KG_PER_LITRE
+			engine_parameters.fuel_density_kg_per_litre
 		)
 
+		rpm = engine_parameters.idle_rpm
+		simulator.initialize(engine_parameters, rpm)
+
 	func update(
-		parameters: CarParameters,
+		_parameters: CarParameters,
 		throttle_input: float,
 		delta: float
 	) -> void:
-		output_torque = calculate_torque(
+		effective_throttle = clampf(throttle_input, 0.0, 1.0)
+		output_torque = simulator.advance(
+			delta,
+			effective_throttle,
+			reaction_torque
+		)
+		rpm = simulator.rpm
+		angular_velocity = simulator.angular_velocity
+		net_torque = output_torque + reaction_torque
+
+
+	func apply_impact_rpm_drop(rpm_drop: float) -> void:
+		if rpm_drop <= 0.0:
+			return
+		simulator.set_rpm(maxf(rpm - rpm_drop, 0.0))
+		rpm = simulator.rpm
+		angular_velocity = simulator.angular_velocity
+
+
+	func clamp_to_idle(_parameters: CarParameters) -> void:
+		rpm = maxf(rpm, engine_parameters.idle_rpm)
+		simulator.set_rpm(rpm)
+
+
+	func calculate_engine_load(throttle_input: float) -> float:
+		var engine_torque := calculate_torque(
 			rpm,
 			throttle_input,
 			parameters
 		)
-
-		net_torque = (
-			output_torque +
-			reaction_torque
-		)
-
-		rpm += (
-			RPM_PER_RADIAN_PER_SECOND *
-			delta *
-			net_torque /
-			parameters.engine_moment
-		)
-
-		angular_velocity = (
-			rpm /
-			RPM_PER_RADIAN_PER_SECOND
-		)
-
-		if rpm >= parameters.max_engine_rpm:
-			output_torque = 0.0
-			rpm -= 500.0
-
-	func calculate_engine_load(throttle_input: float) -> float:
-		var engine_torque := calculate_torque(rpm, throttle_input, parameters)
 		var rpm_factor: float = clamp(
 			rpm /
-			parameters.max_engine_rpm,
+			engine_parameters.max_rpm,
 			0.0,
 			1.0
 		)
-
-		var torque_curve_factor: float = (
-			parameters.torque_curve.sample_baked(
-				rpm_factor
-			)
+		var torque_curve_factor := parameters.torque_curve.sample_baked(
+			rpm_factor
 		)
 		var maximum_torque: float = (
 			torque_curve_factor *
-			parameters.max_torque
+			engine_parameters.max_torque_nm
 		)
-		
+
+		if maximum_torque <= 0.0:
+			return 0.0
+
 		return clampf(
 			engine_torque /
 			maximum_torque,
 			0.0,
 			1.0
 		)
-	
+
 	func calculate_torque(
 		engine_rpm: float,
 		throttle_input: float,
@@ -229,43 +264,29 @@ class EngineController:
 	) -> float:
 		var rpm_factor: float = clamp(
 			engine_rpm /
-			parameters.max_engine_rpm,
+			engine_parameters.max_rpm,
 			0.0,
 			1.0
 		)
-
-		var torque_curve_factor: float = (
-			parameters.torque_curve.sample_baked(
-				rpm_factor
-			)
+		var torque_curve_factor := parameters.torque_curve.sample_baked(
+			rpm_factor
 		)
-
 		var engine_braking_torque: float = (
 			-parameters.engine_brake *
 			rpm_factor
 		)
-
 		var maximum_torque: float = (
 			torque_curve_factor *
-			parameters.max_torque
+			engine_parameters.max_torque_nm
 		)
-
-		var throttle_factor := (
-			parameters.throttle_model.sample_baked(
-				throttle_input
-			)
+		var throttle_factor := parameters.throttle_model.sample_baked(
+			throttle_input
 		)
 
 		return lerpf(
 			engine_braking_torque,
 			maximum_torque,
 			throttle_factor
-		)
-
-	func clamp_to_idle(parameters: CarParameters) -> void:
-		rpm = max(
-			rpm,
-			parameters.rpm_idle
 		)
 
 	func consume_fuel(
@@ -275,7 +296,7 @@ class EngineController:
 		delta: float
 	) -> void:
 		var engine_load := calculate_engine_load(throttle_input)
-		var bsfc: float = parameters.engine_bsfc.sample(
+		var bsfc: float = bsfc_map.sample(
 			rpm,
 			maxf(
 				engine_load,
@@ -284,12 +305,12 @@ class EngineController:
 		)
 		var fuel_consumed: float = (
 			bsfc *
-			maxf(output_torque, 0.0) *
+			maxf(simulator.mean_output_torque, 0.0) *
 			rpm *
 			delta /
 			(
-				60000.0 *
-				PETROL_KG_PER_LITRE *
+				3600.0 *
+				engine_parameters.fuel_density_kg_per_litre *
 				NEWTON_METRE_RPM_TO_KW *
 				1000.0
 			)
@@ -299,44 +320,43 @@ class EngineController:
 			fuel_consumed,
 			fuel_litres
 		)
-
 		fuel_consumed = max(
 			fuel_consumed,
 			0.0
 		)
-
 		fuel_litres -= fuel_consumed
-
 		car.mass -= (
 			fuel_consumed *
-			PETROL_KG_PER_LITRE
+			engine_parameters.fuel_density_kg_per_litre
 		)
 
+	func _create_fallback_bsfc_map() -> EngineBSFCMap:
+		var map := EngineBSFCMap.new()
+		for engine_rpm in [0.0, engine_parameters.max_rpm]:
+			var row := EngineBSFCMapRow.new()
+			row.rpm = engine_rpm
+			row.load_10 = 520.0
+			row.load_25 = 410.0
+			row.load_50 = 340.0
+			row.load_75 = 300.0
+			row.load_100 = 285.0
+			map.rows.append(row)
+		return map
+
 	func update_sound(
-		parameters: CarParameters,
+		_parameters: CarParameters,
 		audio_player: AudioStreamPlayer
 	) -> void:
-		var pitch_scale: float = rpm / 1000.0
-
-		if (
-			rpm >= parameters.rpm_idle &&
-			rpm < parameters.max_engine_rpm
-		):
-			if audio_player.stream != parameters.engine_sound:
-				audio_player.set_stream(
-					parameters.engine_sound
-				)
-
-			if !audio_player.playing:
-				audio_player.play()
-
-		if pitch_scale > 0.1:
-			audio_player.pitch_scale = pitch_scale
+		audio_synthesizer.update(
+			simulator,
+			audio_player,
+			effective_throttle
+		)
 
 	func stop_sound(
 		audio_player: AudioStreamPlayer
 	) -> void:
-		audio_player.stop()
+		audio_synthesizer.stop(audio_player)
 
 
 class PowertrainController:
@@ -443,7 +463,8 @@ class PowertrainController:
 			engine.rpm,
 			parameters.max_engine_rpm,
 			brake_input,
-			longitudinal_speed
+			longitudinal_speed,
+			throttle_input
 		)
 
 	func update_wheel_speeds(
@@ -777,6 +798,7 @@ var engine_controller := EngineController.new()
 var powertrain_controller := PowertrainController.new()
 var suspension_controller := SuspensionController.new()
 var motion_controller := VehicleMotionController.new()
+var pending_collision_rpm_drop: float = 0.0
 
 @onready var wheel_fl = $Wheel_fl as RaycastSuspension
 @onready var wheel_fr = $Wheel_fr as RaycastSuspension
@@ -787,6 +809,8 @@ var motion_controller := VehicleMotionController.new()
 
 func _ready() -> void:
 	add_to_group("player_car")
+	contact_monitor = true
+	max_contacts_reported = 16
 
 	car_params.wheel_params_fl.ackermann = (
 		car_params.ackermann
@@ -826,6 +850,48 @@ func _ready() -> void:
 	)
 
 
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	if powertrain_controller.drivetrain.selected_gear == 0:
+		return
+	var front_impulse_ns := 0.0
+	var inverse_transform := state.transform.affine_inverse()
+	var inverse_basis := state.transform.basis.inverse()
+	for contact_index in range(state.get_contact_count()):
+		var local_position := inverse_transform * state.get_contact_local_position(contact_index)
+		if local_position.z >= -0.65:
+			continue
+		var local_impulse := inverse_basis * state.get_contact_impulse(contact_index)
+		front_impulse_ns += absf(local_impulse.z)
+	if front_impulse_ns <= 0.0:
+		return
+
+	var gear_ratio := absf(powertrain_controller.drivetrain.get_gearing())
+	var clutch_coupling := clampf(1.0 - input_controller.clutch, 0.0, 1.0)
+	if not powertrain_controller.clutch.locked:
+		clutch_coupling *= 0.4
+	if gear_ratio <= 0.0 or clutch_coupling <= 0.0:
+		return
+
+	var tire_radius: float = (
+		wheel_fl.tire_radius +
+		wheel_fr.tire_radius +
+		wheel_bl.tire_radius +
+		wheel_br.tire_radius
+	) * 0.25
+	var impact_speed_drop := front_impulse_ns / maxf(mass, 1.0)
+	impact_speed_drop = minf(
+		impact_speed_drop,
+		absf(motion_controller.longitudinal_velocity) + 0.25
+	)
+	pending_collision_rpm_drop += (
+		impact_speed_drop /
+		maxf(tire_radius, 0.05) *
+		gear_ratio *
+		EngineController.RPM_PER_RADIAN_PER_SECOND *
+		clutch_coupling
+	)
+
+
 func _unhandled_input(event: InputEvent) -> void:
 	if event.is_action_pressed("ShiftUp"):
 		shift_up()
@@ -836,7 +902,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	input_controller.update(
-		joystick
+		joystick,
+		powertrain_controller.drivetrain.selected_gear
 	)
 
 	brake_controller.update(
@@ -873,6 +940,14 @@ func _physics_process(delta: float) -> void:
 	engine_controller.reaction_torque = (
 		powertrain_controller.clutch_reaction_torque
 	)
+
+	if pending_collision_rpm_drop > 0.0:
+		if (
+			powertrain_controller.drivetrain.selected_gear != 0 and
+			input_controller.clutch < 0.99
+		):
+			engine_controller.apply_impact_rpm_drop(pending_collision_rpm_drop)
+		pending_collision_rpm_drop = 0.0
 
 	engine_controller.update(
 		car_params,
@@ -920,13 +995,11 @@ func _physics_process(delta: float) -> void:
 			delta
 		)
 
-	engine_controller.clamp_to_idle(
-		car_params
-	)
+	engine_controller.clamp_to_idle(car_params)
 
 	engine_controller.consume_fuel(
 		car_params,
-		input_controller.throttle,
+		engine_controller.effective_throttle,
 		self,
 		delta
 	)
@@ -935,6 +1008,8 @@ func _physics_process(delta: float) -> void:
 		engine_controller.fuel_litres = 0.0
 		engine_controller.output_torque = 0.0
 		engine_controller.rpm = 0.0
+		engine_controller.angular_velocity = 0.0
+		engine_controller.simulator.stop()
 		engine_controller.stop_sound(
 			engine_audio_player
 		)
