@@ -686,7 +686,7 @@ func _build_guardrails() -> void:
 				upper_batches,
 				midpoint,
 				Transform3D(
-					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
+					basis.scaled_local(Vector3(1.0, 1.0, length + 0.3)),
 					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT - 0.15, 0.0)
 				)
 			)
@@ -694,7 +694,7 @@ func _build_guardrails() -> void:
 				lower_batches,
 				midpoint,
 				Transform3D(
-					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
+					basis.scaled_local(Vector3(1.0, 1.0, length + 0.3)),
 					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT * 0.45, 0.0)
 				)
 			)
