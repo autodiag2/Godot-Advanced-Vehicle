@@ -146,6 +146,12 @@ func get_cylinder_smoke_intensity(cylinder_index: int) -> float:
 	return float(cylinder_states[cylinder_index].smoke_intensity)
 
 
+func get_cylinder_burned_fraction(cylinder_index: int) -> float:
+	if cylinder_index < 0 or cylinder_index >= cylinder_states.size():
+		return 0.0
+	return float(cylinder_states[cylinder_index].burned_fraction)
+
+
 func get_cylinder_heat_release_kw(cylinder_index: int) -> float:
 	if cylinder_index < 0 or cylinder_index >= cylinder_states.size():
 		return 0.0
