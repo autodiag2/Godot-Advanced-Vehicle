@@ -9,6 +9,10 @@ var playback: AudioStreamGeneratorPlayback
 var audio_crank_angle_deg: float = 0.0
 var cylinder_fire_envelopes := PackedFloat32Array()
 var injector_envelopes := PackedFloat32Array()
+var exhaust_envelopes := PackedFloat32Array()
+var intake_envelopes := PackedFloat32Array()
+var exhaust_noise_state: float = 0.0
+var intake_noise_state: float = 0.0
 var noise_state: float = 173.0
 var initialized := false
 
@@ -40,6 +44,8 @@ func update(
 	if cylinder_fire_envelopes.size() != cylinder_count:
 		cylinder_fire_envelopes.resize(cylinder_count)
 		injector_envelopes.resize(cylinder_count)
+		exhaust_envelopes.resize(cylinder_count)
+		intake_envelopes.resize(cylinder_count)
 
 	var rpm := maxf(simulator.rpm * Engine.time_scale, 0.0)
 	var crank_step := rpm * 6.0 / SAMPLE_RATE
@@ -54,8 +60,10 @@ func update(
 		parameters.injection_advance_deg -
 		parameters.diesel_injection_duration_deg
 	)
-	var combustion_decay := exp(-1.0 / (SAMPLE_RATE * 0.045))
-	var injection_decay := exp(-1.0 / (SAMPLE_RATE * 0.008))
+	var combustion_decay := exp(-1.0 / (SAMPLE_RATE * 0.028))
+	var injection_decay := exp(-1.0 / (SAMPLE_RATE * 0.006))
+	var exhaust_decay := exp(-1.0 / (SAMPLE_RATE * 0.065))
+	var intake_decay := exp(-1.0 / (SAMPLE_RATE * 0.03))
 	var throttle_amount := clampf(throttle, 0.0, 1.0)
 	var torque_load := clampf(
 		maxf(simulator.mean_output_torque, 0.0) /
@@ -83,6 +91,8 @@ func update(
 		)
 		var combustion_mix := 0.0
 		var injector_mix := 0.0
+		var exhaust_mix := 0.0
+		var intake_mix := 0.0
 
 		for cylinder_index in range(cylinder_count):
 			var firing_offset: float = simulator.thermodynamics.cylinder_firing_offsets[cylinder_index]
@@ -106,18 +116,46 @@ func update(
 				_crosses_angle(previous_phase, next_phase, injection_angle)
 			):
 				injector_envelopes[cylinder_index] = 1.0
+			if _crosses_angle(
+				previous_phase,
+				next_phase,
+				parameters.exhaust_valve_open_deg
+			):
+				var exhaust_pressure := simulator.get_cylinder_pressure_kpa(cylinder_index)
+				exhaust_envelopes[cylinder_index] = clampf(
+					exhaust_pressure / 8000.0,
+					0.15,
+					1.8
+				)
+			if _crosses_angle(
+				previous_phase,
+				next_phase,
+				parameters.intake_valve_open_deg
+			):
+				intake_envelopes[cylinder_index] = 1.0
 
 			var fire_envelope := cylinder_fire_envelopes[cylinder_index]
 			var injector_envelope := injector_envelopes[cylinder_index]
+			var exhaust_envelope := exhaust_envelopes[cylinder_index]
+			var intake_envelope := intake_envelopes[cylinder_index]
 			combustion_mix += fire_envelope
 			injector_mix += injector_envelope
+			exhaust_mix += exhaust_envelope
+			intake_mix += intake_envelope
 			cylinder_fire_envelopes[cylinder_index] = fire_envelope * combustion_decay
 			injector_envelopes[cylinder_index] = injector_envelope * injection_decay
+			exhaust_envelopes[cylinder_index] = exhaust_envelope * exhaust_decay
+			intake_envelopes[cylinder_index] = intake_envelope * intake_decay
 
-		combustion_mix /= sqrt(float(cylinder_count))
-		injector_mix /= sqrt(float(cylinder_count))
+		var cylinder_scale := sqrt(float(cylinder_count))
+		combustion_mix /= cylinder_scale
+		injector_mix /= cylinder_scale
+		exhaust_mix /= cylinder_scale
+		intake_mix /= cylinder_scale
 
 		var noise := _next_noise()
+		intake_noise_state = lerpf(intake_noise_state, noise, 0.24)
+		exhaust_noise_state = lerpf(exhaust_noise_state, noise, 0.075)
 		var exhaust_tone := (
 			sin(firing_phase) * 0.22 +
 			sin(firing_phase * 2.0) * 0.11 +
@@ -134,9 +172,17 @@ func update(
 			noise * combustion_mix * firing_noise_gain +
 			exhaust_tone * combustion_mix * 0.18
 		)
-		var intake_noise := noise * intake_gain
-		var exhaust_noise := noise * exhaust_gain
-		var injector_click := noise * injector_mix * 0.045
+		var intake_noise := (
+			intake_noise_state *
+			intake_gain *
+			(0.25 + intake_mix * 1.5)
+		)
+		var exhaust_noise := (
+			exhaust_noise_state *
+			exhaust_gain *
+			(0.3 + exhaust_mix * 1.4)
+		)
+		var injector_click := noise * injector_mix * 0.06
 		var diesel_clatter := 0.0
 		if diesel:
 			diesel_clatter = (
@@ -167,6 +213,10 @@ func stop(audio_player: AudioStreamPlayer) -> void:
 	initialized = false
 	cylinder_fire_envelopes.clear()
 	injector_envelopes.clear()
+	exhaust_envelopes.clear()
+	intake_envelopes.clear()
+	exhaust_noise_state = 0.0
+	intake_noise_state = 0.0
 
 
 func _start(simulator: EngineSimulator, audio_player: AudioStreamPlayer) -> void:
