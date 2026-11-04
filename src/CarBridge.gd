@@ -185,6 +185,11 @@ func _process(delta):
 	)
 
 	bridge.setSignal(
+		"SAEJ1979.relative_accelerator_pedal_position",
+		throttle_percent
+	)
+
+	bridge.setSignal(
 		"SAEJ1979.max_intake_manifold_absolute_pressure",
 		engine_parameters.intake_pressure_kpa
 	)
