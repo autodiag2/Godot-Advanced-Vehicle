@@ -18,7 +18,7 @@
 ## Performance optimizations
 Terrain vertex heights are evaluated once per grid point and reused for adjacent triangles. A 16 m spatial hash accelerates the local track-distance queries used by terrain blending and scenery placement; it searches neighboring cells only where the existing thresholds are at most 13 m.
 
-Repeated tree, rock and guardrail meshes are rendered with `MultiMeshInstance3D` batches. Their original mesh shapes, dimensions, transforms, materials, procedural placement and counts are retained. Guardrail collision remains attached to each original segment, so the collision layout is not simplified or merged. The road, shoulders, markings, terrain, lighting, water and scenery design are unchanged.
+Repeated tree, rock and guardrail meshes are rendered with `MultiMeshInstance3D` batches grouped into 48 m spatial cells. Explicit per-cell visibility bounds retain local frustum culling. Original mesh shapes, dimensions, transforms, materials, procedural placement and counts are retained. Guardrail collision remains attached to each original segment, so the collision layout is not simplified or merged. The road, shoulders, markings, terrain, lighting, water and scenery design are unchanged.
 
 These changes target world-generation CPU work and rendering submission overhead. FPS and startup-time improvements still need measurement in the Godot runtime on target hardware.
 
