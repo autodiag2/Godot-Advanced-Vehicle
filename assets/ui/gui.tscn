@@ -53,7 +53,7 @@ grow_horizontal = 0
 grow_vertical = 0
 
 [node name="Joystick" type="Control" parent="." unique_id=992922277]
-clip_contents = true
+clip_contents = false
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
