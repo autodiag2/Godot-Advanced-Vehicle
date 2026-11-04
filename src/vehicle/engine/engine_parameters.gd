@@ -7,7 +7,7 @@ enum FuelType {
 }
 
 @export_category("Engine layout")
-@export_range(1, 12, 1) var cylinder_count: int = 4
+@export var cylinder_count: int = 4
 @export var firing_order: PackedInt32Array = PackedInt32Array([1, 3, 4, 2])
 @export_range(40.0, 150.0, 0.1) var bore_mm: float = 86.0
 @export_range(40.0, 150.0, 0.1) var stroke_mm: float = 86.0
@@ -54,3 +54,7 @@ enum FuelType {
 @export_range(0.0, 100.0, 0.1) var friction_torque_nm: float = 12.0
 @export var torque_curve: Curve
 @export var throttle_model: Curve
+
+
+func get_cylinder_count() -> int:
+	return maxi(cylinder_count, 1)
