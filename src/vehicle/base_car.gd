@@ -976,7 +976,11 @@ func _physics_process(delta: float) -> void:
 	)
 
 	if pending_collision_rpm_drop > 0.0:
-		engine_controller.apply_impact_rpm_drop(pending_collision_rpm_drop)
+		if (
+			powertrain_controller.drivetrain.selected_gear != 0 and
+			input_controller.clutch < 0.99
+		):
+			engine_controller.apply_impact_rpm_drop(pending_collision_rpm_drop)
 		pending_collision_rpm_drop = 0.0
 
 	engine_controller.update(
