@@ -1,11 +1,17 @@
 extends Control
 
 const PREVIEW_BORDER_WIDTH := 4
+const PREVIEW_ASPECT_RATIO := 16.0 / 9.0
 
 var world_sim: WorldSim
 var current_level := 0
 var menu_content: VBoxContainer
 var level_content: VBoxContainer
+var settings_controls: BoxContainer
+var settings_label: Label
+var automatic_transmission: CheckButton
+var restart_button: Button
+var settings_margin: MarginContainer
 
 @onready var preview_frame: PanelContainer = $VBoxContainer/PreviewFrame
 @onready var preview: TextureRect = $VBoxContainer/PreviewFrame/TextureRect
@@ -21,6 +27,11 @@ func _ready() -> void:
 
 	menu_content = get_parent() as VBoxContainer
 	level_content = $VBoxContainer
+	settings_label = menu_content.get_node("Label") as Label
+	settings_margin = menu_content.get_node("MarginContainer") as MarginContainer
+	settings_controls = settings_margin.get_node("VBoxContainer") as BoxContainer
+	automatic_transmission = settings_controls.get_node("automatic_transmission") as CheckButton
+	restart_button = settings_controls.get_node("restart_sim") as Button
 	menu_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	_setup_preview_frame()
@@ -39,9 +50,17 @@ func _setup_preview_frame() -> void:
 	size_flags_vertical = Control.SIZE_EXPAND_FILL
 	level_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	level_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	preview_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	preview_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	preview_frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	preview_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	settings_controls.vertical = false
+	settings_controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	settings_controls.add_theme_constant_override("separation", 12)
+	settings_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for button in [automatic_transmission, restart_button]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		button.size_flags_vertical = Control.SIZE_FILL
 
 	var button_row := previous_button.get_parent() as HBoxContainer
 	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
@@ -60,7 +79,7 @@ func _setup_preview_frame() -> void:
 	preview.offset_right = -PREVIEW_BORDER_WIDTH
 	preview.offset_bottom = -PREVIEW_BORDER_WIDTH
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 
 
 func _layout_menu() -> void:
@@ -69,7 +88,7 @@ func _layout_menu() -> void:
 
 	var viewport_size := get_viewport_rect().size
 	var horizontal_margin := clampf(viewport_size.x * 0.025, 12.0, 48.0)
-	var vertical_margin := clampf(viewport_size.y * 0.025, 12.0, 36.0)
+	var vertical_margin := clampf(viewport_size.y * 0.02, 8.0, 24.0)
 	menu_content.offset_left = horizontal_margin
 	menu_content.offset_top = vertical_margin
 	menu_content.offset_right = -horizontal_margin
@@ -77,19 +96,27 @@ func _layout_menu() -> void:
 
 	var short_side := minf(viewport_size.x, viewport_size.y)
 	var title_font_size := clampi(int(short_side * 0.045), 20, 42)
-	var button_font_size := clampi(int(short_side * 0.028), 14, 25)
-	var button_height := clampf(viewport_size.y * 0.075, 40.0, 76.0)
+	var button_font_size := clampi(int(short_side * 0.032), 14, 24)
+	var button_height := clampf(viewport_size.y * 0.09, 44.0, 72.0)
 	var available_width := maxf(viewport_size.x - horizontal_margin * 2.0, 180.0)
-	var preview_height := clampf(
-		minf(viewport_size.y * 0.55, available_width * 0.5625),
-		100.0,
-		720.0
+	var preview_height := minf(
+		viewport_size.y * 0.58,
+		available_width / PREVIEW_ASPECT_RATIO
 	)
+	preview_height = clampf(preview_height, 100.0, 720.0)
+	var preview_width := preview_height * PREVIEW_ASPECT_RATIO
 
+	menu_content.add_theme_constant_override("separation", 6)
+	settings_label.custom_minimum_size.y = title_font_size * 1.25
+	settings_label.add_theme_font_size_override("font_size", title_font_size)
+	settings_margin.add_theme_constant_override("margin_left", 0)
+	settings_margin.add_theme_constant_override("margin_top", 18)
+	settings_margin.add_theme_constant_override("margin_right", 0)
+	settings_margin.add_theme_constant_override("margin_bottom", 4)
 	level_label.add_theme_font_size_override("font_size", title_font_size)
-	preview_frame.custom_minimum_size = Vector2(0.0, preview_height)
+	preview_frame.custom_minimum_size = Vector2(preview_width, preview_height)
 
-	for button in [previous_button, next_button, play_button]:
+	for button in [automatic_transmission, restart_button, previous_button, next_button, play_button]:
 		button.custom_minimum_size.y = button_height
 		button.add_theme_font_size_override("font_size", button_font_size)
 
