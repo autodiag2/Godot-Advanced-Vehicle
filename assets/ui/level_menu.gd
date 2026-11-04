@@ -89,7 +89,8 @@ func _load_default_preview(scene: PackedScene) -> Texture2D:
 		"preview.png",
 		"preview.webp",
 		"preview.jpg",
-		"preview.jpeg"
+		"preview.jpeg",
+		"preview.svg"
 	]:
 		var path := folder.path_join(filename)
 
