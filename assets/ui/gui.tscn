@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://cjl1t5ebx6upv" path="res://src/gui/gui.gd" id="1_bv3ap"]
 [ext_resource type="PackedScene" uid="uid://dacyugrkjb2o4" path="res://assets/ui/tireinfo_app.tscn" id="2_6tyms"]
 [ext_resource type="PackedScene" path="res://assets/ui/input_app.tscn" id="3_m5e8j"]
-[ext_resource type="PackedScene" uid="uid://25r3bi1ijyc7" path="res://assets/ui/render_stats.tscn" id="4_4dmvl"]
 [ext_resource type="Script" uid="uid://sxtvje6r7qsq" path="res://addons/virtual_joystick/virtual_joystick_instantiator.gd" id="5_kks0w"]
 [ext_resource type="Texture2D" uid="uid://bgamw8rw5t2t6" path="res://assets/ui/gear_up.png" id="6_lkurn"]
 [ext_resource type="Script" uid="uid://377xjj66y52m" path="res://src/gui/gear_up.gd" id="7_l50n0"]
@@ -223,5 +222,3 @@ scale = Vector2(0.38, 0.38)
 texture_normal = ExtResource("18_speed")
 visibility_mode = 0
 
-[node name="RenderStats" parent="HBoxContainer" unique_id=383076913 instance=ExtResource("4_4dmvl")]
-layout_mode = 2
