@@ -16,6 +16,18 @@ var camera_distance: float = 5.2
 var camera_yaw: float = 0.0
 var camera_pitch: float = 0.18
 var rotating_view: bool = false
+var cylinder_areas: Array[Area3D] = []
+var crankshaft_area: Area3D
+var crankshaft_mesh: MeshInstance3D
+var hovered_cylinder_index: int = -1
+var selected_cylinder_index: int = -1
+var hovered_crankshaft: bool = false
+var selected_crankshaft: bool = false
+var hover_material: StandardMaterial3D
+var info_panel: PanelContainer
+var info_label: Label
+var fluid_shader: Shader
+var fluid_time: float = 0.0
 
 
 func _ready() -> void:
@@ -80,6 +92,42 @@ func _build_lighting() -> void:
 		0.0
 	)
 	add_child(floor)
+	_create_selection_info_panel()
+
+
+
+func _create_selection_info_panel() -> void:
+	var canvas := CanvasLayer.new()
+	canvas.layer = 5
+	add_child(canvas)
+
+	info_panel = PanelContainer.new()
+	info_panel.position = Vector2(18.0, 18.0)
+	info_panel.custom_minimum_size = Vector2(280.0, 112.0)
+	info_panel.size = Vector2(280.0, 112.0)
+	info_panel.visible = false
+	info_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var panel_style := StyleBoxFlat.new()
+	panel_style.bg_color = Color(0.018, 0.03, 0.052, 0.94)
+	panel_style.border_color = Color(0.28, 0.57, 0.82, 0.9)
+	panel_style.set_border_width_all(1)
+	panel_style.set_corner_radius_all(8)
+	panel_style.content_margin_left = 12.0
+	panel_style.content_margin_top = 9.0
+	panel_style.content_margin_right = 12.0
+	panel_style.content_margin_bottom = 9.0
+	info_panel.add_theme_stylebox_override("panel", panel_style)
+
+	info_label = Label.new()
+	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	info_label.add_theme_color_override("font_color", Color(0.86, 0.92, 1.0))
+	info_label.add_theme_font_size_override("font_size", 14)
+	info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_panel.add_child(info_label)
+	canvas.add_child(info_panel)
+
+
 
 
 
@@ -159,6 +207,12 @@ func _build_engine() -> void:
 		0.0,
 		2.5
 	)
+	hover_material = _make_material(Color(0.95, 0.68, 0.2, 0.28), 0.1, 2.2)
+	hover_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	fluid_shader = _create_fluid_shader()
+	cylinder_areas.clear()
+	crankshaft_area = null
+	crankshaft_mesh = null
 
 	_add_box(
 		model_root,
@@ -179,14 +233,28 @@ func _build_engine() -> void:
 		dark_steel_material
 	)
 
-	var crankshaft := _add_cylinder(
+	crankshaft_mesh = _add_cylinder(
 		model_root,
 		0.055,
 		width + 0.68,
 		steel_material
 	)
-	crankshaft.rotation.z = PI * 0.5
-	crankshaft.position.y = crank_center_y
+	crankshaft_mesh.rotation.z = PI * 0.5
+	crankshaft_mesh.position.y = crank_center_y
+	crankshaft_area = Area3D.new()
+	crankshaft_area.input_ray_pickable = true
+	crankshaft_area.position = Vector3(0.0, crank_center_y, 0.0)
+	crankshaft_area.rotation.z = PI * 0.5
+	var crankshaft_collision := CollisionShape3D.new()
+	var crankshaft_shape := CylinderShape3D.new()
+	crankshaft_shape.radius = 0.14
+	crankshaft_shape.height = width + 0.8
+	crankshaft_collision.shape = crankshaft_shape
+	crankshaft_area.add_child(crankshaft_collision)
+	model_root.add_child(crankshaft_area)
+	crankshaft_area.mouse_entered.connect(_on_crankshaft_mouse_entered)
+	crankshaft_area.mouse_exited.connect(_on_crankshaft_mouse_exited)
+	crankshaft_area.input_event.connect(_on_crankshaft_area_input)
 
 	var bearing_count := maxi(cylinder_count + 1, 2)
 	for bearing_index in range(bearing_count):
@@ -219,6 +287,27 @@ func _build_engine() -> void:
 			piston_top_y - stroke * 0.5 + 0.1,
 			0.0
 		)
+
+		var cylinder_area := Area3D.new()
+		cylinder_area.input_ray_pickable = true
+		cylinder_area.position = liner.position
+		var cylinder_collision := CollisionShape3D.new()
+		var cylinder_shape := CylinderShape3D.new()
+		cylinder_shape.radius = bore_radius * 1.28
+		cylinder_shape.height = stroke + 0.42
+		cylinder_collision.shape = cylinder_shape
+		cylinder_area.add_child(cylinder_collision)
+		model_root.add_child(cylinder_area)
+		cylinder_area.mouse_entered.connect(
+			_on_cylinder_mouse_entered.bind(cylinder_index)
+		)
+		cylinder_area.mouse_exited.connect(
+			_on_cylinder_mouse_exited.bind(cylinder_index)
+		)
+		cylinder_area.input_event.connect(
+			_on_cylinder_area_input.bind(cylinder_index)
+		)
+		cylinder_areas.append(cylinder_area)
 
 		var liner_rim := _add_torus(
 			model_root,
@@ -271,6 +360,25 @@ func _build_engine() -> void:
 			copper_material
 		)
 		crank_pin.rotation.z = PI * 0.5
+
+		var fluid_mesh := CylinderMesh.new()
+		fluid_mesh.top_radius = bore_radius * 0.82
+		fluid_mesh.bottom_radius = bore_radius * 0.82
+		fluid_mesh.height = 1.0
+		fluid_mesh.radial_segments = 48
+		fluid_mesh.rings = 16
+		var fluid_volume := MeshInstance3D.new()
+		fluid_volume.mesh = fluid_mesh
+		fluid_volume.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var fluid_material := ShaderMaterial.new()
+		fluid_material.shader = fluid_shader
+		fluid_material.set_shader_parameter("flame_fill", 0.0)
+		fluid_material.set_shader_parameter("smoke_fill", 0.0)
+		fluid_material.set_shader_parameter("flow_time", 0.0)
+		fluid_volume.material_override = fluid_material
+		fluid_volume.position = Vector3(x_position, piston_top_y, 0.04)
+		fluid_volume.visible = false
+		model_root.add_child(fluid_volume)
 
 		var glow := MeshInstance3D.new()
 		var glow_mesh := SphereMesh.new()
@@ -364,6 +472,12 @@ func _build_engine() -> void:
 			"intake_valve": intake_valve,
 			"exhaust_valve": exhaust_valve,
 			"pressure_label": pressure_label,
+			"liner": liner,
+			"liner_rim": liner_rim,
+			"fluid_volume": fluid_volume,
+			"fluid_material": fluid_material,
+			"flame_fill": 0.0,
+			"smoke_fill": 0.0,
 			"x": x_position,
 		})
 
@@ -390,10 +504,11 @@ func _build_engine() -> void:
 	camshaft.position = Vector3(0.0, piston_top_y + 0.52, -0.21)
 
 
-func _process(_delta: float) -> void:
+func _process(delta: float) -> void:
 	if simulator == null or engine_parameters == null:
 		return
 
+	fluid_time += delta
 	for cylinder_index in range(cylinder_parts.size()):
 		var phase := simulator.get_cylinder_phase(cylinder_index)
 		var theta := deg_to_rad(fposmod(phase, 360.0))
@@ -434,18 +549,59 @@ func _process(_delta: float) -> void:
 			simulator.get_cylinder_combustion_intensity(cylinder_index)
 		)
 		var smoke_intensity := simulator.get_cylinder_smoke_intensity(cylinder_index)
-		var glow: MeshInstance3D = cylinder_parts[cylinder_index].glow
-		glow.visible = flame_intensity > 0.03
-		glow.scale = Vector3.ONE * maxf(flame_intensity, 0.04)
-		cylinder_parts[cylinder_index].flame_particles.emitting = (
-			flame_intensity > 0.06
+		var burned_fraction := simulator.get_cylinder_burned_fraction(cylinder_index)
+		var fire_target := clampf(flame_intensity * 12.0, 0.0, 1.0)
+		if phase < 180.0:
+			fire_target = maxf(
+				fire_target,
+				burned_fraction * (1.0 - phase / 180.0)
+			)
+		elif phase >= 650.0:
+			fire_target = maxf(
+				fire_target,
+				burned_fraction * clampf((phase - 650.0) / 70.0, 0.0, 1.0) * 0.72
+			)
+		var exhaust_fill := 0.0
+		if phase >= 180.0 and phase < 360.0:
+			exhaust_fill = clampf((phase - 180.0) / 180.0, 0.0, 1.0) * 0.92
+		var transition_smoke := 0.0
+		if phase >= 110.0 and phase < 180.0:
+			transition_smoke = clampf((phase - 110.0) / 70.0, 0.0, 1.0) * 0.5
+		var smoke_target := maxf(
+			clampf(smoke_intensity * 2.5, 0.0, 1.0),
+			maxf(exhaust_fill, transition_smoke)
 		)
-		cylinder_parts[cylinder_index].smoke_particles.emitting = (
-			smoke_intensity > 0.12
+		var part: Dictionary = cylinder_parts[cylinder_index]
+		var flame_fill := float(part.flame_fill)
+		var smoke_fill := float(part.smoke_fill)
+		var flame_blend := 1.0 - exp(-delta * (18.0 if fire_target > flame_fill else 2.2))
+		var smoke_blend := 1.0 - exp(-delta * (5.0 if smoke_target > smoke_fill else 1.0))
+		flame_fill = lerpf(flame_fill, fire_target, flame_blend)
+		smoke_fill = lerpf(smoke_fill, smoke_target, smoke_blend)
+		part.flame_fill = flame_fill
+		part.smoke_fill = smoke_fill
+		cylinder_parts[cylinder_index] = part
+
+		var chamber_top := piston_top_y + 0.15
+		var chamber_height := maxf(chamber_top - piston_y, 0.035)
+		var fluid_volume: MeshInstance3D = part.fluid_volume
+		fluid_volume.position = Vector3(
+			part.x,
+			(piston_y + chamber_top) * 0.5,
+			0.04
 		)
-		cylinder_parts[cylinder_index].chamber_light.light_energy = (
-			flame_intensity * 4.5
-		)
+		fluid_volume.scale = Vector3(1.0, chamber_height, 1.0)
+		fluid_volume.visible = flame_fill > 0.015 or smoke_fill > 0.015
+		var fluid_material: ShaderMaterial = part.fluid_material
+		fluid_material.set_shader_parameter("flame_fill", flame_fill)
+		fluid_material.set_shader_parameter("smoke_fill", smoke_fill)
+		fluid_material.set_shader_parameter("flow_time", fluid_time)
+		var glow: MeshInstance3D = part.glow
+		glow.visible = flame_fill > 0.03
+		glow.scale = Vector3.ONE * maxf(flame_fill, 0.04)
+		part.flame_particles.emitting = flame_fill > 0.2
+		part.smoke_particles.emitting = smoke_fill > 0.28
+		part.chamber_light.light_energy = flame_fill * 4.5
 
 		var intake_lift := _visual_valve_lift(
 			phase,
@@ -467,6 +623,118 @@ func _process(_delta: float) -> void:
 		cylinder_parts[cylinder_index].pressure_label.text = (
 			"C%02d  %.0f kPa" % [cylinder_index + 1, pressure]
 		)
+
+	_update_selection_info()
+	_refresh_highlights()
+
+
+func _on_cylinder_mouse_entered(cylinder_index: int) -> void:
+	hovered_cylinder_index = cylinder_index
+	_refresh_highlights()
+
+
+func _on_cylinder_mouse_exited(cylinder_index: int) -> void:
+	if hovered_cylinder_index == cylinder_index:
+		hovered_cylinder_index = -1
+	_refresh_highlights()
+
+
+func _on_cylinder_area_input(
+	_camera: Camera3D,
+	event: InputEvent,
+	_event_position: Vector3,
+	_normal: Vector3,
+	_shape_index: int,
+	cylinder_index: int
+) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		selected_cylinder_index = cylinder_index
+		selected_crankshaft = false
+		_update_selection_info()
+		_refresh_highlights()
+	elif event is InputEventScreenTouch and event.pressed:
+		selected_cylinder_index = cylinder_index
+		selected_crankshaft = false
+		_update_selection_info()
+		_refresh_highlights()
+
+
+func _on_crankshaft_mouse_entered() -> void:
+	hovered_crankshaft = true
+	_refresh_highlights()
+
+
+func _on_crankshaft_mouse_exited() -> void:
+	hovered_crankshaft = false
+	_refresh_highlights()
+
+
+func _on_crankshaft_area_input(
+	_camera: Camera3D,
+	event: InputEvent,
+	_event_position: Vector3,
+	_normal: Vector3,
+	_shape_index: int
+) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		selected_cylinder_index = -1
+		selected_crankshaft = true
+		_update_selection_info()
+		_refresh_highlights()
+	elif event is InputEventScreenTouch and event.pressed:
+		selected_cylinder_index = -1
+		selected_crankshaft = true
+		_update_selection_info()
+		_refresh_highlights()
+
+
+func _refresh_highlights() -> void:
+	for cylinder_index in range(cylinder_parts.size()):
+		var part: Dictionary = cylinder_parts[cylinder_index]
+		var highlighted := (
+			hovered_cylinder_index == cylinder_index or
+			selected_cylinder_index == cylinder_index
+		)
+		var overlay: Material = hover_material if highlighted else null
+		(part.liner as MeshInstance3D).material_overlay = overlay
+		(part.liner_rim as MeshInstance3D).material_overlay = overlay
+	if is_instance_valid(crankshaft_mesh):
+		crankshaft_mesh.material_overlay = (
+			hover_material
+			if hovered_crankshaft or selected_crankshaft
+			else null
+		)
+
+
+func _update_selection_info() -> void:
+	if not is_instance_valid(info_panel) or simulator == null:
+		return
+	if selected_cylinder_index >= 0:
+		var pressure_kpa := simulator.get_cylinder_pressure_kpa(selected_cylinder_index)
+		var temperature_k := simulator.get_cylinder_temperature_k(selected_cylinder_index)
+		var stage := simulator.get_cylinder_stage(selected_cylinder_index)
+		info_label.text = (
+			"CYLINDER %02d\nPRESSURE  %.1f bar  (%.0f kPa)\n"
+			+ "TEMPERATURE  %.0f K\nCYCLE  %s"
+		) % [
+			selected_cylinder_index + 1,
+			pressure_kpa / 100.0,
+			pressure_kpa,
+			temperature_k,
+			stage,
+		]
+		info_panel.visible = true
+	elif selected_crankshaft:
+		info_label.text = (
+			"CRANKSHAFT\nTORQUE  %.1f N·m\nSPEED  %.0f RPM  (%.1f rad/s)"
+		) % [
+			simulator.output_torque,
+			simulator.rpm,
+			simulator.angular_velocity,
+		]
+		info_panel.visible = true
+	else:
+		info_panel.visible = false
 
 
 func _visual_valve_lift(phase: float, open_angle: float, close_angle: float) -> float:
@@ -499,6 +767,37 @@ func _build_valve(x: float, y: float, material: Material) -> Node3D:
 	)
 	head.position.y = -0.06
 	return valve
+
+
+func _create_fluid_shader() -> Shader:
+	var shader := Shader.new()
+	shader.code = """
+shader_type spatial;
+render_mode unshaded, cull_disabled, blend_mix, depth_draw_never;
+
+uniform float flame_fill : hint_range(0.0, 1.0) = 0.0;
+uniform float smoke_fill : hint_range(0.0, 1.0) = 0.0;
+uniform float flow_time = 0.0;
+
+void fragment() {
+	float phase_a = UV.x * 34.0 + sin(UV.y * 18.0 - flow_time * 2.7) * 2.4 + flow_time * 5.0;
+	float phase_b = UV.x * 51.0 - UV.y * 27.0 + sin(UV.x * 19.0 + flow_time * 1.8) * 1.7;
+	float turbulence = clamp(0.5 + sin(phase_a) * 0.29 + cos(phase_b) * 0.21, 0.0, 1.0);
+	float flame_edge = clamp(flame_fill + (turbulence - 0.5) * 0.18, 0.0, 1.0);
+	float flame_region = 1.0 - smoothstep(flame_edge - 0.06, flame_edge + 0.08, UV.y);
+	float flame = flame_region * flame_fill * (0.55 + turbulence * 0.45);
+	float smoke_edge = clamp(smoke_fill + (turbulence - 0.5) * 0.13, 0.0, 1.0);
+	float smoke_region = 1.0 - smoothstep(smoke_edge - 0.08, smoke_edge + 0.12, UV.y);
+	float smoke = smoke_region * smoke_fill * (0.42 + turbulence * 0.38);
+	vec3 flame_color = mix(vec3(0.95, 0.08, 0.008), vec3(1.0, 0.76, 0.12), clamp(turbulence + UV.y * 0.25, 0.0, 1.0));
+	vec3 smoke_color = mix(vec3(0.10, 0.12, 0.16), vec3(0.43, 0.46, 0.51), turbulence);
+	float total = max(flame + smoke, 0.001);
+	ALBEDO = (flame_color * flame + smoke_color * smoke) / total;
+	ALPHA = clamp(flame * 0.78 + smoke * 0.58, 0.0, 0.86);
+	EMISSION = flame_color * flame * 2.2;
+}
+"""
+	return shader
 
 
 func _create_particles(
