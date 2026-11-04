@@ -30,6 +30,9 @@ Xbox controller:
 - B button for handbrake
 - LB for clutch
 
+Touchscreen:
+- Touch and hold within the expanded area around the joystick for 0.24 seconds to relocate its origin; the new position remains as its resting position. Dragging from the expanded area before the hold completes also relocates the joystick and immediately steers from that point.
+
 ## Help
 Make sure the physics FPS is set to atleast 120 or the physics start to get weird. In this project it is set to 240.
 
