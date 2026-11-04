@@ -100,7 +100,8 @@ func _input(event: InputEvent) -> void:
 			if (
 				_touch_index == -1 and
 				_reposition_touch_index == -1 and
-				_is_point_inside_joystick_area(event.position)
+				_is_point_inside_joystick_area(event.position) and
+				not _is_point_over_gui_button(event.position)
 			):
 				if joystick_mode == Joystick_mode.DYNAMIC or joystick_mode == Joystick_mode.FOLLOWING:
 					_move_base(event.position)
@@ -170,6 +171,27 @@ func _is_point_inside_joystick_area(point: Vector2) -> bool:
 		absf(point.x - center.x) <= half_extent.x and
 		absf(point.y - center.y) <= half_extent.y
 	)
+
+func _is_point_over_gui_button(point: Vector2) -> bool:
+	var gui_root := get_parent().get_parent()
+	for node in gui_root.find_children("*", "TouchScreenButton", true, false):
+		var button := node as TouchScreenButton
+		var texture := button.texture_normal
+		if texture == null:
+			texture = button.texture_pressed
+		if not button.is_visible_in_tree() or texture == null:
+			continue
+		var local_point := button.get_global_transform_with_canvas().affine_inverse() * point
+		var texture_size := Vector2(texture.get_size())
+		if Rect2(-texture_size * 0.5, texture_size).has_point(local_point):
+			return true
+
+	for node in gui_root.find_children("*", "BaseButton", true, false):
+		var button := node as Control
+		if button.is_visible_in_tree() and button.get_global_rect().has_point(point):
+			return true
+	return false
+
 
 func _get_base_radius() -> Vector2:
 	return _base.size * _base.get_global_transform_with_canvas().get_scale() / 2
