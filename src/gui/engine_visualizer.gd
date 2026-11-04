@@ -29,6 +29,8 @@ func _ready() -> void:
 	$Frame/Content/Controls/ResetButton.pressed.connect(_on_reset_speed)
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
 	close_requested.connect(_on_close)
+	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
+	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
 	_update_engine()
 
 
@@ -92,3 +94,16 @@ func _on_reset_speed() -> void:
 
 func _on_close() -> void:
 	hide()
+
+func _on_heading_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		start_drag()
+	elif event is InputEventScreenTouch and event.pressed:
+		start_drag()
+
+
+func _on_resize_grip_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		start_resize(Window.WINDOW_EDGE_BOTTOM_RIGHT)
+	elif event is InputEventScreenTouch and event.pressed:
+		start_resize(Window.WINDOW_EDGE_BOTTOM_RIGHT)
