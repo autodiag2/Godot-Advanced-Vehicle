@@ -33,12 +33,12 @@ func set_rpm(value: float) -> void:
 	_sync_state()
 
 
-func set_cylinder_ignition_enabled(cylinder_index: int, enabled: bool) -> void:
-	thermodynamics.set_cylinder_ignition_enabled(cylinder_index, enabled)
+func set_cylinder_misfire_fault(cylinder_index: int, enabled: bool) -> void:
+	thermodynamics.set_cylinder_misfire_fault(cylinder_index, enabled)
 
 
-func is_cylinder_ignition_enabled(cylinder_index: int) -> bool:
-	return thermodynamics.is_cylinder_ignition_enabled(cylinder_index)
+func has_cylinder_misfire_fault(cylinder_index: int) -> bool:
+	return thermodynamics.has_cylinder_misfire_fault(cylinder_index)
 
 
 func stop() -> void:
