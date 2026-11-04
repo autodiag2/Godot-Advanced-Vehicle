@@ -32,8 +32,10 @@ func _ready() -> void:
 	essentials_container.add_child(engine_button)
 	engine_popup = ENGINE_BUBBLE_SCENE.instantiate() as EngineVisualizer
 	add_child(engine_popup)
+	engine_popup.hide()
 	speed_popup = SPEED_CONTROL_SCENE.instantiate() as SpeedControlVisualizer
 	add_child(speed_popup)
+	speed_popup.hide()
 	engine_button.pressed.connect(_show_engine_popup)
 	speed_button.pressed.connect(_show_speed_popup)
 
