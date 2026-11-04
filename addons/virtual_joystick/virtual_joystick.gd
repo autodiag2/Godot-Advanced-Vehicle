@@ -2,7 +2,7 @@ class_name VirtualJoystick
 
 extends Control
 
-const REPOSITION_AREA_SCALE: float = 5.0
+const REPOSITION_AREA_SCALE: float = 3.0
 const REPOSITION_HOLD_DURATION: float = 0.10
 const REPOSITION_DRAG_THRESHOLD: float = 8.0
 
@@ -60,6 +60,7 @@ var _touch_index : int = -1
 var _reposition_touch_index: int = -1
 var _reposition_touch_position := Vector2.ZERO
 var _reposition_hold_elapsed: float = 0.0
+var _initial_base_center := Vector2.ZERO
 
 @onready var _base := $Base
 @onready var _tip := $Base/Tip
@@ -72,6 +73,7 @@ var _reposition_hold_elapsed: float = 0.0
 # FUNCTIONS
 
 func _ready() -> void:
+	_initial_base_center = _base.global_position + _get_base_radius()
 	if ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"):
 		printerr("The Project Setting 'emulate_mouse_from_touch' should be set to False")
 	if not ProjectSettings.get_setting("input_devices/pointing/emulate_touch_from_mouse"):
@@ -158,14 +160,19 @@ func _cancel_reposition() -> void:
 	_reposition_hold_elapsed = 0.0
 
 func _move_base(new_position: Vector2) -> void:
-	_base.global_position = new_position - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
+	var half_extent := _get_base_radius() * REPOSITION_AREA_SCALE
+	var clamped_center := Vector2(
+		clampf(new_position.x, _initial_base_center.x - half_extent.x, _initial_base_center.x + half_extent.x),
+		clampf(new_position.y, _initial_base_center.y - half_extent.y, _initial_base_center.y + half_extent.y)
+	)
+	_base.global_position = clamped_center - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
 
 func _move_tip(new_position: Vector2) -> void:
 	_tip.global_position = new_position - _tip.pivot_offset * _base.get_global_transform_with_canvas().get_scale()
 
 func _is_point_inside_joystick_area(point: Vector2) -> bool:
 	var base_radius := _get_base_radius()
-	var center : Vector2 = _base.global_position + base_radius
+	var center := _initial_base_center
 	var half_extent := base_radius * REPOSITION_AREA_SCALE
 	return (
 		absf(point.x - center.x) <= half_extent.x and
