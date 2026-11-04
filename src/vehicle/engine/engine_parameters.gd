@@ -50,6 +50,7 @@ enum FuelType {
 @export_range(10.0, 2000.0, 1.0) var max_torque_nm: float = 260.0
 @export_range(1000.0, 15000.0, 50.0) var max_rpm: float = 8000.0
 @export_range(300.0, 2500.0, 25.0) var idle_rpm: float = 900.0
+@export_range(50.0, 600.0, 10.0) var stall_rpm: float = 180.0
 @export_range(0.01, 2.0, 0.01) var inertia_kg_m2: float = 0.14
 @export_range(0.0, 100.0, 0.1) var friction_torque_nm: float = 12.0
 @export var torque_curve: Curve
