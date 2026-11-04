@@ -298,7 +298,7 @@ class EngineController:
 			rpm *
 			delta /
 			(
-				60000.0 *
+				3600.0 *
 				engine_parameters.fuel_density_kg_per_litre *
 				NEWTON_METRE_RPM_TO_KW *
 				1000.0
