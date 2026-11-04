@@ -11,6 +11,11 @@ var crank_radius: float = 0.095
 var rod_length: float = 0.33
 var crank_center_y: float = 0.89
 var visual_scale: float = 2.2
+var camera_target := Vector3(0.0, 1.02, 0.0)
+var camera_distance: float = 5.2
+var camera_yaw: float = 0.0
+var camera_pitch: float = 0.18
+var rotating_view: bool = false
 
 
 func _ready() -> void:
@@ -39,7 +44,7 @@ func _build_lighting() -> void:
 
 	camera = Camera3D.new()
 	camera.position = Vector3(0.0, 2.0, 5.6)
-	camera.fov = 34.0
+	camera.fov = 30.0
 	camera.look_at(Vector3(0.0, 1.02, 0.0), Vector3.UP)
 	camera.current = true
 	add_child(camera)
@@ -77,6 +82,36 @@ func _build_lighting() -> void:
 	add_child(floor)
 
 
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		rotating_view = event.pressed
+	elif event is InputEventMouseMotion and rotating_view:
+		_rotate_camera(event.relative)
+	elif event is InputEventScreenTouch:
+		rotating_view = event.pressed
+	elif event is InputEventScreenDrag:
+		_rotate_camera(event.relative)
+
+
+func _rotate_camera(relative: Vector2) -> void:
+	camera_yaw -= relative.x * 0.008
+	camera_pitch = clampf(camera_pitch + relative.y * 0.008, -0.8, 0.8)
+	_update_camera_orbit()
+
+
+func _update_camera_orbit() -> void:
+	if camera == null:
+		return
+	var horizontal_distance := camera_distance * cos(camera_pitch)
+	camera.position = camera_target + Vector3(
+		sin(camera_yaw) * horizontal_distance,
+		camera_distance * sin(camera_pitch),
+		cos(camera_yaw) * horizontal_distance
+	)
+	camera.look_at(camera_target, Vector3.UP)
+
+
 func _build_engine() -> void:
 	if engine_parameters == null or simulator == null:
 		return
@@ -104,12 +139,9 @@ func _build_engine() -> void:
 		spacing * float(cylinder_count - 1) +
 		bore_radius * 3.0
 	)
-	camera.position = Vector3(
-		0.0,
-		2.05,
-		maxf(5.2, width * 1.75)
-	)
-	camera.look_at(Vector3(0.0, 1.02, 0.0), Vector3.UP)
+	camera_target = Vector3(0.0, 1.02, 0.0)
+	camera_distance = maxf(3.8, width * 1.28)
+	_update_camera_orbit()
 
 	var block_material := _make_material(Color(0.12, 0.17, 0.24), 0.78, 0.0)
 	var block_edge_material := _make_material(Color(0.24, 0.3, 0.38), 0.83, 0.0)
@@ -310,10 +342,11 @@ func _build_engine() -> void:
 		pressure_label.text = "CYL %02d" % (cylinder_index + 1)
 		pressure_label.font_size = 30
 		pressure_label.pixel_size = 0.002
+		pressure_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 		pressure_label.position = Vector3(
 			x_position,
-			piston_top_y + 0.61,
-			0.0
+			piston_top_y + 0.12,
+			0.54
 		)
 		pressure_label.modulate = Color(0.74, 0.84, 0.98)
 		model_root.add_child(pressure_label)
