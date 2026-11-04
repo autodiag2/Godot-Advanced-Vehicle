@@ -26,7 +26,7 @@ transient = true
 exclusive = false
 popup_window = false
 unresizable = false
-borderless = false
+borderless = true
 script = ExtResource("1")
 
 [node name="Frame" type="PanelContainer" parent="."]
