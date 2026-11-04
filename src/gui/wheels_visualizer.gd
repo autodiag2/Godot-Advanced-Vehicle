@@ -152,7 +152,6 @@ func _refresh_display() -> void:
 		wear_label.text = "TREAD WEAR  —"
 		pressure_label.text = "TIRE PRESSURE  —"
 		pressure_label.add_theme_color_override("font_color", Color(0.65, 0.76, 0.88, 1))
-		pressure_slider.editable = true
 		temperature_label.text = "TEMPERATURE  —"
 		temperature_bar.color = Color(0.15, 0.2, 0.27)
 		statistics_label.text = "Wheel telemetry is unavailable."
@@ -167,7 +166,6 @@ func _refresh_display() -> void:
 	var pressure := tire_model.tire_pressure_psi
 	var minimum_pressure := tire_model.recommended_pressure_min_psi
 	var maximum_pressure := tire_model.recommended_pressure_max_psi
-	pressure_slider.editable = false
 	pressure_slider.set_value_no_signal(pressure)
 	if pressure < minimum_pressure:
 		pressure_label.text = "TIRE PRESSURE   %.1f PSI  ·  UNDERPRESSURE" % pressure
