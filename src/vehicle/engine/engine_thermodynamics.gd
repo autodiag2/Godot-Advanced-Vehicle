@@ -10,6 +10,8 @@ const CYCLE_DEGREES: float = 720.0
 const MAX_SUBSTEP_DEGREES: float = 2.0
 const MAX_SUBSTEPS: int = 96
 const SMALL_MASS_KG: float = 0.000000001
+const PISTON_LOOKUP_STEP_DEGREES: float = 0.25
+const PISTON_LOOKUP_SAMPLE_COUNT: int = 1440
 
 var parameters: EngineParameters
 var crank_angle_deg: float = 0.0
@@ -20,10 +22,19 @@ var mean_output_torque: float = 0.0
 var last_throttle: float = 0.0
 var cylinder_firing_offsets: Array[float] = []
 var cylinder_states: Array[Dictionary] = []
+var _bore_m: float = 0.0
+var _stroke_m: float = 0.0
+var _crank_radius_m: float = 0.0
+var _connecting_rod_length_m: float = 0.0
+var _piston_area_m2: float = 0.0
+var _clearance_volume_m3: float = 0.0
+var _heat_transfer_bore_factor: float = 0.0
+var _piston_displacement_lookup := PackedFloat32Array()
 
 
 func initialize(engine_parameters: EngineParameters, initial_rpm: float) -> void:
 	parameters = engine_parameters
+	_build_geometry_cache()
 	crank_angle_deg = 0.0
 	rpm = initial_rpm
 	angular_velocity = rpm / RPM_PER_RADIAN_PER_SECOND
@@ -32,6 +43,41 @@ func initialize(engine_parameters: EngineParameters, initial_rpm: float) -> void
 	last_throttle = 0.0
 	_build_firing_offsets()
 	_build_initial_cylinder_states()
+
+
+
+func _build_geometry_cache() -> void:
+	_bore_m = parameters.bore_mm / 1000.0
+	_stroke_m = parameters.stroke_mm / 1000.0
+	_crank_radius_m = _stroke_m * 0.5
+	_connecting_rod_length_m = _crank_radius_m * parameters.connecting_rod_ratio
+	_piston_area_m2 = PI * _bore_m * _bore_m * 0.25
+	_clearance_volume_m3 = (
+		_piston_area_m2 * _stroke_m /
+		maxf(parameters.compression_ratio - 1.0, 0.1)
+	)
+	_heat_transfer_bore_factor = (
+		3.26 * pow(maxf(_bore_m, 0.001), -0.2)
+	)
+	_piston_displacement_lookup.resize(PISTON_LOOKUP_SAMPLE_COUNT + 1)
+	for index in range(PISTON_LOOKUP_SAMPLE_COUNT + 1):
+		_piston_displacement_lookup[index] = _calculate_piston_displacement(
+			float(index) * PISTON_LOOKUP_STEP_DEGREES
+		)
+
+
+func _calculate_piston_displacement(phase_deg: float) -> float:
+	var theta := deg_to_rad(fposmod(phase_deg, 360.0))
+	var sine := sin(theta)
+	return (
+		_crank_radius_m * (1.0 - cos(theta)) +
+		_connecting_rod_length_m -
+		sqrt(maxf(
+			_connecting_rod_length_m * _connecting_rod_length_m -
+			_crank_radius_m * _crank_radius_m * sine * sine,
+			0.000000001
+		))
+	)
 
 
 func set_rpm(value: float) -> void:
@@ -70,26 +116,29 @@ func advance(delta: float, throttle_input: float, reaction_torque: float) -> flo
 	)
 	var step_delta := delta / float(steps)
 	var torque_sum := 0.0
+	var intake_pressure := _get_intake_pressure_pa(last_throttle)
 
 	for _step_index in range(steps):
 		var angle_step := maxf(rpm, 0.0) * RPM_TO_DEGREES_PER_SECOND * step_delta
 		var cylinder_torque := 0.0
 
 		for cylinder_index in range(cylinder_states.size()):
-			var phase_before := get_cylinder_phase(cylinder_index)
+			var phase_before := fposmod(
+				crank_angle_deg - cylinder_firing_offsets[cylinder_index],
+				CYCLE_DEGREES
+			)
 			var phase_after := fposmod(
 				phase_before + angle_step,
 				CYCLE_DEGREES
 			)
-			var result := _advance_cylinder(
+			cylinder_torque += _advance_cylinder(
 				cylinder_states[cylinder_index],
 				phase_before,
 				phase_after,
 				angle_step,
-				step_delta
+				step_delta,
+				intake_pressure
 			)
-			cylinder_states[cylinder_index] = result.state
-			cylinder_torque += result.torque
 
 		var friction_factor := 0.15 + 0.85 * clampf(
 			rpm / maxf(parameters.max_rpm, 1.0),
@@ -188,31 +237,26 @@ func get_cylinder_stage(cylinder_index: int) -> String:
 
 
 func get_piston_displacement(phase_deg: float) -> float:
-	var stroke := parameters.stroke_mm / 1000.0
-	var crank_radius := stroke * 0.5
-	var rod_length := crank_radius * parameters.connecting_rod_ratio
-	var theta := deg_to_rad(fposmod(phase_deg, 360.0))
-	var sine := sin(theta)
-	return (
-		crank_radius * (1.0 - cos(theta)) +
-		rod_length -
-		sqrt(maxf(
-			rod_length * rod_length -
-			crank_radius * crank_radius * sine * sine,
-			0.000000001
-		))
+	if _piston_displacement_lookup.is_empty():
+		return _calculate_piston_displacement(phase_deg)
+	var phase := fposmod(phase_deg, 360.0)
+	var lookup_position := phase / PISTON_LOOKUP_STEP_DEGREES
+	var index := mini(
+		int(lookup_position),
+		PISTON_LOOKUP_SAMPLE_COUNT - 1
+	)
+	return lerpf(
+		_piston_displacement_lookup[index],
+		_piston_displacement_lookup[index + 1],
+		lookup_position - float(index)
 	)
 
 
 func get_cylinder_volume_m3(phase_deg: float) -> float:
-	var bore := parameters.bore_mm / 1000.0
-	var area := PI * bore * bore * 0.25
-	var swept_volume := area * parameters.stroke_mm / 1000.0
-	var clearance_volume := swept_volume / maxf(
-		parameters.compression_ratio - 1.0,
-		0.1
+	return (
+		_clearance_volume_m3 +
+		_piston_area_m2 * get_piston_displacement(phase_deg)
 	)
-	return clearance_volume + area * get_piston_displacement(phase_deg)
 
 
 func _build_firing_offsets() -> void:
@@ -306,8 +350,9 @@ func _advance_cylinder(
 	phase_before: float,
 	phase_after: float,
 	angle_step: float,
-	delta: float
-) -> Dictionary:
+	delta: float,
+	intake_pressure: float
+) -> float:
 	var volume_before := get_cylinder_volume_m3(phase_before)
 	var volume_after := get_cylinder_volume_m3(phase_after)
 	var volume_mid := (volume_before + volume_after) * 0.5
@@ -318,7 +363,6 @@ func _advance_cylinder(
 	var old_burned_fraction: float = float(state.burned_fraction)
 	var cv_old := _get_cv(old_temperature, old_burned_fraction)
 	var internal_energy := old_mass * cv_old * old_temperature
-	var intake_pressure := _get_intake_pressure_pa(last_throttle)
 	var exhaust_pressure := parameters.exhaust_pressure_kpa * 1000.0
 	var intake_temperature := parameters.intake_temperature_k
 	var exhaust_temperature := 850.0
@@ -479,7 +523,8 @@ func _advance_cylinder(
 		old_temperature,
 		volume_mid,
 		delta,
-		old_burned_fraction
+		old_burned_fraction,
+		intake_pressure
 	)
 	var volume_change := volume_after - volume_before
 	var preliminary_work := old_pressure * volume_change
@@ -550,11 +595,7 @@ func _advance_cylinder(
 	state.indicated_work_j = float(state.indicated_work_j) + corrected_work
 
 	var angle_radians := deg_to_rad(maxf(angle_step, 0.0001))
-	var torque := corrected_work / angle_radians
-	return {
-		"state": state,
-		"torque": torque,
-	}
+	return corrected_work / angle_radians
 
 
 func _get_intake_pressure_pa(throttle: float) -> float:
@@ -635,13 +676,12 @@ func _calculate_wall_heat_loss(
 	temperature: float,
 	volume: float,
 	delta: float,
-	burned_fraction: float
+	burned_fraction: float,
+	intake_pressure: float
 ) -> float:
-	var bore := parameters.bore_mm / 1000.0
-	var stroke := parameters.stroke_mm / 1000.0
-	var piston_speed := 2.0 * stroke * rpm / 60.0
+	var piston_speed := 2.0 * _stroke_m * rpm / 60.0
 	var pressure_difference := maxf(
-		pressure - _get_intake_pressure_pa(last_throttle),
+		pressure - intake_pressure,
 		0.0
 	)
 	var gas_velocity := (
@@ -652,17 +692,15 @@ func _calculate_wall_heat_loss(
 	)
 	gas_velocity = clampf(gas_velocity, 0.3, 80.0)
 	var heat_transfer_coefficient := (
-		3.26 *
-		pow(maxf(bore, 0.001), -0.2) *
+		_heat_transfer_bore_factor *
 		pow(maxf(pressure / 1000.0, 1.0), 0.8) *
 		pow(maxf(temperature, 180.0), -0.55) *
 		pow(gas_velocity, 0.8)
 	)
-	var piston_area := PI * bore * bore * 0.25
-	var chamber_height := maxf(volume / maxf(piston_area, 0.000001), 0.001)
+	var chamber_height := maxf(volume / maxf(_piston_area_m2, 0.000001), 0.001)
 	var heat_transfer_area := (
-		2.0 * piston_area +
-		PI * bore * chamber_height
+		2.0 * _piston_area_m2 +
+		PI * _bore_m * chamber_height
 	)
 	var wall_temperature := parameters.wall_temperature_k
 	var wall_heat_loss := (
