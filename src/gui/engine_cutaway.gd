@@ -753,8 +753,8 @@ func _layout_selection_info_panel() -> void:
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
 	var panel_width := maxf(180.0, minf(280.0, viewport_size.x - 24.0))
-	info_panel.custom_minimum_size = Vector2(panel_width, 142.0)
-	info_panel.size = Vector2(panel_width, 142.0)
+	info_panel.custom_minimum_size = Vector2(panel_width, 154.0)
+	info_panel.size = Vector2(panel_width, 154.0)
 	info_panel.position = Vector2(12.0, 12.0)
 
 
