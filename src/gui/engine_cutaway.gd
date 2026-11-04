@@ -605,6 +605,11 @@ func _process(delta: float) -> void:
 		return
 
 	fluid_time += delta
+	var visual_angle_step := maxf(simulator.rpm * 6.0 * delta, 0.0)
+	var flame_rise_blend := 1.0 - exp(-visual_angle_step / 16.0)
+	var flame_fall_blend := 1.0 - exp(-visual_angle_step / 38.0)
+	var smoke_rise_blend := 1.0 - exp(-visual_angle_step / 28.0)
+	var smoke_fall_blend := 1.0 - exp(-visual_angle_step / 42.0)
 	for cylinder_index in range(cylinder_parts.size()):
 		var phase := simulator.get_cylinder_phase(cylinder_index)
 		var theta := deg_to_rad(fposmod(phase, 360.0))
@@ -670,8 +675,8 @@ func _process(delta: float) -> void:
 		var part: Dictionary = cylinder_parts[cylinder_index]
 		var flame_fill := float(part.flame_fill)
 		var smoke_fill := float(part.smoke_fill)
-		var flame_blend := 1.0 - exp(-delta * (18.0 if fire_target > flame_fill else 2.2))
-		var smoke_blend := 1.0 - exp(-delta * (5.0 if smoke_target > smoke_fill else 1.0))
+		var flame_blend := flame_rise_blend if fire_target > flame_fill else flame_fall_blend
+		var smoke_blend := smoke_rise_blend if smoke_target > smoke_fill else smoke_fall_blend
 		flame_fill = lerpf(flame_fill, fire_target, flame_blend)
 		smoke_fill = lerpf(smoke_fill, smoke_target, smoke_blend)
 		part.flame_fill = flame_fill
