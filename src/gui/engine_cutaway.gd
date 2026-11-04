@@ -331,9 +331,9 @@ func _build_engine() -> void:
 	)
 	glass_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
 	var flame_glow_material := _make_material(
-		Color(1.0, 0.36, 0.06, 0.82),
+		Color(1.0, 0.075, 0.008, 0.96),
 		0.0,
-		2.5
+		6.0
 	)
 	hover_material = _make_material(Color(0.95, 0.68, 0.2, 0.28), 0.1, 2.2)
 	hover_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
@@ -483,39 +483,19 @@ func _build_engine() -> void:
 		glow.visible = false
 		model_root.add_child(glow)
 
-		var flame_particles := _create_particles(
-			x_position,
-			piston_top_y + 0.08,
-			0.035,
-			0.12,
-			40,
-			0.28,
-			Color(1.0, 0.2, 0.025, 0.95),
-			Color(1.0, 0.86, 0.24, 0.0),
-			Vector3(0.0, 0.55, 0.0),
-			0.45,
-			1.35
-		)
-		var smoke_particles := _create_particles(
-			x_position,
-			piston_top_y + 0.15,
-			0.055,
-			0.2,
-			34,
-			1.05,
-			Color(0.25, 0.29, 0.35, 0.4),
-			Color(0.16, 0.19, 0.24, 0.0),
-			Vector3(0.0, 0.28, 0.0),
-			0.08,
-			0.35
-		)
-
 		var chamber_light := OmniLight3D.new()
 		chamber_light.position = Vector3(x_position, piston_top_y + 0.1, 0.02)
-		chamber_light.light_color = Color(1.0, 0.25, 0.035)
+		chamber_light.light_color = Color(1.0, 0.09, 0.008)
 		chamber_light.light_energy = 0.0
-		chamber_light.omni_range = 1.2
+		chamber_light.omni_range = 1.8
 		model_root.add_child(chamber_light)
+
+		var red_flame_light := OmniLight3D.new()
+		red_flame_light.position = Vector3(x_position, piston_top_y + 0.08, 0.03)
+		red_flame_light.light_color = Color(1.0, 0.015, 0.002)
+		red_flame_light.light_energy = 0.0
+		red_flame_light.omni_range = 2.2
+		model_root.add_child(red_flame_light)
 
 		var intake_valve := _build_valve(
 			x_position - bore_radius * 0.36,
@@ -539,18 +519,6 @@ func _build_engine() -> void:
 			-0.12
 		)
 
-		var pressure_label := Label3D.new()
-		pressure_label.text = "CYL %02d" % (cylinder_index + 1)
-		pressure_label.font_size = 30
-		pressure_label.pixel_size = 0.002
-		pressure_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		pressure_label.position = Vector3(
-			x_position,
-			piston_top_y + 0.12,
-			0.54
-		)
-		pressure_label.modulate = Color(0.74, 0.84, 0.98)
-		model_root.add_child(pressure_label)
 
 		cylinder_parts.append({
 			"piston": piston,
@@ -559,12 +527,10 @@ func _build_engine() -> void:
 			"big_end": big_end,
 			"crank_pin": crank_pin,
 			"glow": glow,
-			"flame_particles": flame_particles,
-			"smoke_particles": smoke_particles,
 			"chamber_light": chamber_light,
+			"red_flame_light": red_flame_light,
 			"intake_valve": intake_valve,
 			"exhaust_valve": exhaust_valve,
-			"pressure_label": pressure_label,
 			"liner": liner,
 			"liner_rim": liner_rim,
 			"pick_center": liner.position,
@@ -572,6 +538,7 @@ func _build_engine() -> void:
 			"pick_half_length": (stroke + 0.42) * 0.5,
 			"fluid_volume": fluid_volume,
 			"fluid_material": fluid_material,
+			"flow_offset": float(cylinder_index) * 2.37,
 			"flame_fill": 0.0,
 			"smoke_fill": 0.0,
 			"x": x_position,
@@ -646,22 +613,18 @@ func _process(delta: float) -> void:
 		cylinder_parts[cylinder_index].big_end.position = crank_pin_position
 		cylinder_parts[cylinder_index].crank_pin.position = crank_pin_position
 
-		var flame_intensity := (
-			simulator.get_cylinder_combustion_intensity(cylinder_index)
-		)
+		var flame_intensity := simulator.get_cylinder_combustion_intensity(cylinder_index)
 		var smoke_intensity := simulator.get_cylinder_smoke_intensity(cylinder_index)
 		var burned_fraction := simulator.get_cylinder_burned_fraction(cylinder_index)
-		var fire_target := clampf(flame_intensity * 12.0, 0.0, 1.0)
-		if phase < 180.0:
-			fire_target = maxf(
-				fire_target,
-				burned_fraction * (1.0 - phase / 180.0)
-			)
+		var fire_window := 0.0
+		if phase < 210.0:
+			fire_window = clampf(1.0 - phase / 210.0, 0.0, 1.0)
 		elif phase >= 650.0:
-			fire_target = maxf(
-				fire_target,
-				burned_fraction * clampf((phase - 650.0) / 70.0, 0.0, 1.0) * 0.72
-			)
+			fire_window = clampf((phase - 650.0) / 70.0, 0.0, 1.0)
+		var fire_target := maxf(
+			clampf(flame_intensity * 18.0, 0.0, 1.0),
+			clampf(burned_fraction * fire_window * 1.15, 0.0, 1.0)
+		)
 		var exhaust_fill := 0.0
 		if phase >= 180.0 and phase < 360.0:
 			exhaust_fill = clampf((phase - 180.0) / 180.0, 0.0, 1.0) * 0.92
@@ -697,12 +660,16 @@ func _process(delta: float) -> void:
 		fluid_material.set_shader_parameter("flame_fill", flame_fill)
 		fluid_material.set_shader_parameter("smoke_fill", smoke_fill)
 		fluid_material.set_shader_parameter("flow_time", fluid_time)
+		fluid_material.set_shader_parameter("flow_offset", part.flow_offset)
 		var glow: MeshInstance3D = part.glow
-		glow.visible = flame_fill > 0.03
-		glow.scale = Vector3.ONE * maxf(flame_fill, 0.04)
-		part.flame_particles.emitting = flame_fill > 0.2
-		part.smoke_particles.emitting = smoke_fill > 0.28
+		glow.visible = flame_fill > 0.015
+		glow.scale = Vector3(
+			maxf(flame_fill, 0.04) * 0.9,
+			maxf(flame_fill, 0.04) * 1.5,
+			maxf(flame_fill, 0.04) * 0.9
+		)
 		part.chamber_light.light_energy = flame_fill * 4.5
+		part.red_flame_light.light_energy = flame_fill * 3.5
 
 		var intake_lift := _visual_valve_lift(
 			phase,
@@ -719,10 +686,6 @@ func _process(delta: float) -> void:
 		)
 		cylinder_parts[cylinder_index].exhaust_valve.position.y = (
 			piston_top_y + 0.3 - exhaust_lift * 2.0
-		)
-		var pressure := simulator.get_cylinder_pressure_kpa(cylinder_index)
-		cylinder_parts[cylinder_index].pressure_label.text = (
-			"C%02d  %.0f kPa" % [cylinder_index + 1, pressure]
 		)
 
 	_update_selection_info()
@@ -826,78 +789,28 @@ render_mode unshaded, cull_disabled, blend_mix, depth_draw_never;
 uniform float flame_fill : hint_range(0.0, 1.0) = 0.0;
 uniform float smoke_fill : hint_range(0.0, 1.0) = 0.0;
 uniform float flow_time = 0.0;
+uniform float flow_offset = 0.0;
 
 void fragment() {
-	float phase_a = UV.x * 34.0 + sin(UV.y * 18.0 - flow_time * 2.7) * 2.4 + flow_time * 5.0;
-	float phase_b = UV.x * 51.0 - UV.y * 27.0 + sin(UV.x * 19.0 + flow_time * 1.8) * 1.7;
+	float local_time = flow_time + flow_offset;
+	float phase_a = UV.x * 34.0 + sin(UV.y * 18.0 - local_time * 2.7) * 2.4 + local_time * 5.0;
+	float phase_b = UV.x * 51.0 - UV.y * 27.0 + sin(UV.x * 19.0 + local_time * 1.8) * 1.7;
 	float turbulence = clamp(0.5 + sin(phase_a) * 0.29 + cos(phase_b) * 0.21, 0.0, 1.0);
 	float flame_edge = clamp(flame_fill + (turbulence - 0.5) * 0.18, 0.0, 1.0);
 	float flame_region = 1.0 - smoothstep(flame_edge - 0.06, flame_edge + 0.08, UV.y);
-	float flame = flame_region * flame_fill * (0.55 + turbulence * 0.45);
+	float flame = flame_region * flame_fill * (0.65 + turbulence * 0.35);
 	float smoke_edge = clamp(smoke_fill + (turbulence - 0.5) * 0.13, 0.0, 1.0);
 	float smoke_region = 1.0 - smoothstep(smoke_edge - 0.08, smoke_edge + 0.12, UV.y);
-	float smoke = smoke_region * smoke_fill * (0.42 + turbulence * 0.38);
-	vec3 flame_color = mix(vec3(0.95, 0.08, 0.008), vec3(1.0, 0.76, 0.12), clamp(turbulence + UV.y * 0.25, 0.0, 1.0));
-	vec3 smoke_color = mix(vec3(0.10, 0.12, 0.16), vec3(0.43, 0.46, 0.51), turbulence);
+	float smoke = smoke_region * smoke_fill * (0.32 + turbulence * 0.28);
+	vec3 flame_color = mix(vec3(0.95, 0.018, 0.002), vec3(1.0, 0.19, 0.008), clamp(turbulence * 0.72 + UV.y * 0.12, 0.0, 1.0));
+	vec3 smoke_color = mix(vec3(0.075, 0.085, 0.105), vec3(0.25, 0.28, 0.32), turbulence);
 	float total = max(flame + smoke, 0.001);
 	ALBEDO = (flame_color * flame + smoke_color * smoke) / total;
-	ALPHA = clamp(flame * 0.78 + smoke * 0.58, 0.0, 0.86);
-	EMISSION = flame_color * flame * 2.2;
+	ALPHA = clamp(flame * 0.94 + smoke * 0.42, 0.0, 0.94);
+	EMISSION = flame_color * flame * 4.2;
 }
 """
 	return shader
-
-
-func _create_particles(
-	x: float,
-	y: float,
-	z: float,
-	radius: float,
-	amount: int,
-	lifetime: float,
-	start_color: Color,
-	end_color: Color,
-	gravity: Vector3,
-	velocity_min: float,
-	velocity_max: float
-) -> GPUParticles3D:
-	var gradient := Gradient.new()
-	gradient.colors = PackedColorArray([start_color, end_color])
-	gradient.offsets = PackedFloat32Array([0.0, 1.0])
-	var ramp := GradientTexture1D.new()
-	ramp.gradient = gradient
-
-	var process_material := ParticleProcessMaterial.new()
-	process_material.emission_shape = ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	process_material.emission_sphere_radius = radius
-	process_material.direction = Vector3.UP
-	process_material.spread = 45.0
-	process_material.initial_velocity_min = velocity_min
-	process_material.initial_velocity_max = velocity_max
-	process_material.gravity = gravity
-	process_material.scale_min = 0.3
-	process_material.scale_max = 1.2
-	process_material.color_ramp = ramp
-
-	var particles := GPUParticles3D.new()
-	particles.position = Vector3(x, y, z)
-	particles.amount = amount
-	particles.lifetime = lifetime
-	particles.explosiveness = 0.15
-	particles.randomness = 0.45
-	particles.emitting = false
-	particles.process_material = process_material
-
-	var sphere := SphereMesh.new()
-	sphere.radius = 0.035
-	sphere.height = 0.07
-	particles.draw_pass_1 = sphere
-	var particle_material := StandardMaterial3D.new()
-	particle_material.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
-	particle_material.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	particles.material_override = particle_material
-	model_root.add_child(particles)
-	return particles
 
 
 func _make_material(
