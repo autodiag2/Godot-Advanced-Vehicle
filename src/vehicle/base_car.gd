@@ -351,7 +351,10 @@ class EngineController:
 				audio_player.play()
 
 		if pitch_scale > 0.1:
-			audio_player.pitch_scale = pitch_scale
+			audio_player.pitch_scale = maxf(
+				pitch_scale * Engine.time_scale,
+				0.01
+			)
 
 	func stop_sound(
 		audio_player: AudioStreamPlayer
