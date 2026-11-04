@@ -88,25 +88,27 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="close" type="Button" parent="Menu" unique_id=2117714760]
-layout_mode = 1
-anchors_preset = 0
-offset_left = 12.0
-offset_top = 12.0
-offset_right = 68.0
-offset_bottom = 68.0
 custom_minimum_size = Vector2(56, 56)
-text = ""
+layout_mode = 1
+offset_right = 1271.0
+offset_bottom = 1254.0
+scale = Vector2(0.1, 0.1)
 icon = ExtResource("14_l50n0")
-icon_max_width = 44
 script = ExtResource("15_occxd")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="Menu" unique_id=689788081]
+clip_contents = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
 anchor_bottom = 1.0
+offset_left = -350.0
+offset_top = -366.0
+offset_right = 350.0
 grow_horizontal = 2
-grow_vertical = 2
+grow_vertical = 0
 
 [node name="Label" type="Label" parent="Menu/VBoxContainer" unique_id=406582411]
 layout_mode = 2
