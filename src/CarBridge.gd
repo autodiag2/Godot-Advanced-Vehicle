@@ -254,25 +254,24 @@ func _process(delta):
 		cylinder_fuel_rate
 	)
 
-	var psi := 30.0
 	bridge.setTpmsSensor(
 		"fl",
-		psi,
+		car.wheel_fl.tire_model.tire_pressure_psi,
 		car.wheel_fl.tire_model.tire_temp
 	)
 	bridge.setTpmsSensor(
 		"fr",
-		psi,
-		car.wheel_fl.tire_model.tire_temp
+		car.wheel_fr.tire_model.tire_pressure_psi,
+		car.wheel_fr.tire_model.tire_temp
 	)
 	bridge.setTpmsSensor(
 		"rl",
-		psi,
+		car.wheel_bl.tire_model.tire_pressure_psi,
 		car.wheel_bl.tire_model.tire_temp
 	)
 	bridge.setTpmsSensor(
 		"rr",
-		psi,
+		car.wheel_br.tire_model.tire_pressure_psi,
 		car.wheel_br.tire_model.tire_temp
 	)
 
