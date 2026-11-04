@@ -39,6 +39,25 @@ func set_rpm(value: float) -> void:
 	angular_velocity = rpm / RPM_PER_RADIAN_PER_SECOND
 
 
+func set_cylinder_ignition_enabled(cylinder_index: int, enabled: bool) -> void:
+	if (
+		parameters == null or
+		parameters.fuel_type != EngineParameters.FuelType.PETROL or
+		cylinder_index < 0 or
+		cylinder_index >= cylinder_states.size()
+	):
+		return
+	var state: Dictionary = cylinder_states[cylinder_index]
+	state.ignition_enabled = enabled
+	cylinder_states[cylinder_index] = state
+
+
+func is_cylinder_ignition_enabled(cylinder_index: int) -> bool:
+	if cylinder_index < 0 or cylinder_index >= cylinder_states.size():
+		return false
+	return bool(cylinder_states[cylinder_index].get("ignition_enabled", true))
+
+
 func advance(delta: float, throttle_input: float, reaction_torque: float) -> float:
 	if parameters == null or delta <= 0.0:
 		return output_torque
@@ -279,6 +298,7 @@ func _build_initial_cylinder_states() -> void:
 			"smoke_intensity": 0.0,
 			"heat_release_w": 0.0,
 			"indicated_work_j": 0.0,
+			"ignition_enabled": true,
 		})
 
 
@@ -419,6 +439,8 @@ func _advance_cylinder(
 	var burn_before := _get_burn_progress(phase_before)
 	var burn_after := _get_burn_progress(phase_after)
 	var burn_delta := maxf(burn_after - burn_before, 0.0)
+	if not bool(state.get("ignition_enabled", true)):
+		burn_delta = 0.0
 	var burn_remaining_fraction := maxf(1.0 - burn_before, 0.001)
 	var burned_fuel_mass := minf(
 		fuel_available,
