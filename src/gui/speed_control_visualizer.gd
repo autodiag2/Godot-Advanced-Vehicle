@@ -15,6 +15,7 @@ func _ready() -> void:
 	popup_window = false
 	borderless = true
 	unresizable = false
+	speed_slider.custom_minimum_size = Vector2(0.0, 44.0)
 	speed_slider.value = Engine.time_scale
 	speed_slider.value_changed.connect(_on_speed_changed)
 	$Frame/Content/Controls/ResetButton.pressed.connect(_on_reset_speed)
