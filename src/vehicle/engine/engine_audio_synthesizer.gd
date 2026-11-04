@@ -41,7 +41,7 @@ func update(
 		cylinder_fire_envelopes.resize(cylinder_count)
 		injector_envelopes.resize(cylinder_count)
 
-	var rpm := maxf(simulator.rpm, 0.0)
+	var rpm := maxf(simulator.rpm * Engine.time_scale, 0.0)
 	var crank_step := rpm * 6.0 / SAMPLE_RATE
 	var firing_angle := CYCLE_DEGREES - parameters.ignition_advance_deg
 	if parameters.fuel_type == EngineParameters.FuelType.DIESEL:
