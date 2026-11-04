@@ -105,6 +105,35 @@ func _sample_cycle_lookup(lookup: PackedFloat32Array, phase_deg: float) -> float
 	)
 
 
+func _cycle_distance_to_boundary(phase: float, boundary: float) -> float:
+	return absf(fposmod(phase - boundary + CYCLE_DEGREES * 0.5, CYCLE_DEGREES) - CYCLE_DEGREES * 0.5)
+
+
+func _sample_burn_progress(phase: float) -> float:
+	var ignition_advance := parameters.ignition_advance_deg
+	var duration := parameters.combustion_duration_deg
+	if parameters.fuel_type == EngineParameters.FuelType.DIESEL:
+		ignition_advance = maxf(
+			parameters.injection_advance_deg - parameters.diesel_ignition_delay_deg,
+			0.0
+		)
+		duration = maxf(duration, 35.0)
+	var end_angle := fposmod(CYCLE_DEGREES - ignition_advance + duration, CYCLE_DEGREES)
+	if _cycle_distance_to_boundary(phase, end_angle) <= PISTON_LOOKUP_STEP_DEGREES:
+		return _get_burn_progress(phase)
+	return _sample_cycle_lookup(_burn_progress_lookup, phase)
+
+
+func _sample_injection_progress(phase: float) -> float:
+	var end_angle := fposmod(
+		CYCLE_DEGREES - parameters.injection_advance_deg,
+		CYCLE_DEGREES
+	)
+	if _cycle_distance_to_boundary(phase, end_angle) <= PISTON_LOOKUP_STEP_DEGREES:
+		return _get_injection_progress(phase)
+	return _sample_cycle_lookup(_injection_progress_lookup, phase)
+
+
 func _calculate_piston_displacement(phase_deg: float) -> float:
 	var theta := deg_to_rad(fposmod(phase_deg, 360.0))
 	var sine := sin(theta)
@@ -483,8 +512,8 @@ func _advance_cylinder(
 			maxf(parameters.stoichiometric_afr, 1.0)
 		)
 	else:
-		var injection_before := _sample_cycle_lookup(_injection_progress_lookup, phase_before)
-		var injection_after := _sample_cycle_lookup(_injection_progress_lookup, phase_after)
+		var injection_before := _sample_injection_progress(phase_before)
+		var injection_after := _sample_injection_progress(phase_after)
 		var injection_delta := maxf(injection_after - injection_before, 0.0)
 		var target_fuel_mass := (
 			float(state.air_mass_cycle_kg) /
@@ -516,8 +545,8 @@ func _advance_cylinder(
 		0.0
 	)
 
-	var burn_before := _sample_cycle_lookup(_burn_progress_lookup, phase_before)
-	var burn_after := _sample_cycle_lookup(_burn_progress_lookup, phase_after)
+	var burn_before := _sample_burn_progress(phase_before)
+	var burn_after := _sample_burn_progress(phase_after)
 	var burn_delta := maxf(burn_after - burn_before, 0.0)
 	if bool(state.get("misfire_fault_active", false)):
 		burn_delta = 0.0
