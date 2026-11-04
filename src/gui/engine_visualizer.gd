@@ -10,6 +10,8 @@ var engine_parameters: EngineParameters
 @onready var rpm_label: Label = $Frame/Content/Telemetry/RPM
 @onready var torque_label: Label = $Frame/Content/Telemetry/Torque
 @onready var pressure_label: Label = $Frame/Content/Telemetry/Pressure
+@onready var engine_viewport_container: SubViewportContainer = $Frame/Content/ViewportContainer/ViewportMargin/EngineViewport
+@onready var engine_viewport: SubViewport = $Frame/Content/ViewportContainer/ViewportMargin/EngineViewport/EngineViewport
 @onready var engine_cutaway: EngineCutaway = $Frame/Content/ViewportContainer/ViewportMargin/EngineViewport/EngineViewport/EngineCutaway
 
 
@@ -27,9 +29,17 @@ func _ready() -> void:
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
+	engine_viewport_container.resized.connect(_resize_engine_viewport)
 	for label in [identity_label, rpm_label, torque_label, pressure_label]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_update_engine()
+
+
+func _resize_engine_viewport() -> void:
+	engine_viewport.size = Vector2i(
+		maxi(1, int(engine_viewport_container.size.x)),
+		maxi(1, int(engine_viewport_container.size.y))
+	)
 
 
 func present() -> void:
