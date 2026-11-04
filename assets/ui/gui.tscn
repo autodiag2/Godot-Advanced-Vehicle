@@ -19,6 +19,8 @@
 [ext_resource type="Script" uid="uid://db413do0lraea" path="res://src/gui/close.gd" id="15_occxd"]
 [ext_resource type="Texture2D" uid="uid://bu3afm1jh5i75" path="res://assets/ui/menu_icon.png" id="16_6t5qj"]
 [ext_resource type="Script" uid="uid://bruvy704gbd2i" path="res://assets/ui/level_menu.gd" id="16_46dll"]
+[ext_resource type="Texture2D" path="res://assets/ui/engine_icon.png" id="17_engine"]
+[ext_resource type="Texture2D" path="res://assets/ui/sim_speed_icon.png" id="18_speed"]
 
 [node name="Gui" type="Control" unique_id=1129693519]
 layout_mode = 3
@@ -28,41 +30,6 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bv3ap")
-
-[node name="Essentials" type="Panel" parent="." unique_id=1658974966]
-self_modulate = Color(1, 1, 1, 0.556863)
-custom_minimum_size = Vector2(200, 100)
-layout_mode = 1
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -141.0
-offset_right = 200.0
-grow_vertical = 0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="Essentials" unique_id=1614417459]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="GearLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1063625288]
-layout_mode = 2
-text = "Gear"
-
-[node name="Speedlabel" type="Label" parent="Essentials/VBoxContainer" unique_id=644883117]
-layout_mode = 2
-text = "Speed"
-
-[node name="RpmLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=2078353953]
-layout_mode = 2
-text = "Rpm"
-
-[node name="FuelLabel" type="Label" parent="Essentials/VBoxContainer" unique_id=1066805467]
-layout_mode = 2
-text = "Fuel"
 
 [node name="TireInfoApp" parent="." unique_id=609235454 instance=ExtResource("2_6tyms")]
 layout_mode = 0
@@ -243,6 +210,18 @@ position = Vector2(4, 22)
 scale = Vector2(0.08, 0.08)
 texture_normal = ExtResource("16_6t5qj")
 script = ExtResource("13_o2lvu")
+
+[node name="EngineButton" type="TouchScreenButton" parent="HBoxContainer"]
+position = Vector2(110, 22)
+scale = Vector2(0.38, 0.38)
+texture_normal = ExtResource("17_engine")
+visibility_mode = 0
+
+[node name="SpeedButton" type="TouchScreenButton" parent="HBoxContainer"]
+position = Vector2(214, 22)
+scale = Vector2(0.38, 0.38)
+texture_normal = ExtResource("18_speed")
+visibility_mode = 0
 
 [node name="RenderStats" parent="HBoxContainer" unique_id=383076913 instance=ExtResource("4_4dmvl")]
 layout_mode = 2
