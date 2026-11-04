@@ -54,7 +54,6 @@ func _setup_preview_frame() -> void:
 	preview_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
-	settings_controls.vertical = false
 	settings_controls.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	settings_controls.add_theme_constant_override("separation", 12)
 	settings_margin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
