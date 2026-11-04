@@ -79,7 +79,7 @@ layout_mode = 2
 mouse_filter = 2
 theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
-text = "TIRE CONDITION  /  TEMPERATURE  /  TREAD WEAR"
+text = "TIRE CONDITION  /  PRESSURE  /  TEMPERATURE  /  TREAD WEAR"
 
 [node name="CloseButton" type="Button" parent="Frame/Content/Heading"]
 layout_mode = 2
@@ -213,6 +213,21 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.77, 0.85, 0.96, 1)
 text = "TREAD WEAR  0.0%"
+
+[node name="PressureLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.25, 0.88, 0.42, 1)
+text = "TIRE PRESSURE  32.0 PSI  ·  RECOMMENDED (30–35)"
+
+[node name="PressureSlider" type="HSlider" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
+custom_minimum_size = Vector2(0, 26)
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 60.0
+step = 0.5
+value = 32.0
 
 [node name="TemperatureLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
