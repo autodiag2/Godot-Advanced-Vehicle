@@ -42,11 +42,11 @@ func _show_engine_popup() -> void:
 	if vehicle == null:
 		return
 	engine_popup.set_vehicle(vehicle)
-	engine_popup.popup_centered()
+	engine_popup.present()
 
 
 func _show_speed_popup() -> void:
-	speed_popup.popup_centered()
+	speed_popup.present()
 
 
 @warning_ignore("shadowed_variable")
