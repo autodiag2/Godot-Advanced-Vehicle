@@ -26,7 +26,7 @@ var selected_crankshaft: bool = false
 var hover_material: StandardMaterial3D
 var info_panel: PanelContainer
 var info_label: Label
-var ignition_fault_toggle: CheckButton
+var misfire_fault_toggle: CheckButton
 var pointer_start_position := Vector2.ZERO
 var pointer_moved: bool = false
 var fluid_shader: Shader
@@ -132,13 +132,13 @@ func _create_selection_info_panel() -> void:
 	info_label.add_theme_font_size_override("font_size", 14)
 	info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	info_container.add_child(info_label)
-	ignition_fault_toggle = CheckButton.new()
-	ignition_fault_toggle.text = "Ignition fault"
-	ignition_fault_toggle.custom_minimum_size = Vector2(0.0, 48.0)
-	ignition_fault_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	ignition_fault_toggle.add_theme_font_size_override("font_size", 13)
-	ignition_fault_toggle.toggled.connect(_on_ignition_fault_toggled)
-	info_container.add_child(ignition_fault_toggle)
+	misfire_fault_toggle = CheckButton.new()
+	misfire_fault_toggle.text = "Misfire fault"
+	misfire_fault_toggle.custom_minimum_size = Vector2(0.0, 48.0)
+	misfire_fault_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	misfire_fault_toggle.add_theme_font_size_override("font_size", 13)
+	misfire_fault_toggle.toggled.connect(_on_misfire_fault_toggled)
+	info_container.add_child(misfire_fault_toggle)
 	info_panel.add_child(info_container)
 	canvas.add_child(info_panel)
 
@@ -353,7 +353,7 @@ func _build_engine() -> void:
 	selected_crankshaft = false
 	info_panel.visible = false
 
-	var cylinder_count := maxi(engine_parameters.cylinder_count, 1)
+	var cylinder_count := engine_parameters.get_cylinder_count()
 	var bore_radius := (
 		engine_parameters.bore_mm /
 		1000.0 *
@@ -794,29 +794,21 @@ func _update_selection_info() -> void:
 		var pressure_kpa := simulator.get_cylinder_pressure_kpa(selected_cylinder_index)
 		var temperature_k := simulator.get_cylinder_temperature_k(selected_cylinder_index)
 		var stage := simulator.get_cylinder_stage(selected_cylinder_index)
-		var is_petrol := engine_parameters.fuel_type == EngineParameters.FuelType.PETROL
-		var ignition_status := "COMPRESSION IGNITION"
-		if is_petrol:
-			ignition_status = (
-				"OK"
-				if simulator.is_cylinder_ignition_enabled(selected_cylinder_index)
-				else "FAULT"
-			)
+		var misfire_fault_active := simulator.has_cylinder_misfire_fault(selected_cylinder_index)
+		var misfire_status := "ACTIVE" if misfire_fault_active else "INACTIVE"
 		info_label.text = (
 			"CYLINDER %02d\nPRESSURE  %.1f bar  (%.0f kPa)\n"
-			+ "TEMPERATURE  %.0f K\nCYCLE  %s\nIGNITION  %s"
+			+ "TEMPERATURE  %.0f K\nCYCLE  %s\nMISFIRE  %s"
 		) % [
 			selected_cylinder_index + 1,
 			pressure_kpa / 100.0,
 			pressure_kpa,
 			temperature_k,
 			stage,
-			ignition_status,
+			misfire_status,
 		]
-		ignition_fault_toggle.visible = is_petrol
-		ignition_fault_toggle.set_pressed_no_signal(
-			is_petrol and not simulator.is_cylinder_ignition_enabled(selected_cylinder_index)
-		)
+		misfire_fault_toggle.visible = true
+		misfire_fault_toggle.set_pressed_no_signal(misfire_fault_active)
 		info_panel.visible = true
 	elif selected_crankshaft:
 		info_label.text = (
@@ -826,21 +818,17 @@ func _update_selection_info() -> void:
 			simulator.rpm,
 			simulator.angular_velocity,
 		]
-		ignition_fault_toggle.visible = false
+		misfire_fault_toggle.visible = false
 		info_panel.visible = true
 	else:
-		ignition_fault_toggle.visible = false
+		misfire_fault_toggle.visible = false
 		info_panel.visible = false
 
 
-func _on_ignition_fault_toggled(fault_active: bool) -> void:
-	if (
-		selected_cylinder_index < 0 or
-		engine_parameters == null or
-		engine_parameters.fuel_type != EngineParameters.FuelType.PETROL
-	):
+func _on_misfire_fault_toggled(fault_active: bool) -> void:
+	if selected_cylinder_index < 0 or simulator == null:
 		return
-	simulator.set_cylinder_ignition_enabled(selected_cylinder_index, not fault_active)
+	simulator.set_cylinder_misfire_fault(selected_cylinder_index, fault_active)
 	_update_selection_info()
 
 
