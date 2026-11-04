@@ -1,6 +1,8 @@
 class_name RaycastSuspension
 extends RayCast3D
 
+const AMBIENT_TIRE_TEMPERATURE: float = 20.0
+
 ############# Choose what tire formula to use #############
 var tire_model: BaseTireModel 
 
@@ -78,8 +80,14 @@ func _physics_process(delta: float) -> void:
 	if abs(spin) > spin_treshold or abs(z_vel) > 1.0:
 		tire_wear = tire_model.update_tire_wear(delta, slip_vec, y_force, surface_mu)
 	
-	var ambient_temp := 20.0
-	tire_model.update_tire_temp(slip_vec, y_force, local_vel.length(), surface_mu, ambient_temp, delta)
+	tire_model.update_tire_temp(
+		slip_vec,
+		y_force,
+		local_vel.length(),
+		surface_mu,
+		AMBIENT_TIRE_TEMPERATURE,
+		delta
+	)
 
 
 func apply_forces(opposite_comp, delta):
@@ -198,6 +206,14 @@ func apply_torque(drive_torque, brake_torque, drive_inertia, delta):
 		return 0.5
 	else:
 		return (spin - prev_spin) * (wheel_inertia + drive_inertia) / (drive_torque * delta)
+
+
+func replace_tire() -> void:
+	tire_wear = 0.0
+	if tire_model == null:
+		return
+	tire_model.tire_wear = 0.0
+	tire_model.tire_temp = AMBIENT_TIRE_TEMPERATURE
 
 
 func set_spin(value):
