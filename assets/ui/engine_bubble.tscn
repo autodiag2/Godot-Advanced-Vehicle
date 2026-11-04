@@ -188,7 +188,7 @@ offset_top = -28.0
 offset_right = -4.0
 offset_bottom = -4.0
 mouse_filter = 0
-mouse_default_cursor_shape = 8
+mouse_default_cursor_shape = 12
 
 [node name="GripMark" type="Label" parent="ResizeGrip"]
 anchors_preset = 15
