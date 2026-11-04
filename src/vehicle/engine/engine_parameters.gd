@@ -16,6 +16,7 @@ enum FuelType {
 
 @export_category("Fuel and combustion")
 @export var fuel_type: FuelType = FuelType.PETROL
+@export var bsfc_map: EngineBSFCMap
 @export_range(0.1, 1.0, 0.01) var volumetric_efficiency: float = 0.88
 @export_range(0.1, 1.0, 0.01) var combustion_efficiency: float = 0.34
 @export_range(10.0, 100.0, 0.5) var combustion_duration_deg: float = 42.0

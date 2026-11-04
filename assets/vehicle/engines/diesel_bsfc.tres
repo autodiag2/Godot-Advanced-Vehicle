@@ -1,0 +1,44 @@
+[gd_resource type="Resource" script_class="EngineBSFCMap" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/vehicle/engine/EngineBSFCMapRow.gd" id="1"]
+[ext_resource type="Script" path="res://src/vehicle/engine/EngineBSFCMap.gd" id="2"]
+
+[sub_resource type="Resource" id="Resource_850"]
+script = ExtResource("1")
+rpm = 850.0
+load_10 = 430.0
+load_25 = 330.0
+load_50 = 280.0
+load_75 = 260.0
+load_100 = 250.0
+
+[sub_resource type="Resource" id="Resource_1500"]
+script = ExtResource("1")
+rpm = 1500.0
+load_10 = 410.0
+load_25 = 305.0
+load_50 = 255.0
+load_75 = 235.0
+load_100 = 225.0
+
+[sub_resource type="Resource" id="Resource_3000"]
+script = ExtResource("1")
+rpm = 3000.0
+load_10 = 390.0
+load_25 = 290.0
+load_50 = 240.0
+load_75 = 220.0
+load_100 = 215.0
+
+[sub_resource type="Resource" id="Resource_4800"]
+script = ExtResource("1")
+rpm = 4800.0
+load_10 = 410.0
+load_25 = 300.0
+load_50 = 250.0
+load_75 = 230.0
+load_100 = 220.0
+
+[resource]
+script = ExtResource("2")
+rows = Array[ExtResource("1")]([SubResource("Resource_850"), SubResource("Resource_1500"), SubResource("Resource_3000"), SubResource("Resource_4800")])

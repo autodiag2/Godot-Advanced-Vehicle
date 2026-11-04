@@ -269,7 +269,12 @@ func _calculate_cylinder_pressure(phase: float, throttle_input: float) -> float:
 	if phase < 180.0 or phase >= 540.0:
 		pressure = (
 			compression_pressure +
-			thermal_pressure * burn_progress
+			thermal_pressure *
+			burn_progress *
+			pow(
+				clearance_volume / maxf(volume, 0.000000001),
+				parameters.specific_heat_ratio
+			)
 		)
 	elif phase < 360.0:
 		pressure = parameters.exhaust_pressure_kpa * 1000.0

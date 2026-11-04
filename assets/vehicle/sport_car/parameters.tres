@@ -7,6 +7,8 @@
 [ext_resource type="Script" uid="uid://dbjj4t3ukrgvy" path="res://src/vehicle/wheel/wheel_params.gd" id="4_0pj5q"]
 [ext_resource type="Script" uid="uid://770j2as8psxx" path="res://src/vehicle/wheel/tire/curve_tire_model.gd" id="5_ebxlq"]
 
+[ext_resource type="Resource" path="res://assets/vehicle/engines/petrol_inline_4.tres" id="engine_preset"]
+
 [sub_resource type="Resource" id="Resource_a4qox"]
 script = ExtResource("1_5ylef")
 
@@ -58,6 +60,7 @@ anti_roll = 2.0
 
 [resource]
 script = ExtResource("3_d2226")
+engine = ExtResource("engine_preset")
 max_steer = 0.4
 max_brake_force = 100000.0
 max_handbrake_torque = 4000.0

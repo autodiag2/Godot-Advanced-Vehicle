@@ -147,6 +147,7 @@ class EngineController:
 	var fuel_litres: float = 0.0
 	var parameters: CarParameters
 	var engine_parameters: EngineParameters
+	var bsfc_map: EngineBSFCMap
 	var simulator := EngineSimulator.new()
 
 	@warning_ignore("shadowed_variable")
@@ -174,6 +175,12 @@ class EngineController:
 			parameters.torque_curve = engine_parameters.torque_curve
 		if engine_parameters.throttle_model != null:
 			parameters.throttle_model = engine_parameters.throttle_model
+
+		bsfc_map = engine_parameters.bsfc_map
+		if bsfc_map == null or bsfc_map.rows.size() < 2:
+			bsfc_map = parameters.engine_bsfc
+		if bsfc_map == null or bsfc_map.rows.size() < 2:
+			bsfc_map = _create_fallback_bsfc_map()
 
 		fuel_litres = (
 			parameters.fuel_tank_size *
@@ -288,7 +295,7 @@ class EngineController:
 		delta: float
 	) -> void:
 		var engine_load := calculate_engine_load(throttle_input)
-		var bsfc: float = parameters.engine_bsfc.sample(
+		var bsfc: float = bsfc_map.sample(
 			rpm,
 			maxf(
 				engine_load,
@@ -321,6 +328,19 @@ class EngineController:
 			fuel_consumed *
 			engine_parameters.fuel_density_kg_per_litre
 		)
+
+	func _create_fallback_bsfc_map() -> EngineBSFCMap:
+		var map := EngineBSFCMap.new()
+		for engine_rpm in [0.0, engine_parameters.max_rpm]:
+			var row := EngineBSFCMapRow.new()
+			row.rpm = engine_rpm
+			row.load_10 = 520.0
+			row.load_25 = 410.0
+			row.load_50 = 340.0
+			row.load_75 = 300.0
+			row.load_100 = 285.0
+			map.rows.append(row)
+		return map
 
 	func update_sound(
 		parameters: CarParameters,
