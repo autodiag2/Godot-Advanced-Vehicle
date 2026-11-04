@@ -1,8 +1,53 @@
-[gd_scene format=3 uid="uid://dacyugrkjb2o4"]
+[gd_scene format=3 uid="uid://cjsh6edhc1ayl"]
 
-[ext_resource type="Script" uid="uid://b0eehbwoe8qrg" path="res://src/gui/tireinfo_app.gd" id="1"]
+[sub_resource type="GDScript" id="GDScript_n2en2"]
+script/source = "extends Control
 
-[node name="TireInfoApp" type="Control"]
+var wheel_fl
+var wheel_fr
+var wheel_bl
+var wheel_br
+
+var wheels : Array[RaycastSuspension]:
+	get():
+		return [wheel_fl, wheel_fr, wheel_bl, wheel_br]
+
+func onSetVehicle(vehicle: BaseCar):
+	wheel_bl = vehicle.wheel_bl
+	wheel_br = vehicle.wheel_br
+	wheel_fl = vehicle.wheel_fl
+	wheel_fr = vehicle.wheel_fr
+		
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta: float) -> void:
+
+	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireWearLabel.text = \"%3.1f %% \" % float(wheel_fl.tire_wear * 100)
+	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireWearLabel.text = \"%3.1f %% \" % float(wheel_fr.tire_wear * 100)
+	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireWearLabel.text =\"%3.1f %% \" % float(wheel_bl.tire_wear * 100)
+	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireWearLabel.text =\"%3.1f %% \" % float(wheel_br.tire_wear * 100)
+	
+	var colors := []
+	for wheel in wheels:
+		if wheel.tire_model.tire_temp < wheel.tire_model.opt_tire_temp:
+			colors.append(lerp(Color.AQUA, Color.GREEN, wheel.tire_model.tire_temp / wheel.tire_model.opt_tire_temp))
+		else:
+			var amount: float = (wheel.tire_model.tire_temp - wheel.tire_model.opt_tire_temp) / (wheel.tire_model.max_tire_temp - wheel.tire_model.opt_tire_temp)
+			colors.append(lerp(Color.GREEN, Color.FIREBRICK, amount))
+			
+		
+	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp.color = colors[0]
+	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp.color = colors[1]
+	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp.color = colors[2]
+	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp.color = colors[3]
+	
+	$Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp/Label.text = \"%2.1f c\" % wheel_fl.tire_model.tire_temp
+	$Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp/Label.text = \"%2.1f c\" % wheel_fr.tire_model.tire_temp
+	$Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp/Label.text = \"%2.1f c\" % wheel_bl.tire_model.tire_temp
+	$Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp/Label.text = \"%2.1f c\" % wheel_br.tire_model.tire_temp
+	
+"
+
+[node name="TireInfoApp" type="Control" unique_id=1104959586]
 layout_mode = 3
 anchors_preset = 8
 anchor_left = 0.5
@@ -17,15 +62,15 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 4
 size_flags_vertical = 4
-script = ExtResource("1")
+script = SubResource("GDScript_n2en2")
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=964443872]
 self_modulate = Color(1, 1, 1, 0.556863)
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=1248645446]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -34,27 +79,27 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1566960805]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="WheelFL" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+[node name="WheelFL" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer" unique_id=202042570]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFL"]
+[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFL" unique_id=1680776236]
 layout_mode = 2
 text = "0.0"
 horizontal_alignment = 1
 
-[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer/WheelFL"]
+[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer/WheelFL" unique_id=899898444]
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0, 0.545098, 0.2, 1)
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFL/TireTemp" unique_id=2011862883]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -69,22 +114,22 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "20.0 c"
 
-[node name="WheelFR" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer"]
+[node name="WheelFR" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer" unique_id=1876007898]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 
-[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFR"]
+[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFR" unique_id=1869522876]
 layout_mode = 2
 text = "0.0"
 horizontal_alignment = 1
 
-[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer/WheelFR"]
+[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer/WheelFR" unique_id=1016062769]
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0, 0.545098, 0.2, 1)
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer/WheelFR/TireTemp" unique_id=1810738824]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -99,23 +144,23 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "20.0 c"
 
-[node name="HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="HBoxContainer2" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=1691316440]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="WheelBL" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer2"]
+[node name="WheelBL" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer2" unique_id=848168162]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL"]
+[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL" unique_id=326989284]
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0, 0.545098, 0.2, 1)
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL/TireTemp" unique_id=930978581]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -130,23 +175,23 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "20.0 c"
 
-[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL"]
+[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBL" unique_id=906760916]
 layout_mode = 2
 text = "0.0"
 horizontal_alignment = 1
 
-[node name="WheelBR" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer2"]
+[node name="WheelBR" type="VBoxContainer" parent="Panel/VBoxContainer/HBoxContainer2" unique_id=1440475276]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR"]
+[node name="TireTemp" type="ColorRect" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR" unique_id=1484495408]
 layout_mode = 2
 size_flags_vertical = 3
 color = Color(0, 0.545098, 0.2, 1)
 
-[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp"]
+[node name="Label" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR/TireTemp" unique_id=848073565]
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -161,7 +206,7 @@ grow_horizontal = 2
 grow_vertical = 2
 text = "20.0 c"
 
-[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR"]
+[node name="TireWearLabel" type="Label" parent="Panel/VBoxContainer/HBoxContainer2/WheelBR" unique_id=1864680632]
 layout_mode = 2
 text = "0.0"
 horizontal_alignment = 1
