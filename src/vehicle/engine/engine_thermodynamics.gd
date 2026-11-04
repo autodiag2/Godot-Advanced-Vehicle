@@ -12,6 +12,7 @@ const MAX_SUBSTEPS: int = 96
 const SMALL_MASS_KG: float = 0.000000001
 const PISTON_LOOKUP_STEP_DEGREES: float = 0.25
 const PISTON_LOOKUP_SAMPLE_COUNT: int = 1440
+const CYCLE_LOOKUP_SAMPLE_COUNT: int = 2880
 
 var parameters: EngineParameters
 var crank_angle_deg: float = 0.0
@@ -30,6 +31,10 @@ var _piston_area_m2: float = 0.0
 var _clearance_volume_m3: float = 0.0
 var _heat_transfer_bore_factor: float = 0.0
 var _piston_displacement_lookup := PackedFloat32Array()
+var _intake_valve_lift_lookup := PackedFloat32Array()
+var _exhaust_valve_lift_lookup := PackedFloat32Array()
+var _burn_progress_lookup := PackedFloat32Array()
+var _injection_progress_lookup := PackedFloat32Array()
 
 
 func initialize(engine_parameters: EngineParameters, initial_rpm: float) -> void:
@@ -64,6 +69,40 @@ func _build_geometry_cache() -> void:
 		_piston_displacement_lookup[index] = _calculate_piston_displacement(
 			float(index) * PISTON_LOOKUP_STEP_DEGREES
 		)
+
+	var cycle_lookup_size := CYCLE_LOOKUP_SAMPLE_COUNT + 1
+	_intake_valve_lift_lookup.resize(cycle_lookup_size)
+	_exhaust_valve_lift_lookup.resize(cycle_lookup_size)
+	_burn_progress_lookup.resize(cycle_lookup_size)
+	_injection_progress_lookup.resize(cycle_lookup_size)
+	for index in range(cycle_lookup_size):
+		var phase := float(index) * PISTON_LOOKUP_STEP_DEGREES
+		_intake_valve_lift_lookup[index] = _get_valve_lift(
+			phase,
+			parameters.intake_valve_open_deg,
+			parameters.intake_valve_close_deg
+		)
+		_exhaust_valve_lift_lookup[index] = _get_valve_lift(
+			phase,
+			parameters.exhaust_valve_open_deg,
+			parameters.exhaust_valve_close_deg
+		)
+		_burn_progress_lookup[index] = _get_burn_progress(phase)
+		_injection_progress_lookup[index] = _get_injection_progress(phase)
+
+
+func _sample_cycle_lookup(lookup: PackedFloat32Array, phase_deg: float) -> float:
+	var phase := fposmod(phase_deg, CYCLE_DEGREES)
+	var lookup_position := phase / PISTON_LOOKUP_STEP_DEGREES
+	var index := mini(
+		int(lookup_position),
+		CYCLE_LOOKUP_SAMPLE_COUNT - 1
+	)
+	return lerpf(
+		lookup[index],
+		lookup[index + 1],
+		lookup_position - float(index)
+	)
 
 
 func _calculate_piston_displacement(phase_deg: float) -> float:
@@ -375,15 +414,13 @@ func _advance_cylinder(
 		old_fuel_mass = 0.0
 		old_burned_fraction = 0.0
 
-	var intake_lift := _get_valve_lift(
-		phase_before,
-		parameters.intake_valve_open_deg,
-		parameters.intake_valve_close_deg
+	var intake_lift := _sample_cycle_lookup(
+		_intake_valve_lift_lookup,
+		phase_before
 	)
-	var exhaust_lift := _get_valve_lift(
-		phase_before,
-		parameters.exhaust_valve_open_deg,
-		parameters.exhaust_valve_close_deg
+	var exhaust_lift := _sample_cycle_lookup(
+		_exhaust_valve_lift_lookup,
+		phase_before
 	)
 	var intake_in_mass := 0.0
 	var intake_out_mass := 0.0
@@ -446,8 +483,8 @@ func _advance_cylinder(
 			maxf(parameters.stoichiometric_afr, 1.0)
 		)
 	else:
-		var injection_before := _get_injection_progress(phase_before)
-		var injection_after := _get_injection_progress(phase_after)
+		var injection_before := _sample_cycle_lookup(_injection_progress_lookup, phase_before)
+		var injection_after := _sample_cycle_lookup(_injection_progress_lookup, phase_after)
 		var injection_delta := maxf(injection_after - injection_before, 0.0)
 		var target_fuel_mass := (
 			float(state.air_mass_cycle_kg) /
@@ -479,8 +516,8 @@ func _advance_cylinder(
 		0.0
 	)
 
-	var burn_before := _get_burn_progress(phase_before)
-	var burn_after := _get_burn_progress(phase_after)
+	var burn_before := _sample_cycle_lookup(_burn_progress_lookup, phase_before)
+	var burn_after := _sample_cycle_lookup(_burn_progress_lookup, phase_after)
 	var burn_delta := maxf(burn_after - burn_before, 0.0)
 	if bool(state.get("misfire_fault_active", false)):
 		burn_delta = 0.0
