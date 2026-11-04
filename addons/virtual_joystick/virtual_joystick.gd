@@ -90,10 +90,10 @@ func _ready() -> void:
 func _initialize_reposition_bounds() -> void:
 	if _reposition_bounds_initialized:
 		return
-	var base_rect := _base.get_global_rect()
-	if base_rect.size.x <= 0.0 or base_rect.size.y <= 0.0:
+	var base_radius := _get_base_radius()
+	if base_radius.x <= 0.0 or base_radius.y <= 0.0:
 		return
-	_initial_base_center = base_rect.get_center()
+	_initial_base_center = _base.global_position + base_radius
 	_base_default_position = _base.position
 	_tip_default_position = _tip.position
 	_reposition_bounds_initialized = true
@@ -184,7 +184,7 @@ func _move_base(new_position: Vector2) -> void:
 		clampf(new_position.x, _initial_base_center.x - half_extent.x, _initial_base_center.x + half_extent.x),
 		clampf(new_position.y, _initial_base_center.y - half_extent.y, _initial_base_center.y + half_extent.y)
 	)
-	_base.global_position = clamped_center - _get_base_radius()
+	_base.global_position = clamped_center - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
 
 func _move_tip(new_position: Vector2) -> void:
 	_tip.global_position = new_position - _tip.pivot_offset * _base.get_global_transform_with_canvas().get_scale()
@@ -220,7 +220,7 @@ func _is_point_over_gui_button(point: Vector2) -> bool:
 
 
 func _get_base_radius() -> Vector2:
-	return _base.get_global_rect().size * 0.5
+	return _base.size * _base.get_global_transform_with_canvas().get_scale() / 2
 
 func _is_point_inside_base(point: Vector2) -> bool:
 	var _base_radius = _get_base_radius()
