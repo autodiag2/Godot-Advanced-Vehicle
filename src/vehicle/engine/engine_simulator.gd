@@ -61,6 +61,10 @@ func get_cylinder_smoke_intensity(cylinder_index: int) -> float:
 	return thermodynamics.get_cylinder_smoke_intensity(cylinder_index)
 
 
+func get_cylinder_burned_fraction(cylinder_index: int) -> float:
+	return thermodynamics.get_cylinder_burned_fraction(cylinder_index)
+
+
 func get_cylinder_heat_release_kw(cylinder_index: int) -> float:
 	return thermodynamics.get_cylinder_heat_release_kw(cylinder_index)
 
