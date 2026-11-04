@@ -60,10 +60,43 @@ func update(
 		parameters.injection_advance_deg -
 		parameters.diesel_injection_duration_deg
 	)
-	var combustion_decay := exp(-1.0 / (SAMPLE_RATE * 0.028))
-	var injection_decay := exp(-1.0 / (SAMPLE_RATE * 0.006))
-	var exhaust_decay := exp(-1.0 / (SAMPLE_RATE * 0.065))
-	var intake_decay := exp(-1.0 / (SAMPLE_RATE * 0.03))
+	var crank_degrees_per_second := maxf(rpm * 6.0, 1.0)
+	var combustion_duration_seconds := (
+		parameters.combustion_duration_deg /
+		crank_degrees_per_second
+	)
+	var injection_duration_seconds := (
+		parameters.diesel_injection_duration_deg /
+		crank_degrees_per_second
+	)
+	var exhaust_duration_seconds := (
+		maxf(
+			parameters.exhaust_valve_close_deg -
+			parameters.exhaust_valve_open_deg,
+			1.0
+		) /
+		crank_degrees_per_second
+	)
+	var intake_duration_seconds := (
+		maxf(
+			parameters.intake_valve_close_deg -
+			parameters.intake_valve_open_deg,
+			1.0
+		) /
+		crank_degrees_per_second
+	)
+	var combustion_decay := exp(
+		-1.0 / (SAMPLE_RATE * maxf(combustion_duration_seconds, 0.0007))
+	)
+	var injection_decay := exp(
+		-1.0 / (SAMPLE_RATE * maxf(injection_duration_seconds, 0.0007))
+	)
+	var exhaust_decay := exp(
+		-1.0 / (SAMPLE_RATE * maxf(exhaust_duration_seconds, 0.002))
+	)
+	var intake_decay := exp(
+		-1.0 / (SAMPLE_RATE * maxf(intake_duration_seconds, 0.002))
+	)
 	var throttle_amount := clampf(throttle, 0.0, 1.0)
 	var torque_load := clampf(
 		maxf(simulator.mean_output_torque, 0.0) /
