@@ -37,8 +37,8 @@ func _process(delta):
 
 	var engine = car.engine_controller
 	var engine_parameters = engine.engine_parameters
-	var throttle := engine.effective_throttle
-	var engine_load := engine.calculate_engine_load(throttle)
+	var throttle : float = engine.effective_throttle
+	var engine_load : float = engine.calculate_engine_load(throttle)
 	var engine_load_percent := engine_load * 100.0
 	var reference_torque := maxf(
 		engine_parameters.max_torque_nm,
@@ -53,7 +53,7 @@ func _process(delta):
 		100.0
 	)
 
-	var intake_manifold_pressure := engine_parameters.intake_pressure_kpa
+	var intake_manifold_pressure : float = engine_parameters.intake_pressure_kpa
 	if engine_parameters.fuel_type == EngineParameters.FuelType.PETROL:
 		intake_manifold_pressure *= lerpf(
 			0.18,
@@ -63,7 +63,7 @@ func _process(delta):
 
 	var timing_advance := 0.0
 	var commanded_equivalence_ratio := 1.0
-	var commanded_air_fuel_ratio := engine_parameters.stoichiometric_afr
+	var commanded_air_fuel_ratio : float = engine_parameters.stoichiometric_afr
 	var fuel_injection_timing := 0.0
 	if engine_parameters.fuel_type == EngineParameters.FuelType.PETROL:
 		timing_advance = engine_parameters.ignition_advance_deg
@@ -81,7 +81,7 @@ func _process(delta):
 			commanded_equivalence_ratio = 0.0
 		fuel_injection_timing = engine_parameters.injection_advance_deg
 
-	var fuel_rate_lph := _get_engine_fuel_rate_lph(
+	var fuel_rate_lph : float = _get_engine_fuel_rate_lph(
 		engine,
 		engine_load
 	)
@@ -90,7 +90,7 @@ func _process(delta):
 		engine_parameters.fuel_type == EngineParameters.FuelType.PETROL or
 		throttle > 0.0
 	):
-		var fuel_mass_flow_g_s := (
+		var fuel_mass_flow_g_s : float = (
 			fuel_rate_lph *
 			engine_parameters.fuel_density_kg_per_litre *
 			1000.0 /
@@ -99,7 +99,7 @@ func _process(delta):
 		maf_air_flow_rate = fuel_mass_flow_g_s * commanded_air_fuel_ratio
 
 	var cylinder_fuel_rate := 0.0
-	var firing_events_per_hour := (
+	var firing_events_per_hour : float = (
 		engine.rpm *
 		30.0 *
 		engine_parameters.get_cylinder_count()
@@ -112,7 +112,7 @@ func _process(delta):
 			firing_events_per_hour
 		)
 
-	var driver_demand_torque := engine.calculate_torque(
+	var driver_demand_torque : float = engine.calculate_torque(
 		engine.rpm,
 		throttle,
 		car.car_params
@@ -127,7 +127,7 @@ func _process(delta):
 		0.0,
 		1.0
 	)
-	var friction_percent_torque := (
+	var friction_percent_torque : float = (
 		-engine_parameters.friction_torque_nm *
 		friction_factor /
 		reference_torque *
@@ -281,7 +281,7 @@ func _get_engine_fuel_rate_lph(engine, engine_load: float) -> float:
 	if engine.rpm <= 0.0:
 		return 0.0
 
-	var bsfc := engine.bsfc_map.sample(
+	var bsfc : float = engine.bsfc_map.sample(
 		engine.rpm,
 		maxf(engine_load, 0.10)
 	)
