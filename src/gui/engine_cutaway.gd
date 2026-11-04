@@ -45,7 +45,7 @@ func configure(engine_simulator: EngineSimulator, parameters: EngineParameters) 
 	simulator = engine_simulator
 	engine_parameters = parameters
 	if visualization_active and is_node_ready():
-		_prepare_visualization()
+		_prepare_visualization(true)
 
 
 func set_visualization_active(active: bool) -> void:
@@ -57,10 +57,14 @@ func set_visualization_active(active: bool) -> void:
 		_prepare_visualization()
 
 
-func _prepare_visualization() -> void:
+func _prepare_visualization(force_rebuild: bool = false) -> void:
 	if not lighting_initialized:
 		_build_lighting()
-	if simulator != null and engine_parameters != null:
+	if (
+		simulator != null and
+		engine_parameters != null and
+		(force_rebuild or not is_instance_valid(model_root))
+	):
 		_build_engine()
 
 
