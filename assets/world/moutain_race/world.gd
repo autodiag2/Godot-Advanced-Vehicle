@@ -27,6 +27,8 @@ const TRACK_WIDTH := 12.0
 const SHOULDER_WIDTH := 4.0
 const TRACK_SAMPLES := 440
 const TRACK_SPATIAL_CELL_SIZE := 16.0
+const MULTIMESH_CELL_SIZE := 48.0
+const MULTIMESH_BATCH_MARGIN := 8.0
 const TERRAIN_SIZE := 300.0
 const TERRAIN_RESOLUTION := 151
 const TRACK_SURFACE_OFFSET := 0.45
@@ -59,9 +61,9 @@ var track_tangents: Array[Vector3] = []
 var track_sides: Array[Vector3] = []
 var river_centers: Array[Vector3] = []
 var track_spatial_bins: Dictionary = {}
-var tree_trunk_transforms: Array[Transform3D] = []
-var tree_crown_transforms: Array[Transform3D] = []
-var rock_transforms: Array[Transform3D] = []
+var tree_trunk_batches: Dictionary = {}
+var tree_crown_batches: Dictionary = {}
+var rock_batches: Dictionary = {}
 
 var track_mesh_instance: MeshInstance3D
 var terrain_mesh_instance: MeshInstance3D
@@ -641,9 +643,9 @@ func _build_guardrails() -> void:
 	var lower_mesh := BoxMesh.new()
 	lower_mesh.size = Vector3(0.14, 0.16, 1.0)
 
-	var post_transforms: Array[Transform3D] = []
-	var upper_transforms: Array[Transform3D] = []
-	var lower_transforms: Array[Transform3D] = []
+	var post_batches: Dictionary = {}
+	var upper_batches: Dictionary = {}
+	var lower_batches: Dictionary = {}
 
 	for i in range(0, TRACK_SAMPLES, GUARDRAIL_STEP):
 		var next := (i + GUARDRAIL_STEP) % TRACK_SAMPLES
@@ -671,20 +673,26 @@ func _build_guardrails() -> void:
 					GUARDRAIL_HEIGHT * 0.5,
 					z_offset
 				)
-				post_transforms.append(
+				_append_multimesh_transform(
+					post_batches,
+					midpoint,
 					Transform3D(
 						basis,
 						midpoint + basis * local_position
 					)
 				)
 
-			upper_transforms.append(
+			_append_multimesh_transform(
+				upper_batches,
+				midpoint,
 				Transform3D(
 					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
 					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT - 0.15, 0.0)
 				)
 			)
-			lower_transforms.append(
+			_append_multimesh_transform(
+				lower_batches,
+				midpoint,
 				Transform3D(
 					basis.scaled(Vector3(1.0, 1.0, length + 0.3)),
 					midpoint + basis * Vector3(0.0, GUARDRAIL_HEIGHT * 0.45, 0.0)
@@ -712,16 +720,59 @@ func _build_guardrails() -> void:
 			collision.position = Vector3(0.0, GUARDRAIL_HEIGHT * 0.5, 0.0)
 			body.add_child(collision)
 
-	_create_multimesh_instance("GuardrailPosts", post_mesh, guardrail_material, post_transforms)
-	_create_multimesh_instance("UpperGuardrails", upper_mesh, guardrail_material, upper_transforms)
-	_create_multimesh_instance("LowerGuardrails", lower_mesh, guardrail_material, lower_transforms)
+	_create_chunked_multimesh_instances("GuardrailPosts", post_mesh, guardrail_material, post_batches)
+	_create_chunked_multimesh_instances("UpperGuardrails", upper_mesh, guardrail_material, upper_batches)
+	_create_chunked_multimesh_instances("LowerGuardrails", lower_mesh, guardrail_material, lower_batches)
+
+
+func _append_multimesh_transform(
+	batches: Dictionary,
+	position: Vector3,
+	transform: Transform3D
+) -> void:
+	var cell := Vector2i(
+		floori(position.x / MULTIMESH_CELL_SIZE),
+		floori(position.z / MULTIMESH_CELL_SIZE)
+	)
+	var transforms: Array = batches.get(cell, [])
+	transforms.append(transform)
+	batches[cell] = transforms
+
+
+func _create_chunked_multimesh_instances(
+	node_name: String,
+	mesh: Mesh,
+	material: Material,
+	batches: Dictionary
+) -> void:
+	for cell_value in batches:
+		var cell: Vector2i = cell_value
+		var transforms: Array = batches[cell]
+		var margin := MULTIMESH_BATCH_MARGIN
+		var extent := MULTIMESH_CELL_SIZE + margin * 2.0
+		var bounds := AABB(
+			Vector3(
+				float(cell.x) * MULTIMESH_CELL_SIZE - margin,
+				-20.0,
+				float(cell.y) * MULTIMESH_CELL_SIZE - margin
+			),
+			Vector3(extent, 100.0, extent)
+		)
+		_create_multimesh_instance(
+			"%s_%d_%d" % [node_name, cell.x, cell.y],
+			mesh,
+			material,
+			transforms,
+			bounds
+		)
 
 
 func _create_multimesh_instance(
 	node_name: String,
 	mesh: Mesh,
 	material: Material,
-	transforms: Array[Transform3D]
+	transforms: Array,
+	custom_aabb: AABB
 ) -> void:
 	if transforms.is_empty():
 		return
@@ -730,9 +781,11 @@ func _create_multimesh_instance(
 	multimesh.transform_format = MultiMesh.TRANSFORM_3D
 	multimesh.mesh = mesh
 	multimesh.instance_count = transforms.size()
+	multimesh.custom_aabb = custom_aabb
 
 	for i in range(transforms.size()):
-		multimesh.set_instance_transform(i, transforms[i])
+		var instance_transform: Transform3D = transforms[i]
+		multimesh.set_instance_transform(i, instance_transform)
 
 	var instance := MultiMeshInstance3D.new()
 	instance.name = node_name
@@ -826,7 +879,9 @@ func _build_spawn_marker() -> void:
 func _add_tree_at(x: float, z: float) -> void:
 	var y := _terrain_height(x, z)
 	var trunk_height := rng.randf_range(3.5, 6.0)
-	tree_trunk_transforms.append(
+	_append_multimesh_transform(
+		tree_trunk_batches,
+		Vector3(x, y, z),
 		Transform3D(
 			Basis().scaled(Vector3(1.0, trunk_height, 1.0)),
 			Vector3(x, y + trunk_height * 0.5, z)
@@ -838,7 +893,9 @@ func _add_tree_at(x: float, z: float) -> void:
 		rng.randf_range(7.0, 12.0),
 		rng.randf_range(3.5, 6.0)
 	)
-	tree_crown_transforms.append(
+	_append_multimesh_transform(
+		tree_crown_batches,
+		Vector3(x, y, z),
 		Transform3D(
 			Basis().scaled(crown_size),
 			Vector3(x, y + trunk_height + crown_size.y * 0.35, z)
@@ -910,7 +967,9 @@ func _build_scenery() -> void:
 			rng.randf_range(0.5, 1.3),
 			rng.randf_range(0.7, 1.8)
 		)
-		rock_transforms.append(
+		_append_multimesh_transform(
+			rock_batches,
+			Vector3(x, y, z),
 			Transform3D(
 				Basis().scaled(Vector3(
 					radius * rock_scale.x,
@@ -931,9 +990,9 @@ func _build_scenery() -> void:
 	rock_mesh.radius = 1.0
 	rock_mesh.height = 2.0
 
-	_create_multimesh_instance("TreeTrunks", trunk_mesh, tree_trunk_material, tree_trunk_transforms)
-	_create_multimesh_instance("TreeCrowns", crown_mesh, tree_material, tree_crown_transforms)
-	_create_multimesh_instance("Rocks", rock_mesh, rock_material, rock_transforms)
+	_create_chunked_multimesh_instances("TreeTrunks", trunk_mesh, tree_trunk_material, tree_trunk_batches)
+	_create_chunked_multimesh_instances("TreeCrowns", crown_mesh, tree_material, tree_crown_batches)
+	_create_chunked_multimesh_instances("Rocks", rock_mesh, rock_material, rock_batches)
 
 func _build_grass() -> void:
 	var grass_mesh := CylinderMesh.new()
