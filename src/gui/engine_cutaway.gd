@@ -739,8 +739,13 @@ func _refresh_highlights() -> void:
 		var overlay: Material = hover_material if highlighted else null
 		var liner: MeshInstance3D = part.liner
 		var liner_rim: MeshInstance3D = part.liner_rim
+		var piston: MeshInstance3D = part.piston
 		liner.material_overlay = overlay
 		liner_rim.material_overlay = overlay
+		piston.material_overlay = overlay
+		for ring in part.piston_rings:
+			var piston_ring: MeshInstance3D = ring
+			piston_ring.material_overlay = overlay
 	if is_instance_valid(crankshaft_mesh):
 		crankshaft_mesh.material_overlay = (
 			hover_material
