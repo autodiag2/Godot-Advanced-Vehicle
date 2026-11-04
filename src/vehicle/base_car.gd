@@ -907,7 +907,7 @@ func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
 	if gear_ratio <= 0.0 or clutch_coupling <= 0.0:
 		return
 
-	var tire_radius := (
+	var tire_radius: float = (
 		wheel_fl.tire_radius +
 		wheel_fr.tire_radius +
 		wheel_bl.tire_radius +
