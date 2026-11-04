@@ -1,4 +1,4 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://src/gui/wheels_visualizer.gd" id="1"]
 
@@ -86,7 +86,11 @@ layout_mode = 2
 custom_minimum_size = Vector2(42, 36)
 text = "×"
 
-[node name="MainContent" type="BoxContainer" parent="Frame/Content"]
+[node name="MainScroll" type="ScrollContainer" parent="Frame/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MainContent" type="BoxContainer" parent="Frame/Content/MainScroll"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 12
@@ -98,74 +102,74 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="DiagramMargin" type="MarginContainer" parent="Frame/Content/MainContent/DiagramPanel"]
+[node name="DiagramMargin" type="MarginContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="Diagram" type="VBoxContainer" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin"]
+[node name="Diagram" type="VBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="FrontLabel" type="Label" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+[node name="FrontLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
 text = "FRONT  ↑"
 horizontal_alignment = 1
 
-[node name="FrontRow" type="HBoxContainer" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+[node name="FrontRow" type="HBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="FrontLeft" type="Button" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
+[node name="FrontLeft" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
 custom_minimum_size = Vector2(104, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "FL"
 
-[node name="FrontRight" type="Button" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
+[node name="FrontRight" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/FrontRow"]
 custom_minimum_size = Vector2(104, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "FR"
 
-[node name="Chassis" type="PanelContainer" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+[node name="Chassis" type="PanelContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ChassisLabel" type="Label" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/Chassis"]
+[node name="ChassisLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/Chassis"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
 text = "VEHICLE  /  TOP VIEW"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="RearRow" type="HBoxContainer" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+[node name="RearRow" type="HBoxContainer" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 14
 
-[node name="RearLeft" type="Button" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
+[node name="RearLeft" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
 custom_minimum_size = Vector2(104, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "RL"
 
-[node name="RearRight" type="Button" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
+[node name="RearRight" type="Button" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram/RearRow"]
 custom_minimum_size = Vector2(104, 100)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 text = "RR"
 
-[node name="RearLabel" type="Label" parent="Frame/Content/MainContent/DiagramPanel/DiagramMargin/Diagram"]
+[node name="RearLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DiagramPanel/DiagramMargin/Diagram"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.49, 0.65, 0.82, 1)
 text = "REAR  ↓"
@@ -174,51 +178,51 @@ horizontal_alignment = 1
 [node name="DetailsPanel" type="PanelContainer" parent="Frame/Content/MainContent"]
 custom_minimum_size = Vector2(340, 0)
 layout_mode = 2
-size_flags_horizontal = 5
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 
-[node name="DetailsMargin" type="MarginContainer" parent="Frame/Content/MainContent/DetailsPanel"]
+[node name="DetailsMargin" type="MarginContainer" parent="Frame/Content/MainScroll/MainContent/DetailsPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 14
 theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 14
 
-[node name="Details" type="VBoxContainer" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin"]
+[node name="Details" type="VBoxContainer" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin"]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="WheelTitle" type="Label" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="WheelTitle" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 19
 theme_override_colors/font_color = Color(0.91, 0.95, 1, 1)
 text = "FRONT LEFT  ·  FL"
 
-[node name="ConditionLabel" type="Label" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="ConditionLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.34, 0.9, 0.48, 1)
 text = "CONDITION  100.0%"
 
-[node name="WearLabel" type="Label" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="WearLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.77, 0.85, 0.96, 1)
 text = "TREAD WEAR  0.0%"
 
-[node name="TemperatureLabel" type="Label" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="TemperatureLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 15
 theme_override_colors/font_color = Color(0.77, 0.85, 0.96, 1)
 text = "TEMPERATURE  20.0 °C"
 
-[node name="TemperatureBar" type="ColorRect" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="TemperatureBar" type="ColorRect" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 custom_minimum_size = Vector2(0, 18)
 layout_mode = 2
 color = Color(0, 0.7, 0.8, 1)
 
-[node name="StatisticsLabel" type="Label" parent="Frame/Content/MainContent/DetailsPanel/DetailsMargin/Details"]
+[node name="StatisticsLabel" type="Label" parent="Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_font_sizes/font_size = 13
