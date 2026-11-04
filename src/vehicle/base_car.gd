@@ -131,10 +131,10 @@ class BrakeController:
 		return brake_torques
 
 
+
 class EngineController:
 	extends RefCounted
 
-	const PETROL_KG_PER_LITRE: float = 0.7489
 	const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 	const NEWTON_METRE_RPM_TO_KW: int = 9549
 	const NO_LOAD_BSFC_LOAD: float = 0.10
@@ -146,6 +146,8 @@ class EngineController:
 	var reaction_torque: float = 0.0
 	var fuel_litres: float = 0.0
 	var parameters: CarParameters
+	var engine_parameters: EngineParameters
+	var simulator := EngineSimulator.new()
 
 	@warning_ignore("shadowed_variable")
 	func initialize(
@@ -153,75 +155,89 @@ class EngineController:
 		car: RigidBody3D
 	) -> void:
 		self.parameters = parameters
+		engine_parameters = parameters.engine
+
+		if engine_parameters == null:
+			engine_parameters = EngineParameters.new()
+			engine_parameters.max_torque_nm = parameters.max_torque
+			engine_parameters.max_rpm = parameters.max_engine_rpm
+			engine_parameters.idle_rpm = parameters.rpm_idle
+			engine_parameters.inertia_kg_m2 = parameters.engine_moment
+			engine_parameters.friction_torque_nm = 12.0
+		else:
+			parameters.max_torque = engine_parameters.max_torque_nm
+			parameters.max_engine_rpm = engine_parameters.max_rpm
+			parameters.rpm_idle = engine_parameters.idle_rpm
+			parameters.engine_moment = engine_parameters.inertia_kg_m2
+
+		if engine_parameters.torque_curve != null:
+			parameters.torque_curve = engine_parameters.torque_curve
+		if engine_parameters.throttle_model != null:
+			parameters.throttle_model = engine_parameters.throttle_model
+
 		fuel_litres = (
 			parameters.fuel_tank_size *
 			parameters.fuel_percentage *
 			0.01
 		)
-
 		car.mass += (
 			fuel_litres *
-			PETROL_KG_PER_LITRE
+			engine_parameters.fuel_density_kg_per_litre
 		)
+
+		rpm = engine_parameters.idle_rpm
+		simulator.initialize(engine_parameters, rpm)
 
 	func update(
 		parameters: CarParameters,
 		throttle_input: float,
 		delta: float
 	) -> void:
-		output_torque = calculate_torque(
+		var requested_mean_torque := calculate_torque(
 			rpm,
 			throttle_input,
 			parameters
 		)
-
-		net_torque = (
-			output_torque +
+		output_torque = simulator.advance(
+			delta,
+			throttle_input,
+			requested_mean_torque,
 			reaction_torque
 		)
-
-		rpm += (
-			RPM_PER_RADIAN_PER_SECOND *
-			delta *
-			net_torque /
-			parameters.engine_moment
-		)
-
-		angular_velocity = (
-			rpm /
-			RPM_PER_RADIAN_PER_SECOND
-		)
-
-		if rpm >= parameters.max_engine_rpm:
-			output_torque = 0.0
-			rpm -= 500.0
+		rpm = simulator.rpm
+		angular_velocity = simulator.angular_velocity
+		net_torque = output_torque + reaction_torque
 
 	func calculate_engine_load(throttle_input: float) -> float:
-		var engine_torque := calculate_torque(rpm, throttle_input, parameters)
+		var engine_torque := calculate_torque(
+			rpm,
+			throttle_input,
+			parameters
+		)
 		var rpm_factor: float = clamp(
 			rpm /
-			parameters.max_engine_rpm,
+			engine_parameters.max_rpm,
 			0.0,
 			1.0
 		)
-
-		var torque_curve_factor: float = (
-			parameters.torque_curve.sample_baked(
-				rpm_factor
-			)
+		var torque_curve_factor := parameters.torque_curve.sample_baked(
+			rpm_factor
 		)
 		var maximum_torque: float = (
 			torque_curve_factor *
-			parameters.max_torque
+			engine_parameters.max_torque_nm
 		)
-		
+
+		if maximum_torque <= 0.0:
+			return 0.0
+
 		return clampf(
 			engine_torque /
 			maximum_torque,
 			0.0,
 			1.0
 		)
-	
+
 	func calculate_torque(
 		engine_rpm: float,
 		throttle_input: float,
@@ -229,31 +245,23 @@ class EngineController:
 	) -> float:
 		var rpm_factor: float = clamp(
 			engine_rpm /
-			parameters.max_engine_rpm,
+			engine_parameters.max_rpm,
 			0.0,
 			1.0
 		)
-
-		var torque_curve_factor: float = (
-			parameters.torque_curve.sample_baked(
-				rpm_factor
-			)
+		var torque_curve_factor := parameters.torque_curve.sample_baked(
+			rpm_factor
 		)
-
 		var engine_braking_torque: float = (
 			-parameters.engine_brake *
 			rpm_factor
 		)
-
 		var maximum_torque: float = (
 			torque_curve_factor *
-			parameters.max_torque
+			engine_parameters.max_torque_nm
 		)
-
-		var throttle_factor := (
-			parameters.throttle_model.sample_baked(
-				throttle_input
-			)
+		var throttle_factor := parameters.throttle_model.sample_baked(
+			throttle_input
 		)
 
 		return lerpf(
@@ -262,10 +270,15 @@ class EngineController:
 			throttle_factor
 		)
 
-	func clamp_to_idle(parameters: CarParameters) -> void:
+	func clamp_to_idle(_parameters: CarParameters) -> void:
 		rpm = max(
 			rpm,
-			parameters.rpm_idle
+			engine_parameters.idle_rpm
+		)
+		simulator.rpm = rpm
+		simulator.angular_velocity = (
+			rpm /
+			RPM_PER_RADIAN_PER_SECOND
 		)
 
 	func consume_fuel(
@@ -284,12 +297,12 @@ class EngineController:
 		)
 		var fuel_consumed: float = (
 			bsfc *
-			maxf(output_torque, 0.0) *
+			maxf(simulator.mean_output_torque, 0.0) *
 			rpm *
 			delta /
 			(
 				60000.0 *
-				PETROL_KG_PER_LITRE *
+				engine_parameters.fuel_density_kg_per_litre *
 				NEWTON_METRE_RPM_TO_KW *
 				1000.0
 			)
@@ -299,17 +312,14 @@ class EngineController:
 			fuel_consumed,
 			fuel_litres
 		)
-
 		fuel_consumed = max(
 			fuel_consumed,
 			0.0
 		)
-
 		fuel_litres -= fuel_consumed
-
 		car.mass -= (
 			fuel_consumed *
-			PETROL_KG_PER_LITRE
+			engine_parameters.fuel_density_kg_per_litre
 		)
 
 	func update_sound(
@@ -319,8 +329,8 @@ class EngineController:
 		var pitch_scale: float = rpm / 1000.0
 
 		if (
-			rpm >= parameters.rpm_idle &&
-			rpm < parameters.max_engine_rpm
+			rpm >= engine_parameters.idle_rpm &&
+			rpm < engine_parameters.max_rpm
 		):
 			if audio_player.stream != parameters.engine_sound:
 				audio_player.set_stream(
@@ -935,6 +945,9 @@ func _physics_process(delta: float) -> void:
 		engine_controller.fuel_litres = 0.0
 		engine_controller.output_torque = 0.0
 		engine_controller.rpm = 0.0
+		engine_controller.simulator.rpm = 0.0
+		engine_controller.simulator.angular_velocity = 0.0
+		engine_controller.simulator.output_torque = 0.0
 		engine_controller.stop_sound(
 			engine_audio_player
 		)
