@@ -23,7 +23,7 @@ enum FuelType {
 @export_range(0.5, 5.0, 0.1) var wiebe_shape: float = 2.0
 @export var bsfc_map: EngineBSFCMap
 @export_range(0.1, 1.0, 0.01) var volumetric_efficiency: float = 0.88
-@export_range(0.1, 1.0, 0.01) var combustion_efficiency: float = 0.34
+@export_range(0.1, 1.0, 0.01) var combustion_efficiency: float = 0.8
 @export_range(10.0, 100.0, 0.5) var combustion_duration_deg: float = 42.0
 @export_range(0.0, 40.0, 0.5) var ignition_advance_deg: float = 15.0
 @export_range(0.0, 40.0, 0.5) var injection_advance_deg: float = 8.0
