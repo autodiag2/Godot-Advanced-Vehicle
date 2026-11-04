@@ -26,8 +26,13 @@ var selected_crankshaft: bool = false
 var hover_material: StandardMaterial3D
 var info_panel: PanelContainer
 var info_label: Label
+var ignition_fault_toggle: CheckButton
+var pointer_start_position := Vector2.ZERO
+var pointer_moved: bool = false
 var fluid_shader: Shader
 var fluid_time: float = 0.0
+
+const POINTER_DRAG_THRESHOLD: float = 8.0
 
 
 func _ready() -> void:
@@ -102,11 +107,11 @@ func _create_selection_info_panel() -> void:
 	add_child(canvas)
 
 	info_panel = PanelContainer.new()
-	info_panel.position = Vector2(18.0, 18.0)
-	info_panel.custom_minimum_size = Vector2(280.0, 112.0)
-	info_panel.size = Vector2(280.0, 112.0)
+	info_panel.position = Vector2(12.0, 12.0)
+	info_panel.custom_minimum_size = Vector2(280.0, 142.0)
+	info_panel.size = Vector2(280.0, 142.0)
 	info_panel.visible = false
-	info_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	info_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
 	var panel_style := StyleBoxFlat.new()
 	panel_style.bg_color = Color(0.018, 0.03, 0.052, 0.94)
@@ -119,12 +124,21 @@ func _create_selection_info_panel() -> void:
 	panel_style.content_margin_bottom = 9.0
 	info_panel.add_theme_stylebox_override("panel", panel_style)
 
+	var info_container := VBoxContainer.new()
+	info_container.add_theme_constant_override("separation", 6)
 	info_label = Label.new()
 	info_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	info_label.add_theme_color_override("font_color", Color(0.86, 0.92, 1.0))
 	info_label.add_theme_font_size_override("font_size", 14)
 	info_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	info_panel.add_child(info_label)
+	info_container.add_child(info_label)
+	ignition_fault_toggle = CheckButton.new()
+	ignition_fault_toggle.text = "Ignition fault"
+	ignition_fault_toggle.custom_minimum_size = Vector2(250.0, 42.0)
+	ignition_fault_toggle.add_theme_font_size_override("font_size", 13)
+	ignition_fault_toggle.toggled.connect(_on_ignition_fault_toggled)
+	info_container.add_child(ignition_fault_toggle)
+	info_panel.add_child(info_container)
 	canvas.add_child(info_panel)
 
 
@@ -132,23 +146,63 @@ func _create_selection_info_panel() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventMouseMotion:
-		_update_hover(event.position)
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if event.pressed:
+			if _is_info_panel_input(event.position):
+				return
+			_start_pointer(event.position)
+		else:
+			_end_pointer()
+	elif event is InputEventMouseMotion:
 		if rotating_view:
-			_rotate_camera(event.relative)
-	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		_update_hover(event.position)
-		if event.pressed:
-			_select_hovered_part()
-		rotating_view = event.pressed
+			if (
+				not pointer_moved and
+				(event.position - pointer_start_position).length() >= POINTER_DRAG_THRESHOLD
+			):
+				pointer_moved = true
+			if pointer_moved:
+				_rotate_camera(event.relative)
+		elif not _is_info_panel_input(event.position):
+			_update_hover(event.position)
 	elif event is InputEventScreenTouch:
-		_update_hover(event.position)
 		if event.pressed:
-			_select_hovered_part()
-		rotating_view = event.pressed
-	elif event is InputEventScreenDrag:
-		_update_hover(event.position)
-		_rotate_camera(event.relative)
+			if _is_info_panel_input(event.position):
+				return
+			_start_pointer(event.position)
+		else:
+			_end_pointer()
+	elif event is InputEventScreenDrag and rotating_view:
+		if (
+			not pointer_moved and
+			(event.position - pointer_start_position).length() >= POINTER_DRAG_THRESHOLD
+		):
+			pointer_moved = true
+		if pointer_moved:
+			_rotate_camera(event.relative)
+
+
+func _start_pointer(screen_position: Vector2) -> void:
+	pointer_start_position = screen_position
+	pointer_moved = false
+	rotating_view = true
+	_update_hover(screen_position)
+
+
+func _end_pointer() -> void:
+	if not rotating_view:
+		return
+	if not pointer_moved:
+		_update_hover(pointer_start_position)
+		_select_hovered_part()
+	rotating_view = false
+
+
+func _is_info_panel_input(screen_position: Vector2) -> bool:
+	return (
+		is_instance_valid(info_panel) and
+		info_panel.visible and
+		info_panel.get_global_rect().has_point(screen_position)
+	)
 
 
 func _pick_interactable(screen_position: Vector2) -> Dictionary:
@@ -718,22 +772,39 @@ func _refresh_highlights() -> void:
 
 
 func _update_selection_info() -> void:
-	if not is_instance_valid(info_panel) or simulator == null:
+	if (
+		not is_instance_valid(info_panel) or
+		simulator == null or
+		engine_parameters == null
+	):
 		return
 	if selected_cylinder_index >= 0:
 		var pressure_kpa := simulator.get_cylinder_pressure_kpa(selected_cylinder_index)
 		var temperature_k := simulator.get_cylinder_temperature_k(selected_cylinder_index)
 		var stage := simulator.get_cylinder_stage(selected_cylinder_index)
+		var is_petrol := engine_parameters.fuel_type == EngineParameters.FuelType.PETROL
+		var ignition_status := "COMPRESSION IGNITION"
+		if is_petrol:
+			ignition_status = (
+				"OK"
+				if simulator.is_cylinder_ignition_enabled(selected_cylinder_index)
+				else "FAULT"
+			)
 		info_label.text = (
 			"CYLINDER %02d\nPRESSURE  %.1f bar  (%.0f kPa)\n"
-			+ "TEMPERATURE  %.0f K\nCYCLE  %s"
+			+ "TEMPERATURE  %.0f K\nCYCLE  %s\nIGNITION  %s"
 		) % [
 			selected_cylinder_index + 1,
 			pressure_kpa / 100.0,
 			pressure_kpa,
 			temperature_k,
 			stage,
+			ignition_status,
 		]
+		ignition_fault_toggle.visible = is_petrol
+		ignition_fault_toggle.set_pressed_no_signal(
+			is_petrol and not simulator.is_cylinder_ignition_enabled(selected_cylinder_index)
+		)
 		info_panel.visible = true
 	elif selected_crankshaft:
 		info_label.text = (
@@ -743,9 +814,22 @@ func _update_selection_info() -> void:
 			simulator.rpm,
 			simulator.angular_velocity,
 		]
+		ignition_fault_toggle.visible = false
 		info_panel.visible = true
 	else:
+		ignition_fault_toggle.visible = false
 		info_panel.visible = false
+
+
+func _on_ignition_fault_toggled(fault_active: bool) -> void:
+	if (
+		selected_cylinder_index < 0 or
+		engine_parameters == null or
+		engine_parameters.fuel_type != EngineParameters.FuelType.PETROL
+	):
+		return
+	simulator.set_cylinder_ignition_enabled(selected_cylinder_index, not fault_active)
+	_update_selection_info()
 
 
 func _visual_valve_lift(phase: float, open_angle: float, close_angle: float) -> float:
