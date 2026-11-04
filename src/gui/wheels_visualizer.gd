@@ -23,6 +23,8 @@ var wheel_button_styles: Array[StyleBoxFlat] = []
 @onready var wheel_title: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WheelTitle
 @onready var condition_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/ConditionLabel
 @onready var wear_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WearLabel
+@onready var pressure_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/PressureLabel
+@onready var pressure_slider: HSlider = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/PressureSlider
 @onready var temperature_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureLabel
 @onready var temperature_bar: ColorRect = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/TemperatureBar
 @onready var statistics_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/StatisticsLabel
@@ -63,6 +65,7 @@ func _ready() -> void:
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
 	$Frame/Content/Footer/ActionButtons/ReplaceSelectedButton.pressed.connect(_replace_selected_wheel)
 	$Frame/Content/Footer/ActionButtons/ReplaceAllButton.pressed.connect(_replace_all_wheels)
+	pressure_slider.value_changed.connect(_on_pressure_changed)
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
@@ -147,6 +150,9 @@ func _refresh_display() -> void:
 		wheel_title.text = "NO VEHICLE"
 		condition_label.text = "CONDITION  —"
 		wear_label.text = "TREAD WEAR  —"
+		pressure_label.text = "TIRE PRESSURE  —"
+		pressure_label.add_theme_color_override("font_color", Color(0.65, 0.76, 0.88, 1))
+		pressure_slider.disabled = true
 		temperature_label.text = "TEMPERATURE  —"
 		temperature_bar.color = Color(0.15, 0.2, 0.27)
 		statistics_label.text = "Wheel telemetry is unavailable."
@@ -158,6 +164,24 @@ func _refresh_display() -> void:
 	var wear := clampf(wheel.tire_wear, 0.0, 1.0)
 	var condition := 1.0 - wear
 	var temperature := tire_model.tire_temp
+	var pressure := tire_model.tire_pressure_psi
+	var minimum_pressure := tire_model.recommended_pressure_min_psi
+	var maximum_pressure := tire_model.recommended_pressure_max_psi
+	pressure_slider.disabled = false
+	pressure_slider.set_value_no_signal(pressure)
+	if pressure < minimum_pressure:
+		pressure_label.text = "TIRE PRESSURE   %.1f PSI  ·  UNDERPRESSURE" % pressure
+		pressure_label.add_theme_color_override("font_color", Color(0.96, 0.22, 0.18, 1))
+	elif pressure > maximum_pressure:
+		pressure_label.text = "TIRE PRESSURE   %.1f PSI  ·  OVERPRESSURE" % pressure
+		pressure_label.add_theme_color_override("font_color", Color(0.96, 0.22, 0.18, 1))
+	else:
+		pressure_label.text = "TIRE PRESSURE   %.1f PSI  ·  RECOMMENDED (%.0f–%.0f)" % [
+			pressure,
+			minimum_pressure,
+			maximum_pressure,
+		]
+		pressure_label.add_theme_color_override("font_color", Color(0.25, 0.88, 0.42, 1))
 	wheel_title.text = "%s  ·  %s" % [
 		WHEEL_NAMES[selected_wheel_index],
 		WHEEL_SHORT_NAMES[selected_wheel_index],
@@ -221,6 +245,16 @@ func _replace_all_wheels() -> void:
 	for wheel in wheels:
 		if is_instance_valid(wheel):
 			wheel.replace_tire()
+	_refresh_display()
+
+
+func _on_pressure_changed(value: float) -> void:
+	if selected_wheel_index < 0 or selected_wheel_index >= wheels.size():
+		return
+	var wheel := wheels[selected_wheel_index]
+	if not is_instance_valid(wheel) or wheel.tire_model == null:
+		return
+	wheel.tire_model.tire_pressure_psi = value
 	_refresh_display()
 
 
