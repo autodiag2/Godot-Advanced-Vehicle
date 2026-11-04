@@ -100,21 +100,21 @@ text = "ENGINE CONFIGURATION"
 
 [node name="RPM" type="Label" parent="Frame/Content/Telemetry"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(82, 0)
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.95, 0.72, 0.35, 1)
 text = "RPM"
 
 [node name="Torque" type="Label" parent="Frame/Content/Telemetry"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(132, 0)
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.95, 0.72, 0.35, 1)
 text = "CRANK TORQUE"
 
 [node name="Pressure" type="Label" parent="Frame/Content/Telemetry"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 0)
+custom_minimum_size = Vector2(148, 0)
 theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.38, 0.78, 0.96, 1)
 text = "PEAK CYLINDER"
