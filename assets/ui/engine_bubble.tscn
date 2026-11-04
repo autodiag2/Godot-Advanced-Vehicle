@@ -141,7 +141,7 @@ stretch = true
 [node name="EngineViewport" type="SubViewport" parent="Frame/Content/ViewportContainer/ViewportMargin/EngineViewport"]
 own_world_3d = true
 size = Vector2i(640, 420)
-render_target_update_mode = 3
+render_target_update_mode = 0
 
 [node name="EngineCutaway" parent="Frame/Content/ViewportContainer/ViewportMargin/EngineViewport/EngineViewport" instance=ExtResource("2")]
 
