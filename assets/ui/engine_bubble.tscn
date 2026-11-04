@@ -139,7 +139,6 @@ stretch = true
 
 [node name="EngineViewport" type="SubViewport" parent="Frame/Content/ViewportContainer/ViewportMargin/EngineViewport"]
 own_world_3d = true
-physics_object_picking = true
 size = Vector2i(1040, 590)
 render_target_update_mode = 3
 
