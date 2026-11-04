@@ -39,23 +39,22 @@ func set_rpm(value: float) -> void:
 	angular_velocity = rpm / RPM_PER_RADIAN_PER_SECOND
 
 
-func set_cylinder_ignition_enabled(cylinder_index: int, enabled: bool) -> void:
+func set_cylinder_misfire_fault(cylinder_index: int, active: bool) -> void:
 	if (
 		parameters == null or
-		parameters.fuel_type != EngineParameters.FuelType.PETROL or
 		cylinder_index < 0 or
 		cylinder_index >= cylinder_states.size()
 	):
 		return
 	var state: Dictionary = cylinder_states[cylinder_index]
-	state.ignition_enabled = enabled
+	state.misfire_fault_active = active
 	cylinder_states[cylinder_index] = state
 
 
-func is_cylinder_ignition_enabled(cylinder_index: int) -> bool:
+func has_cylinder_misfire_fault(cylinder_index: int) -> bool:
 	if cylinder_index < 0 or cylinder_index >= cylinder_states.size():
 		return false
-	return bool(cylinder_states[cylinder_index].get("ignition_enabled", true))
+	return bool(cylinder_states[cylinder_index].get("misfire_fault_active", false))
 
 
 func advance(delta: float, throttle_input: float, reaction_torque: float) -> float:
@@ -218,7 +217,7 @@ func get_cylinder_volume_m3(phase_deg: float) -> float:
 
 func _build_firing_offsets() -> void:
 	cylinder_firing_offsets.clear()
-	var count := maxi(parameters.cylinder_count, 1)
+	var count := parameters.get_cylinder_count()
 	cylinder_firing_offsets.resize(count)
 	var valid_order := parameters.firing_order.size() == count
 	var seen: Dictionary = {}
@@ -245,7 +244,7 @@ func _build_firing_offsets() -> void:
 
 func _build_initial_cylinder_states() -> void:
 	cylinder_states.clear()
-	for cylinder_index in range(parameters.cylinder_count):
+	for cylinder_index in range(parameters.get_cylinder_count()):
 		var phase := get_cylinder_phase(cylinder_index)
 		var volume := get_cylinder_volume_m3(phase)
 		var intake_pressure := _get_intake_pressure_pa(0.6)
@@ -298,7 +297,7 @@ func _build_initial_cylinder_states() -> void:
 			"smoke_intensity": 0.0,
 			"heat_release_w": 0.0,
 			"indicated_work_j": 0.0,
-			"ignition_enabled": true,
+			"misfire_fault_active": false,
 		})
 
 
@@ -439,7 +438,7 @@ func _advance_cylinder(
 	var burn_before := _get_burn_progress(phase_before)
 	var burn_after := _get_burn_progress(phase_after)
 	var burn_delta := maxf(burn_after - burn_before, 0.0)
-	if not bool(state.get("ignition_enabled", true)):
+	if bool(state.get("misfire_fault_active", false)):
 		burn_delta = 0.0
 	var burn_remaining_fraction := maxf(1.0 - burn_before, 0.001)
 	var burned_fuel_mass := minf(
