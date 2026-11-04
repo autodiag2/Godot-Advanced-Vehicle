@@ -2,16 +2,19 @@ extends Control
 
 const ENGINE_BUBBLE_SCENE: PackedScene = preload("res://assets/ui/engine_bubble.tscn")
 const SPEED_CONTROL_SCENE: PackedScene = preload("res://assets/ui/speed_control_bubble.tscn")
+const WHEELS_BUBBLE_SCENE: PackedScene = preload("res://assets/ui/wheels_bubble.tscn")
 const COCKPIT_TEXTURE: Texture2D = preload("res://assets/ui/cockpit_hud.png")
 
 @onready var TireInfoApp = $TireInfoApp
 @onready var automatic_transmission = $Menu/VBoxContainer/MarginContainer/VBoxContainer/automatic_transmission
 @onready var engine_button: TouchScreenButton = $HBoxContainer/EngineButton
 @onready var speed_button: TouchScreenButton = $HBoxContainer/SpeedButton
+@onready var wheels_button: TouchScreenButton = $HBoxContainer/WheelsButton
 
 var vehicle: BaseCar
 var engine_popup: EngineVisualizer
 var speed_popup: SpeedControlVisualizer
+var wheels_popup: WheelsVisualizer
 var cockpit_root: Control
 var cockpit_readouts: Array[Dictionary] = []
 var rpm_value_label: Label
@@ -29,8 +32,12 @@ func _ready() -> void:
 	speed_popup = SPEED_CONTROL_SCENE.instantiate() as SpeedControlVisualizer
 	add_child(speed_popup)
 	speed_popup.hide()
+	wheels_popup = WHEELS_BUBBLE_SCENE.instantiate() as WheelsVisualizer
+	add_child(wheels_popup)
+	wheels_popup.hide()
 	engine_button.pressed.connect(_show_engine_popup)
 	speed_button.pressed.connect(_show_speed_popup)
+	wheels_button.pressed.connect(_show_wheels_popup)
 
 
 func _create_cockpit_hud() -> void:
@@ -168,6 +175,8 @@ func set_vehicle(value: BaseCar) -> void:
 	automatic_transmission.onSetVehicle(vehicle)
 	if is_instance_valid(engine_popup):
 		engine_popup.set_vehicle(vehicle)
+	if is_instance_valid(wheels_popup):
+		wheels_popup.set_vehicle(vehicle)
 
 
 func _process(_delta: float) -> void:
@@ -203,3 +212,10 @@ func _show_engine_popup() -> void:
 
 func _show_speed_popup() -> void:
 	speed_popup.present()
+
+
+func _show_wheels_popup() -> void:
+	if vehicle == null:
+		return
+	wheels_popup.set_vehicle(vehicle)
+	wheels_popup.present()
