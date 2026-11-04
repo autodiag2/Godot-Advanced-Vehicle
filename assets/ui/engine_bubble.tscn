@@ -175,7 +175,7 @@ text = "RESET 1×"
 layout_mode = 2
 theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.42, 0.52, 0.65, 1)
-text = "0-D SINGLE-ZONE SOLVER  ·  INTAKE / COMPRESSION / COMBUSTION / EXPANSION / EXHAUST"
+text = "DRAG ENGINE TO ROTATE  ·  DRAG WINDOW HEADER TO MOVE  ·  RESIZE FROM CORNER  ·  0-D FOUR-STROKE SOLVER"
 
 [node name="ResizeGrip" type="Control" parent="."]
 anchors_preset = 15
@@ -189,3 +189,16 @@ offset_right = -4.0
 offset_bottom = -4.0
 mouse_filter = 0
 mouse_default_cursor_shape = 8
+
+[node name="GripMark" type="Label" parent="ResizeGrip"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_right = -1.0
+offset_bottom = 1.0
+mouse_filter = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(0.38, 0.62, 0.82, 1)
+text = "◢"
+horizontal_alignment = 2
+vertical_alignment = 2
