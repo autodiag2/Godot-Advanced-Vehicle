@@ -149,6 +149,9 @@ class EngineController:
 	var engine_parameters: EngineParameters
 	var bsfc_map: EngineBSFCMap
 	var simulator := EngineSimulator.new()
+	var audio_synthesizer := EngineAudioSynthesizer.new()
+	var is_running := true
+	var effective_throttle: float = 0.0
 
 	@warning_ignore("shadowed_variable")
 	func initialize(
@@ -157,6 +160,8 @@ class EngineController:
 	) -> void:
 		self.parameters = parameters
 		engine_parameters = parameters.engine
+		is_running = true
+		effective_throttle = 0.0
 
 		if engine_parameters == null:
 			engine_parameters = EngineParameters.new()
@@ -200,14 +205,58 @@ class EngineController:
 		throttle_input: float,
 		delta: float
 	) -> void:
+		if not is_running:
+			output_torque = 0.0
+			rpm = 0.0
+			angular_velocity = 0.0
+			net_torque = 0.0
+			return
+
+		effective_throttle = _get_effective_throttle(throttle_input)
 		output_torque = simulator.advance(
 			delta,
-			throttle_input,
+			effective_throttle,
 			reaction_torque
 		)
 		rpm = simulator.rpm
 		angular_velocity = simulator.angular_velocity
 		net_torque = output_torque + reaction_torque
+		if rpm <= engine_parameters.stall_rpm:
+			stall()
+
+
+	func _get_effective_throttle(driver_throttle: float) -> float:
+		var throttle := clampf(driver_throttle, 0.0, 1.0)
+		if throttle > 0.01 or rpm >= engine_parameters.idle_rpm * 1.15:
+			return throttle
+		var idle_error := (
+			engine_parameters.idle_rpm - rpm
+		) / maxf(engine_parameters.idle_rpm, 1.0)
+		return maxf(
+			throttle,
+			clampf(0.18 + idle_error * 0.65, 0.0, 0.72)
+		)
+
+
+	func apply_impact_rpm_drop(rpm_drop: float) -> void:
+		if not is_running or rpm_drop <= 0.0:
+			return
+		simulator.set_rpm(maxf(rpm - rpm_drop, 0.0))
+		rpm = simulator.rpm
+		angular_velocity = simulator.angular_velocity
+		if rpm <= engine_parameters.stall_rpm:
+			stall()
+
+
+	func stall() -> void:
+		if not is_running:
+			return
+		is_running = false
+		output_torque = 0.0
+		net_torque = 0.0
+		rpm = 0.0
+		angular_velocity = 0.0
+		simulator.stop()
 
 	func calculate_engine_load(throttle_input: float) -> float:
 		var engine_torque := calculate_torque(
@@ -271,19 +320,14 @@ class EngineController:
 			throttle_factor
 		)
 
-	func clamp_to_idle(_parameters: CarParameters) -> void:
-		rpm = max(
-			rpm,
-			engine_parameters.idle_rpm
-		)
-		simulator.set_rpm(rpm)
-
 	func consume_fuel(
 		parameters: CarParameters,
 		throttle_input: float,
 		car: RigidBody3D,
 		delta: float
 	) -> void:
+		if not is_running:
+			return
 		var engine_load := calculate_engine_load(throttle_input)
 		var bsfc: float = bsfc_map.sample(
 			rpm,
@@ -333,33 +377,22 @@ class EngineController:
 		return map
 
 	func update_sound(
-		parameters: CarParameters,
+		_parameters: CarParameters,
 		audio_player: AudioStreamPlayer
 	) -> void:
-		var pitch_scale: float = rpm / 1000.0
-
-		if (
-			rpm >= engine_parameters.idle_rpm &&
-			rpm < engine_parameters.max_rpm
-		):
-			if audio_player.stream != parameters.engine_sound:
-				audio_player.set_stream(
-					parameters.engine_sound
-				)
-
-			if !audio_player.playing:
-				audio_player.play()
-
-		if pitch_scale > 0.1:
-			audio_player.pitch_scale = maxf(
-				pitch_scale * Engine.time_scale,
-				0.01
-			)
+		if not is_running:
+			stop_sound(audio_player)
+			return
+		audio_synthesizer.update(
+			simulator,
+			audio_player,
+			effective_throttle
+		)
 
 	func stop_sound(
 		audio_player: AudioStreamPlayer
 	) -> void:
-		audio_player.stop()
+		audio_synthesizer.stop(audio_player)
 
 
 class PowertrainController:
@@ -800,6 +833,7 @@ var engine_controller := EngineController.new()
 var powertrain_controller := PowertrainController.new()
 var suspension_controller := SuspensionController.new()
 var motion_controller := VehicleMotionController.new()
+var pending_collision_rpm_drop: float = 0.0
 
 @onready var wheel_fl = $Wheel_fl as RaycastSuspension
 @onready var wheel_fr = $Wheel_fr as RaycastSuspension
@@ -810,6 +844,8 @@ var motion_controller := VehicleMotionController.new()
 
 func _ready() -> void:
 	add_to_group("player_car")
+	contact_monitor = true
+	max_contacts_reported = 16
 
 	car_params.wheel_params_fl.ackermann = (
 		car_params.ackermann
@@ -846,6 +882,48 @@ func _ready() -> void:
 
 	motion_controller.initialize(
 		self
+	)
+
+
+func _integrate_forces(state: PhysicsDirectBodyState3D) -> void:
+	if powertrain_controller.drivetrain.selected_gear == 0:
+		return
+	var front_impulse_ns := 0.0
+	var inverse_transform := state.transform.affine_inverse()
+	var inverse_basis := state.transform.basis.inverse()
+	for contact_index in range(state.get_contact_count()):
+		var local_position := inverse_transform * state.get_contact_local_position(contact_index)
+		if local_position.z >= -0.65:
+			continue
+		var local_impulse := inverse_basis * state.get_contact_impulse(contact_index)
+		front_impulse_ns += absf(local_impulse.z)
+	if front_impulse_ns <= 0.0:
+		return
+
+	var gear_ratio := absf(powertrain_controller.drivetrain.get_gearing())
+	var clutch_coupling := clampf(1.0 - input_controller.clutch, 0.0, 1.0)
+	if not powertrain_controller.clutch.locked:
+		clutch_coupling *= 0.4
+	if gear_ratio <= 0.0 or clutch_coupling <= 0.0:
+		return
+
+	var tire_radius := (
+		wheel_fl.tire_radius +
+		wheel_fr.tire_radius +
+		wheel_bl.tire_radius +
+		wheel_br.tire_radius
+	) * 0.25
+	var impact_speed_drop := front_impulse_ns / maxf(mass, 1.0)
+	impact_speed_drop = minf(
+		impact_speed_drop,
+		absf(motion_controller.longitudinal_velocity) + 0.25
+	)
+	pending_collision_rpm_drop += (
+		impact_speed_drop /
+		maxf(tire_radius, 0.05) *
+		gear_ratio *
+		EngineController.RPM_PER_RADIAN_PER_SECOND *
+		clutch_coupling
 	)
 
 
@@ -897,6 +975,10 @@ func _physics_process(delta: float) -> void:
 		powertrain_controller.clutch_reaction_torque
 	)
 
+	if pending_collision_rpm_drop > 0.0:
+		engine_controller.apply_impact_rpm_drop(pending_collision_rpm_drop)
+		pending_collision_rpm_drop = 0.0
+
 	engine_controller.update(
 		car_params,
 		input_controller.throttle,
@@ -943,22 +1025,16 @@ func _physics_process(delta: float) -> void:
 			delta
 		)
 
-	engine_controller.clamp_to_idle(
-		car_params
-	)
-
 	engine_controller.consume_fuel(
 		car_params,
-		input_controller.throttle,
+		engine_controller.effective_throttle,
 		self,
 		delta
 	)
 
 	if engine_controller.fuel_litres <= 0.0:
 		engine_controller.fuel_litres = 0.0
-		engine_controller.output_torque = 0.0
-		engine_controller.rpm = 0.0
-		engine_controller.simulator.stop()
+		engine_controller.stall()
 		engine_controller.stop_sound(
 			engine_audio_player
 		)
