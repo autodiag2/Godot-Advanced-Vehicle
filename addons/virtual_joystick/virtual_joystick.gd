@@ -61,6 +61,7 @@ var _reposition_touch_index: int = -1
 var _reposition_touch_position := Vector2.ZERO
 var _reposition_hold_elapsed: float = 0.0
 var _initial_base_center := Vector2.ZERO
+var _reposition_bounds_initialized := false
 
 @onready var _base := $Base
 @onready var _tip := $Base/Tip
@@ -73,7 +74,7 @@ var _initial_base_center := Vector2.ZERO
 # FUNCTIONS
 
 func _ready() -> void:
-	_initial_base_center = _base.global_position + _get_base_radius()
+	call_deferred("_initialize_reposition_bounds")
 	if ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"):
 		printerr("The Project Setting 'emulate_mouse_from_touch' should be set to False")
 	if not ProjectSettings.get_setting("input_devices/pointing/emulate_touch_from_mouse"):
@@ -84,6 +85,13 @@ func _ready() -> void:
 	
 	if visibility_mode == Visibility_mode.WHEN_TOUCHED:
 		hide()
+
+func _initialize_reposition_bounds() -> void:
+	_initial_base_center = _base.get_global_rect().get_center()
+	_base_default_position = _base.position
+	_tip_default_position = _tip.position
+	_reposition_bounds_initialized = true
+
 
 func _process(delta: float) -> void:
 	if _reposition_touch_index == -1:
@@ -97,6 +105,9 @@ func _process(delta: float) -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if not _reposition_bounds_initialized:
+		_initialize_reposition_bounds()
+
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			if (
@@ -165,7 +176,7 @@ func _move_base(new_position: Vector2) -> void:
 		clampf(new_position.x, _initial_base_center.x - half_extent.x, _initial_base_center.x + half_extent.x),
 		clampf(new_position.y, _initial_base_center.y - half_extent.y, _initial_base_center.y + half_extent.y)
 	)
-	_base.global_position = clamped_center - _base.pivot_offset * get_global_transform_with_canvas().get_scale()
+	_base.global_position = clamped_center - _get_base_radius()
 
 func _move_tip(new_position: Vector2) -> void:
 	_tip.global_position = new_position - _tip.pivot_offset * _base.get_global_transform_with_canvas().get_scale()
@@ -201,7 +212,7 @@ func _is_point_over_gui_button(point: Vector2) -> bool:
 
 
 func _get_base_radius() -> Vector2:
-	return _base.size * _base.get_global_transform_with_canvas().get_scale() / 2
+	return _base.get_global_rect().size * 0.5
 
 func _is_point_inside_base(point: Vector2) -> bool:
 	var _base_radius = _get_base_radius()
