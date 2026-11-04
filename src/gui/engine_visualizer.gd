@@ -104,6 +104,6 @@ func _on_heading_input(event: InputEvent) -> void:
 
 func _on_resize_grip_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-		start_resize(Window.WINDOW_EDGE_BOTTOM_RIGHT)
+		start_resize(DisplayServer.WINDOW_EDGE_BOTTOM_RIGHT)
 	elif event is InputEventScreenTouch and event.pressed:
-		start_resize(Window.WINDOW_EDGE_BOTTOM_RIGHT)
+		start_resize(DisplayServer.WINDOW_EDGE_BOTTOM_RIGHT)
