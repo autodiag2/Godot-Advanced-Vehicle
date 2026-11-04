@@ -31,7 +31,8 @@ Xbox controller:
 - LB for clutch
 
 Touchscreen:
-- Touch and hold within the expanded area around the joystick for 0.24 seconds to relocate its origin; the new position remains as its resting position. Dragging from the expanded area before the hold completes also relocates the joystick and immediately steers from that point.
+- Touch and hold within the fixed 3× joystick area around its original position for 0.10 seconds to relocate it; the joystick remains inside this original movement area, and its new position persists as its resting position. Dragging from the area before the hold completes also relocates the joystick and immediately steers from that point.
+- With an automatic gearbox, holding the joystick down brakes forward motion and selects reverse once the car is nearly stopped; the joystick then operates in reverse (down accelerates, up brakes). Holding it up while reversing brakes to a near-stop and selects first gear again. Manual gearboxes keep the same direction-dependent joystick mapping for a manually selected reverse gear, but never change ratios automatically.
 
 ## Help
 Make sure the physics FPS is set to atleast 120 or the physics start to get weird. In this project it is set to 240.
