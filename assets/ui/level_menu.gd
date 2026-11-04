@@ -78,6 +78,7 @@ func _setup_preview_frame() -> void:
 	preview.offset_top = PREVIEW_BORDER_WIDTH
 	preview.offset_right = -PREVIEW_BORDER_WIDTH
 	preview.offset_bottom = -PREVIEW_BORDER_WIDTH
+	preview.custom_minimum_size = Vector2.ZERO
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
 
