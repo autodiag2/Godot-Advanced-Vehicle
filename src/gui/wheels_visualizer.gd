@@ -18,7 +18,8 @@ var wheel_button_styles: Array[StyleBoxFlat] = []
 @onready var main_content: BoxContainer = $Frame/Content/MainScroll/MainContent
 @onready var diagram_panel: PanelContainer = $Frame/Content/MainScroll/MainContent/DiagramPanel
 @onready var details_panel: PanelContainer = $Frame/Content/MainScroll/MainContent/DetailsPanel
-@onready var footer: BoxContainer = $Frame/Content/Footer
+@onready var action_buttons: BoxContainer = $Frame/Content/Footer/ActionButtons
+@onready var help_label: Label = $Frame/Content/Footer/HelpLabel
 @onready var wheel_title: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WheelTitle
 @onready var condition_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/ConditionLabel
 @onready var wear_label: Label = $Frame/Content/MainScroll/MainContent/DetailsPanel/DetailsMargin/Details/WearLabel
@@ -57,11 +58,11 @@ func _ready() -> void:
 		wheel_buttons[index].add_theme_font_size_override("font_size", 15)
 		wheel_buttons[index].add_theme_color_override("font_color", Color(0.98, 0.99, 1.0))
 		wheel_buttons[index].add_theme_color_override("font_hover_color", Color.WHITE)
-	footer.vertical = false
-	$Frame/Content/Footer/HelpLabel.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	action_buttons.vertical = false
+	help_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
-	$Frame/Content/Footer/ReplaceSelectedButton.pressed.connect(_replace_selected_wheel)
-	$Frame/Content/Footer/ReplaceAllButton.pressed.connect(_replace_all_wheels)
+	$Frame/Content/Footer/ActionButtons/ReplaceSelectedButton.pressed.connect(_replace_selected_wheel)
+	$Frame/Content/Footer/ActionButtons/ReplaceAllButton.pressed.connect(_replace_all_wheels)
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
@@ -97,13 +98,13 @@ func present() -> void:
 		size = target_size
 		unresizable = mobile_layout
 		$ResizeGrip.visible = not mobile_layout
-		var stacked_layout := target_size.x < 680
+		var stacked_layout := target_size.x < 760
 		main_content.vertical = stacked_layout
-		footer.vertical = stacked_layout
+		action_buttons.vertical = target_size.x < 520
 		diagram_panel.custom_minimum_size.x = 0.0 if stacked_layout else 280.0
 		details_panel.custom_minimum_size.x = 0.0 if stacked_layout else 340.0
 		if mobile_layout:
-			$Frame/Content/Footer/HelpLabel.text = "Select a wheel, then replace it or reset all four."
+			help_label.text = "Select a wheel, then replace it or reset all four."
 		popup_centered()
 	grab_focus()
 
