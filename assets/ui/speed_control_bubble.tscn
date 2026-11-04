@@ -19,6 +19,7 @@ content_margin_right = 16.0
 content_margin_bottom = 12.0
 
 [node name="SpeedControlBubble" type="Window"]
+visible = false
 size = Vector2i(480, 245)
 min_size = Vector2i(390, 210)
 always_on_top = true
