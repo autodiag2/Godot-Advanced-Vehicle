@@ -230,7 +230,7 @@ theme_override_colors/font_color = Color(0.65, 0.76, 0.88, 1)
 text = "TIRE WIDTH       205 mm\nTIRE RADIUS      300 mm\nWHEEL SPEED      0 rpm\nNORMAL LOAD      0 N\nLATERAL SLIP     0.0%\nLONGITUDINAL SLIP 0.0%"
 autowrap_mode = 3
 
-[node name="Footer" type="HBoxContainer" parent="Frame/Content"]
+[node name="Footer" type="BoxContainer" parent="Frame/Content"]
 layout_mode = 2
 theme_override_constants/separation = 8
 
