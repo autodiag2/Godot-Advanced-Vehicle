@@ -1,6 +1,7 @@
 extends Control
 
 const ENGINE_BUBBLE_SCENE: PackedScene = preload("res://assets/ui/engine_bubble.tscn")
+const SPEED_CONTROL_SCENE: PackedScene = preload("res://assets/ui/speed_control_bubble.tscn")
 
 @onready var speedlabel = $Essentials/VBoxContainer/Speedlabel
 @onready var gearlabel = $Essentials/VBoxContainer/GearLabel
@@ -13,19 +14,28 @@ const ENGINE_BUBBLE_SCENE: PackedScene = preload("res://assets/ui/engine_bubble.
 
 var vehicle: BaseCar
 var engine_button: Button
+var speed_button: Button
 var engine_popup: EngineVisualizer
+var speed_popup: SpeedControlVisualizer
 
 
 func _ready() -> void:
-	essentials_panel.offset_top = -171.0
-	essentials_panel.custom_minimum_size = Vector2(200.0, 171.0)
+	essentials_panel.offset_top = -207.0
+	essentials_panel.custom_minimum_size = Vector2(200.0, 207.0)
+	speed_button = Button.new()
+	speed_button.text = "Speed (%.2fx)" % Engine.time_scale
+	speed_button.custom_minimum_size = Vector2(120.0, 30.0)
+	essentials_container.add_child(speed_button)
 	engine_button = Button.new()
 	engine_button.text = "Engine"
 	engine_button.custom_minimum_size = Vector2(120.0, 30.0)
 	essentials_container.add_child(engine_button)
 	engine_popup = ENGINE_BUBBLE_SCENE.instantiate() as EngineVisualizer
 	add_child(engine_popup)
+	speed_popup = SPEED_CONTROL_SCENE.instantiate() as SpeedControlVisualizer
+	add_child(speed_popup)
 	engine_button.pressed.connect(_show_engine_popup)
+	speed_button.pressed.connect(_show_speed_popup)
 
 
 func _show_engine_popup() -> void:
@@ -34,6 +44,9 @@ func _show_engine_popup() -> void:
 	engine_popup.set_vehicle(vehicle)
 	engine_popup.popup_centered()
 
+
+func _show_speed_popup() -> void:
+	speed_popup.popup_centered()
 
 
 @warning_ignore("shadowed_variable")
@@ -48,7 +61,8 @@ func set_vehicle(vehicle: BaseCar) -> void:
 func _process(delta: float) -> void:
 	if vehicle == null:
 		return
-	engine_button.text = "Engine (%.2fx)" % Engine.time_scale
+	engine_button.text = "Engine"
+	speed_button.text = "Speed (%.2fx)" % Engine.time_scale
 	speedlabel.text = "Speed = %d" % vehicle.getSpeedKmH()
 	
 	gearlabel.text = "gear = %d" % vehicle.powertrain_controller.drivetrain.selected_gear
