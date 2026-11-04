@@ -294,7 +294,7 @@ func _ray_cylinder_distance(
 	for distance in [near_distance, far_distance]:
 		if distance < 0.0:
 			continue
-		var axial_position := axial_origin + axial_direction * distance
+		var axial_position : float = axial_origin + axial_direction * distance
 		if absf(axial_position - axial_center) <= half_length:
 			return distance
 	return 1.0e20

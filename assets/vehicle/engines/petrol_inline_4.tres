@@ -1,33 +1,9 @@
-[gd_resource type="Resource" script_class="EngineParameters" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="EngineParameters" format=3 uid="uid://bkab5l12nklbh"]
 
-[ext_resource type="Script" path="res://src/vehicle/engine/engine_parameters.gd" id="1"]
-[ext_resource type="Resource" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="2"]
+[ext_resource type="Script" uid="uid://bliwrpou6g8y3" path="res://src/vehicle/engine/engine_parameters.gd" id="1"]
+[ext_resource type="Resource" uid="uid://dlhwxvyrpfci2" path="res://assets/vehicle/sport_car/petrol_bsfc.tres" id="2"]
 
 [resource]
 script = ExtResource("1")
-bsfc_map = ExtResource("2")
-fuel_type = 0
-cylinder_count = 4
 firing_order = PackedInt32Array(1, 3, 4, 2)
-bore_mm = 86.0
-stroke_mm = 86.0
-connecting_rod_ratio = 3.5
-compression_ratio = 10.5
-volumetric_efficiency = 0.88
-combustion_efficiency = 0.8
-combustion_duration_deg = 42.0
-ignition_advance_deg = 15.0
-injection_advance_deg = 8.0
-intake_temperature_k = 300.0
-specific_heat_ratio = 1.34
-exhaust_pressure_kpa = 105.0
-torque_pulse_strength = 0.45
-fuel_density_kg_per_litre = 0.745
-lower_heating_value_mj_per_kg = 43.0
-stoichiometric_afr = 14.7
-diesel_full_load_afr = 18.0
-max_torque_nm = 260.0
-max_rpm = 8000.0
-idle_rpm = 900.0
-inertia_kg_m2 = 0.14
-friction_torque_nm = 12.0
+bsfc_map = ExtResource("2")
