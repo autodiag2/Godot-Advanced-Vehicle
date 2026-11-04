@@ -50,11 +50,11 @@ func present() -> void:
 			maxi(300, mini(1100, int(float(available_size.x) * 0.96))),
 			maxi(280, mini(850, int(float(available_size.y) * 0.92)))
 		)
-		size = target_size
 		min_size = Vector2i(
 			mini(860, target_size.x),
 			mini(650, target_size.y)
 		)
+		size = target_size
 		unresizable = mobile_layout
 		$ResizeGrip.visible = not mobile_layout
 		if mobile_layout:
