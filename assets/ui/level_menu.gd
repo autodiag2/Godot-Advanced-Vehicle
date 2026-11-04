@@ -4,6 +4,8 @@ const PREVIEW_BORDER_WIDTH := 4
 
 var world_sim: WorldSim
 var current_level := 0
+var menu_content: VBoxContainer
+var level_content: VBoxContainer
 
 @onready var preview_frame: PanelContainer = $VBoxContainer/PreviewFrame
 @onready var preview: TextureRect = $VBoxContainer/PreviewFrame/TextureRect
@@ -12,28 +14,44 @@ var current_level := 0
 @onready var next_button: Button = $VBoxContainer/HBoxContainer/NextButton
 @onready var play_button: Button = $VBoxContainer/HBoxContainer/PlayButton
 
+
 func _ready() -> void:
 	world_sim = get_tree().root.find_child("WorldSim", true, false) as WorldSim
 	assert(world_sim != null)
+
+	menu_content = get_parent() as VBoxContainer
+	level_content = $VBoxContainer
+	menu_content.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 
 	_setup_preview_frame()
 
 	previous_button.pressed.connect(previous_level)
 	next_button.pressed.connect(next_level)
 	play_button.pressed.connect(load_level)
+	get_viewport().size_changed.connect(_layout_menu)
 
 	update_ui()
+	_layout_menu()
 
 
 func _setup_preview_frame() -> void:
-	preview_frame.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	preview_frame.size_flags_vertical = Control.SIZE_SHRINK_CENTER
+	size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	size_flags_vertical = Control.SIZE_EXPAND_FILL
+	level_content.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	level_content.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	preview_frame.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	preview_frame.size_flags_vertical = Control.SIZE_EXPAND_FILL
+	level_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+
+	var button_row := previous_button.get_parent() as HBoxContainer
+	button_row.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	for button in [previous_button, next_button, play_button]:
+		button.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 
 	var style := StyleBoxFlat.new()
 	style.bg_color = Color(0.06, 0.06, 0.06)
 	style.border_color = Color.WHITE
 	style.set_border_width_all(PREVIEW_BORDER_WIDTH)
-
 	preview_frame.add_theme_stylebox_override("panel", style)
 
 	preview.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -42,7 +60,38 @@ func _setup_preview_frame() -> void:
 	preview.offset_right = -PREVIEW_BORDER_WIDTH
 	preview.offset_bottom = -PREVIEW_BORDER_WIDTH
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_COVERED
+	preview.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+
+
+func _layout_menu() -> void:
+	if not is_instance_valid(menu_content) or not is_instance_valid(level_content):
+		return
+
+	var viewport_size := get_viewport_rect().size
+	var horizontal_margin := clampf(viewport_size.x * 0.025, 12.0, 48.0)
+	var vertical_margin := clampf(viewport_size.y * 0.025, 12.0, 36.0)
+	menu_content.offset_left = horizontal_margin
+	menu_content.offset_top = vertical_margin
+	menu_content.offset_right = -horizontal_margin
+	menu_content.offset_bottom = -vertical_margin
+
+	var short_side := minf(viewport_size.x, viewport_size.y)
+	var title_font_size := clampi(int(short_side * 0.045), 20, 42)
+	var button_font_size := clampi(int(short_side * 0.028), 14, 25)
+	var button_height := clampf(viewport_size.y * 0.075, 40.0, 76.0)
+	var available_width := maxf(viewport_size.x - horizontal_margin * 2.0, 180.0)
+	var preview_height := clampf(
+		minf(viewport_size.y * 0.55, available_width * 0.5625),
+		100.0,
+		720.0
+	)
+
+	level_label.add_theme_font_size_override("font_size", title_font_size)
+	preview_frame.custom_minimum_size = Vector2(0.0, preview_height)
+
+	for button in [previous_button, next_button, play_button]:
+		button.custom_minimum_size.y = button_height
+		button.add_theme_font_size_override("font_size", button_font_size)
 
 
 func update_ui() -> void:
