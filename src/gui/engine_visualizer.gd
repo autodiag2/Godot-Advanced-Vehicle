@@ -10,8 +10,6 @@ var engine_parameters: EngineParameters
 @onready var rpm_label: Label = $Frame/Content/Telemetry/RPM
 @onready var torque_label: Label = $Frame/Content/Telemetry/Torque
 @onready var pressure_label: Label = $Frame/Content/Telemetry/Pressure
-@onready var speed_label: Label = $Frame/Content/Controls/SpeedValue
-@onready var speed_slider: HSlider = $Frame/Content/Controls/SpeedSlider
 @onready var engine_cutaway: EngineCutaway = $Frame/Content/ViewportContainer/ViewportMargin/EngineViewport/EngineViewport/EngineCutaway
 
 
@@ -24,9 +22,6 @@ func _ready() -> void:
 	exclusive = false
 	popup_window = false
 	unresizable = false
-	speed_slider.value = Engine.time_scale
-	speed_slider.value_changed.connect(_on_speed_changed)
-	$Frame/Content/Controls/ResetButton.pressed.connect(_on_reset_speed)
 	$Frame/Content/Heading/CloseButton.pressed.connect(_on_close)
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
@@ -72,24 +67,12 @@ func _process(_delta: float) -> void:
 	rpm_label.text = "RPM\n%d" % int(simulator.rpm)
 	torque_label.text = "CRANK TORQUE\n%.0f N·m" % simulator.output_torque
 	pressure_label.text = "PEAK CYLINDER\n%.1f bar" % (maximum_pressure / 100.0)
-	speed_label.text = "%.2fx" % Engine.time_scale
-	if absf(speed_slider.value - Engine.time_scale) > 0.005:
-		speed_slider.set_value_no_signal(Engine.time_scale)
 
 
 func _update_engine() -> void:
 	if simulator == null or engine_parameters == null or engine_cutaway == null:
 		return
 	engine_cutaway.configure(simulator, engine_parameters)
-
-
-func _on_speed_changed(value: float) -> void:
-	Engine.time_scale = clampf(value, 0.01, 1.0)
-
-
-func _on_reset_speed() -> void:
-	Engine.time_scale = 1.0
-	speed_slider.set_value_no_signal(1.0)
 
 
 func _on_close() -> void:
