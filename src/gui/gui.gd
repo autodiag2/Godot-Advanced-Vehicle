@@ -53,32 +53,32 @@ func _create_cockpit_hud() -> void:
 		"0000",
 		Vector2(0.255, 0.59),
 		Vector2(0.19, 0.22),
-		0.052,
-		0.095
+		0.012,
+		0.024
 	)
 	speed_value_label = _add_cockpit_readout(
 		"SPEED",
 		"000 km/h",
 		Vector2(0.538, 0.59),
 		Vector2(0.23, 0.22),
-		0.052,
-		0.105
+		0.012,
+		0.025
 	)
 	fuel_value_label = _add_cockpit_readout(
 		"FUEL",
 		"100%",
 		Vector2(0.765, 0.61),
 		Vector2(0.15, 0.20),
-		0.055,
-		0.105
+		0.011,
+		0.020
 	)
 	gear_value_label = _add_cockpit_readout(
 		"GEAR",
 		"N",
 		Vector2(0.39, 0.785),
 		Vector2(0.09, 0.15),
-		0.075,
-		0.16
+		0.010,
+		0.027
 	)
 	_layout_cockpit_hud()
 
