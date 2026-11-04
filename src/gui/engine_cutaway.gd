@@ -2,6 +2,7 @@ class_name EngineCutaway
 extends Node3D
 
 var simulator: EngineSimulator
+var visualization_active: bool = false
 var engine_parameters: EngineParameters
 var model_root: Node3D
 var camera: Camera3D
@@ -36,13 +37,23 @@ const POINTER_DRAG_THRESHOLD: float = 8.0
 
 
 func _ready() -> void:
+	set_process(false)
 	_build_lighting()
 
 
 func configure(engine_simulator: EngineSimulator, parameters: EngineParameters) -> void:
 	simulator = engine_simulator
 	engine_parameters = parameters
-	if is_node_ready():
+	if visualization_active and is_node_ready():
+		_build_engine()
+
+
+func set_visualization_active(active: bool) -> void:
+	if visualization_active == active:
+		return
+	visualization_active = active
+	set_process(active)
+	if active and simulator != null and engine_parameters != null:
 		_build_engine()
 
 
@@ -147,6 +158,8 @@ func _create_selection_info_panel() -> void:
 
 
 func _input(event: InputEvent) -> void:
+	if not visualization_active:
+		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
 			if _is_info_panel_input(event.position):
