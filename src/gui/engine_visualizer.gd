@@ -27,7 +27,6 @@ func _ready() -> void:
 	close_requested.connect(_on_close)
 	$ResizeGrip.gui_input.connect(_on_resize_grip_input)
 	$Frame/Content/Heading.gui_input.connect(_on_heading_input)
-	var telemetry: GridContainer = $Frame/Content/Telemetry
 	for label in [identity_label, rpm_label, torque_label, pressure_label]:
 		label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_update_engine()
