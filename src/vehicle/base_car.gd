@@ -14,7 +14,7 @@ class CarInputController:
 	var handbrake: bool = false
 	var clutch: float = 0.0
 
-	func update(input_joystick: Control) -> void:
+	func update(input_joystick: Control, selected_gear: int) -> void:
 		var joystick_output := Vector2.ZERO
 
 		if input_joystick:
@@ -22,12 +22,12 @@ class CarInputController:
 
 		steering = -joystick_output.x
 
-		if joystick_output.y < 0.0:
-			throttle = -joystick_output.y
-			brake = 0.0
+		if selected_gear == -1:
+			throttle = maxf(joystick_output.y, 0.0)
+			brake = maxf(-joystick_output.y, 0.0)
 		else:
-			throttle = 0.0
-			brake = joystick_output.y
+			throttle = maxf(-joystick_output.y, 0.0)
+			brake = maxf(joystick_output.y, 0.0)
 
 		handbrake = Input.is_action_pressed("Handbrake")
 		clutch = Input.get_action_strength("Clutch")
@@ -463,7 +463,8 @@ class PowertrainController:
 			engine.rpm,
 			parameters.max_engine_rpm,
 			brake_input,
-			longitudinal_speed
+			longitudinal_speed,
+			throttle_input
 		)
 
 	func update_wheel_speeds(
@@ -901,7 +902,8 @@ func _unhandled_input(event: InputEvent) -> void:
 
 func _physics_process(delta: float) -> void:
 	input_controller.update(
-		joystick
+		joystick,
+		powertrain_controller.drivetrain.selected_gear
 	)
 
 	brake_controller.update(
