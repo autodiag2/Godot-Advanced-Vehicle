@@ -63,21 +63,41 @@ func _process(delta):
 
 	var timing_advance := 0.0
 	var commanded_equivalence_ratio := 1.0
+	var commanded_air_fuel_ratio := engine_parameters.stoichiometric_afr
 	var fuel_injection_timing := 0.0
 	if engine_parameters.fuel_type == EngineParameters.FuelType.PETROL:
 		timing_advance = engine_parameters.ignition_advance_deg
 	else:
-		commanded_equivalence_ratio = (
-			engine_parameters.stoichiometric_afr /
-			maxf(engine_parameters.diesel_full_load_afr, 1.0) *
-			throttle
-		)
+		if throttle > 0.0:
+			commanded_air_fuel_ratio = (
+				engine_parameters.diesel_full_load_afr /
+				throttle
+			)
+			commanded_equivalence_ratio = (
+				engine_parameters.stoichiometric_afr /
+				commanded_air_fuel_ratio
+			)
+		else:
+			commanded_equivalence_ratio = 0.0
 		fuel_injection_timing = engine_parameters.injection_advance_deg
 
 	var fuel_rate_lph := _get_engine_fuel_rate_lph(
 		engine,
 		engine_load
 	)
+	var maf_air_flow_rate := 0.0
+	if (
+		engine_parameters.fuel_type == EngineParameters.FuelType.PETROL or
+		throttle > 0.0
+	):
+		var fuel_mass_flow_g_s := (
+			fuel_rate_lph *
+			engine_parameters.fuel_density_kg_per_litre *
+			1000.0 /
+			3600.0
+		)
+		maf_air_flow_rate = fuel_mass_flow_g_s * commanded_air_fuel_ratio
+
 	var cylinder_fuel_rate := 0.0
 	var firing_events_per_hour := (
 		engine.rpm *
@@ -132,6 +152,11 @@ func _process(delta):
 	bridge.setSignal(
 		"SAEJ1979.intake_manifold_pressure",
 		intake_manifold_pressure
+	)
+
+	bridge.setSignal(
+		"SAEJ1979.maf_air_flow_rate",
+		maf_air_flow_rate
 	)
 
 	bridge.setSignal(
