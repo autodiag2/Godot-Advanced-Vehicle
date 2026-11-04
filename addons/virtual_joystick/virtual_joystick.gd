@@ -74,7 +74,8 @@ var _reposition_bounds_initialized := false
 # FUNCTIONS
 
 func _ready() -> void:
-	call_deferred("_initialize_reposition_bounds")
+	await get_tree().process_frame
+	_initialize_reposition_bounds()
 	if ProjectSettings.get_setting("input_devices/pointing/emulate_mouse_from_touch"):
 		printerr("The Project Setting 'emulate_mouse_from_touch' should be set to False")
 	if not ProjectSettings.get_setting("input_devices/pointing/emulate_touch_from_mouse"):
@@ -87,7 +88,12 @@ func _ready() -> void:
 		hide()
 
 func _initialize_reposition_bounds() -> void:
-	_initial_base_center = _base.get_global_rect().get_center()
+	if _reposition_bounds_initialized:
+		return
+	var base_rect := _base.get_global_rect()
+	if base_rect.size.x <= 0.0 or base_rect.size.y <= 0.0:
+		return
+	_initial_base_center = base_rect.get_center()
 	_base_default_position = _base.position
 	_tip_default_position = _tip.position
 	_reposition_bounds_initialized = true
@@ -107,6 +113,8 @@ func _process(delta: float) -> void:
 func _input(event: InputEvent) -> void:
 	if not _reposition_bounds_initialized:
 		_initialize_reposition_bounds()
+	if not _reposition_bounds_initialized:
+		return
 
 	if event is InputEventScreenTouch:
 		if event.pressed:
