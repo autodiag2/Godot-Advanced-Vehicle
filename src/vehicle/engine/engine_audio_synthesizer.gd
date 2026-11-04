@@ -109,10 +109,10 @@ func update(
 	var firing_frequency := crank_frequency * float(cylinder_count) * 0.5
 	var firing_increment := TAU * firing_frequency / SAMPLE_RATE
 	var crank_increment := TAU * crank_frequency / SAMPLE_RATE
-	var combustion_gain := 0.2 + load * 0.7
-	var intake_gain := 0.012 + throttle_amount * 0.045
-	var exhaust_gain := 0.018 + load * 0.04
-	var firing_noise_gain := 0.15 + load * 0.15
+	var combustion_gain := 0.32 + load * 0.16
+	var intake_gain := 0.018 + throttle_amount * 0.012
+	var exhaust_gain := 0.024 + load * 0.012
+	var firing_noise_gain := 0.12 + load * 0.06
 	var diesel := parameters.fuel_type == EngineParameters.FuelType.DIESEL
 	var crank_phase := TAU * audio_crank_angle_deg / 360.0
 	var firing_phase := TAU * audio_crank_angle_deg * float(cylinder_count) / CYCLE_DEGREES
@@ -208,29 +208,30 @@ func update(
 		var intake_noise := (
 			intake_noise_state *
 			intake_gain *
-			(0.25 + intake_mix * 1.5)
+			(0.35 + intake_mix * 0.85)
 		)
 		var exhaust_noise := (
 			exhaust_noise_state *
 			exhaust_gain *
-			(0.3 + exhaust_mix * 1.4)
+			(0.4 + exhaust_mix * 0.85)
 		)
-		var injector_click := noise * injector_mix * 0.06
+		var injector_click := noise * injector_mix * 0.04
 		var diesel_clatter := 0.0
 		if diesel:
 			diesel_clatter = (
-				sin(crank_phase * 8.0) * (0.018 + load * 0.035) +
+				sin(crank_phase * 8.0) * (0.014 + load * 0.014) +
 				injector_click
 			)
 		var sample := (
-			mechanical_tone * (0.45 + load * 0.4) +
-			exhaust_tone * (0.08 + load * 0.15) +
+			mechanical_tone * (0.5 + load * 0.12) +
+			exhaust_tone * (0.08 + load * 0.04) +
 			combustion_noise * combustion_gain +
 			intake_noise +
 			exhaust_noise +
 			diesel_clatter
 		)
-		sample = clampf(sample, -0.85, 0.85)
+		var throttle_volume := 0.88 + load * 0.12
+		sample = clampf(sample * throttle_volume, -0.85, 0.85)
 		playback.push_frame(Vector2(sample, sample))
 
 		audio_crank_angle_deg = next_angle
