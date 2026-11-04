@@ -14,6 +14,11 @@ const TIRE_TEMP_MU = preload("res://src/vehicle/wheel/tire/temp_mu.tres")
 @export var heating_multiplier := 0.0015
 @export var cooling_multiplier := -0.25
 @export var rolling_resistance_coefficient := 0.01
+@export_range(10.0, 60.0, 0.5) var tire_pressure_psi := 32.0
+@export_range(10.0, 60.0, 0.5) var recommended_pressure_min_psi := 30.0
+@export_range(10.0, 60.0, 0.5) var recommended_pressure_max_psi := 35.0
+@export_range(0.0, 5.0, 0.1) var underinflation_wear_sensitivity := 2.0
+@export_range(0.0, 5.0, 0.1) var overinflation_wear_sensitivity := 1.0
 
 var tire_wear := 0.0
 var load_sensitivity := 1.0
@@ -46,9 +51,38 @@ func get_rolling_resistance(
 
 
 func update_tire_wear(delta: float, slip: Vector2, normal_load: float, mu: float):
-	tire_wear += slip.length() * mu * delta * normal_load / 7000000.0
+	var pressure_multiplier := get_pressure_wear_multiplier()
+	tire_wear += (
+		slip.length() *
+		mu *
+		delta *
+		normal_load *
+		pressure_multiplier /
+		7000000.0
+	)
 	tire_wear = clampf(tire_wear, 0 ,1)
 	return tire_wear
+
+
+func get_pressure_wear_multiplier() -> float:
+	var pressure_multiplier := 1.0
+	var minimum_pressure := maxf(recommended_pressure_min_psi, 0.1)
+	var maximum_pressure := maxf(recommended_pressure_max_psi, minimum_pressure)
+
+	if tire_pressure_psi < minimum_pressure:
+		pressure_multiplier += (
+			(minimum_pressure - tire_pressure_psi) /
+			minimum_pressure *
+			underinflation_wear_sensitivity
+		)
+	elif tire_pressure_psi > maximum_pressure:
+		pressure_multiplier += (
+			(tire_pressure_psi - maximum_pressure) /
+			maximum_pressure *
+			overinflation_wear_sensitivity
+		)
+
+	return pressure_multiplier
 
 
 func update_load_sensitivity(normal_load: float) -> float:
