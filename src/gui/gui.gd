@@ -49,6 +49,7 @@ func _create_cockpit_hud() -> void:
 
 	var background := TextureRect.new()
 	background.texture = COCKPIT_TEXTURE
+	background.modulate = Color(1.0, 1.0, 1.0, 0.35)
 	background.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	background.stretch_mode = TextureRect.STRETCH_SCALE
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
