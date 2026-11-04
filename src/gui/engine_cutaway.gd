@@ -292,6 +292,11 @@ func _build_engine() -> void:
 	model_root = Node3D.new()
 	add_child(model_root)
 	cylinder_parts.clear()
+	hovered_cylinder_index = -1
+	selected_cylinder_index = -1
+	hovered_crankshaft = false
+	selected_crankshaft = false
+	info_panel.visible = false
 
 	var cylinder_count := maxi(engine_parameters.cylinder_count, 1)
 	var bore_radius := (
@@ -727,8 +732,10 @@ func _refresh_highlights() -> void:
 			selected_cylinder_index == cylinder_index
 		)
 		var overlay: Material = hover_material if highlighted else null
-		(part.liner as MeshInstance3D).material_overlay = overlay
-		(part.liner_rim as MeshInstance3D).material_overlay = overlay
+		var liner: MeshInstance3D = part.liner
+		var liner_rim: MeshInstance3D = part.liner_rim
+		liner.material_overlay = overlay
+		liner_rim.material_overlay = overlay
 	if is_instance_valid(crankshaft_mesh):
 		crankshaft_mesh.material_overlay = (
 			hover_material
