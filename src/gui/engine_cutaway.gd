@@ -632,11 +632,8 @@ func _build_engine() -> void:
 		oil_pipe_material
 	)
 	_add_oil_pipe(head_gallery_left, head_gallery_right, 0.018, oil_pipe_material)
-	for cylinder_index in range(cylinder_count):
-		var feed_x := (
-			(float(cylinder_index) - float(cylinder_count - 1) * 0.5) *
-			maxf(bore_radius * 2.65, 0.29)
-		)
+	for feed_index in range(cylinder_count):
+		var feed_x := (float(feed_index) - float(cylinder_count - 1) * 0.5) * spacing
 		_add_oil_pipe(
 			Vector3(feed_x, head_gallery_right.y, head_gallery_right.z),
 			Vector3(feed_x, piston_top_y + 0.51, 0.02),
@@ -1037,6 +1034,7 @@ func _update_selection_info() -> void:
 		engine_parameters == null
 	):
 		return
+	var thermal := simulator.thermal_system
 	if selected_cylinder_index >= 0:
 		var pressure_kpa := simulator.get_cylinder_pressure_kpa(selected_cylinder_index)
 		var temperature_k := simulator.get_cylinder_temperature_k(selected_cylinder_index)
@@ -1060,7 +1058,6 @@ func _update_selection_info() -> void:
 		oil_type_option.visible = false
 		info_panel.visible = true
 	elif selected_system == "coolant":
-		var thermal := simulator.thermal_system
 		info_label.text = (
 			"COOLING SYSTEM\nCOOLANT  %s\nTEMPERATURE  %.1f °C\n"
 			+ "GAUGE PRESSURE  %.2f bar\nTHERMOSTAT  %.0f %%\nRADIATOR  %.1f kW"
@@ -1078,7 +1075,6 @@ func _update_selection_info() -> void:
 			coolant_type_option.select(thermal.coolant_mixture)
 		info_panel.visible = true
 	elif selected_system == "oil":
-		var thermal := simulator.thermal_system
 		info_label.text = (
 			"LUBRICATION SYSTEM\nENGINE OIL  %s\nTEMPERATURE  %.1f °C\n"
 			+ "GAUGE PRESSURE  %.2f bar\nVISCOSITY  %.1f cSt\nOIL COOLER  %.1f kW"
