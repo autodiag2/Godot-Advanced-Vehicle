@@ -175,6 +175,7 @@ func _create_selection_info_panel() -> void:
 	coolant_type_option = OptionButton.new()
 	coolant_type_option.custom_minimum_size = Vector2(0.0, 42.0)
 	coolant_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	coolant_type_option.mouse_filter = Control.MOUSE_FILTER_STOP
 	coolant_type_option.add_theme_font_size_override("font_size", 13)
 	coolant_type_option.tooltip_text = "Select the coolant water / glycol mixture"
 	coolant_type_option.add_item("Water (0% glycol)")
@@ -188,6 +189,7 @@ func _create_selection_info_panel() -> void:
 	oil_type_option = OptionButton.new()
 	oil_type_option.custom_minimum_size = Vector2(0.0, 42.0)
 	oil_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	oil_type_option.mouse_filter = Control.MOUSE_FILTER_STOP
 	oil_type_option.add_theme_font_size_override("font_size", 13)
 	oil_type_option.tooltip_text = "Select the engine oil SAE viscosity grade"
 	oil_type_option.add_item("SAE 0W-20")
@@ -205,7 +207,7 @@ func _create_selection_info_panel() -> void:
 
 
 func _input(event: InputEvent) -> void:
-	if not visualization_active:
+	if not visualization_active or _is_fluid_selector_popup_open():
 		return
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if event.pressed:
@@ -264,6 +266,16 @@ func _is_info_panel_input(screen_position: Vector2) -> bool:
 		info_panel.visible and
 		info_panel.get_global_rect().has_point(screen_position)
 	)
+
+
+func _is_fluid_selector_popup_open() -> bool:
+	if is_instance_valid(coolant_type_option):
+		if coolant_type_option.get_popup().visible:
+			return true
+	if is_instance_valid(oil_type_option):
+		if oil_type_option.get_popup().visible:
+			return true
+	return false
 
 
 func _pick_interactable(screen_position: Vector2) -> Dictionary:
