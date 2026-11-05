@@ -1114,6 +1114,27 @@ func _update_selection_info() -> void:
 		info_panel.visible = false
 
 
+func _add_oil_pipe(
+	start: Vector3,
+	finish: Vector3,
+	radius: float,
+	material: Material
+) -> MeshInstance3D:
+	var direction := finish - start
+	if direction.length_squared() <= 0.000001:
+		return null
+	var pipe := _add_cylinder(
+		model_root,
+		radius,
+		direction.length(),
+		material
+	)
+	pipe.position = (start + finish) * 0.5
+	pipe.basis = Basis(Quaternion(Vector3.UP, direction.normalized()))
+	oil_parts.append(pipe)
+	return pipe
+
+
 func _on_coolant_type_selected(index: int) -> void:
 	if simulator == null:
 		return
