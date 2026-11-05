@@ -15,6 +15,8 @@ const PISTON_LOOKUP_SAMPLE_COUNT: int = 1440
 const CYCLE_LOOKUP_SAMPLE_COUNT: int = 2880
 
 var parameters: EngineParameters
+var thermal_system := EngineThermalSystem.new()
+var wall_heat_input_j: float = 0.0
 var crank_angle_deg: float = 0.0
 var rpm: float = 0.0
 var angular_velocity: float = 0.0
@@ -39,6 +41,7 @@ var _injection_progress_lookup := PackedFloat32Array()
 
 func initialize(engine_parameters: EngineParameters, initial_rpm: float) -> void:
 	parameters = engine_parameters
+	thermal_system.initialize(engine_parameters)
 	_build_geometry_cache()
 	crank_angle_deg = 0.0
 	rpm = initial_rpm
@@ -184,6 +187,8 @@ func advance(delta: float, throttle_input: float, reaction_torque: float) -> flo
 	)
 	var step_delta := delta / float(steps)
 	var torque_sum := 0.0
+	var friction_energy_j := 0.0
+	wall_heat_input_j = 0.0
 	var intake_pressure := _get_intake_pressure_pa(last_throttle)
 
 	for _step_index in range(steps):
@@ -215,6 +220,7 @@ func advance(delta: float, throttle_input: float, reaction_torque: float) -> flo
 		)
 		var friction_torque := parameters.friction_torque_nm * friction_factor
 		var step_torque := cylinder_torque - friction_torque
+		friction_energy_j += friction_torque * rpm * TAU / 60.0 * step_delta
 		step_torque = clampf(
 			step_torque,
 			-parameters.max_torque_nm * 0.5,
@@ -237,6 +243,13 @@ func advance(delta: float, throttle_input: float, reaction_torque: float) -> flo
 			CYCLE_DEGREES
 		)
 
+	thermal_system.advance(
+		delta,
+		rpm,
+		last_throttle,
+		wall_heat_input_j / delta,
+		friction_energy_j / delta
+	)
 	output_torque = torque_sum / float(steps)
 	var smoothing := 1.0 - exp(-delta / 0.18)
 	mean_output_torque = lerpf(
@@ -592,6 +605,7 @@ func _advance_cylinder(
 		old_burned_fraction,
 		intake_pressure
 	)
+	wall_heat_input_j += heat_loss
 	var volume_change := volume_after - volume_before
 	var preliminary_work := old_pressure * volume_change
 	var new_internal_energy := (
@@ -768,7 +782,7 @@ func _calculate_wall_heat_loss(
 		2.0 * _piston_area_m2 +
 		PI * _bore_m * chamber_height
 	)
-	var wall_temperature := parameters.wall_temperature_k
+	var wall_temperature := thermal_system.get_wall_temperature_k()
 	var wall_heat_loss := (
 		heat_transfer_coefficient *
 		heat_transfer_area *
