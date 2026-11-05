@@ -91,8 +91,8 @@ func advance(
 	if delta <= 0.0 or parameters == null:
 		return
 
-	var coolant_density := COOLANT_DENSITIES[coolant_mixture]
-	var coolant_heat_capacity := COOLANT_HEAT_CAPACITIES[coolant_mixture]
+	var coolant_density : float = COOLANT_DENSITIES[coolant_mixture]
+	var coolant_heat_capacity : float = COOLANT_HEAT_CAPACITIES[coolant_mixture]
 	var coolant_capacity_j_k := maxf(
 		parameters.coolant_capacity_litres * coolant_density * coolant_heat_capacity,
 		1000.0
@@ -110,7 +110,7 @@ func advance(
 	thermostat_opening = thermostat_position * thermostat_position * (3.0 - 2.0 * thermostat_position)
 	var fan_factor := 1.0 if coolant_temperature_c >= 96.0 else 0.0
 	var airflow_factor := clampf(0.22 + throttle * 0.18 + fan_factor * 0.6, 0.2, 1.0)
-	var radiator_ua := (60.0 + 280.0 * airflow_factor) / COOLANT_VISCOSITY_FACTORS[coolant_mixture]
+	var radiator_ua : float = (60.0 + 280.0 * airflow_factor) / COOLANT_VISCOSITY_FACTORS[coolant_mixture]
 	var oil_cooler_ua := 18.0 + 38.0 * airflow_factor
 	var block_to_coolant_w := (block_temperature_c - coolant_temperature_c) * 390.0 * pump_factor
 	var block_to_oil_w := (block_temperature_c - oil_temperature_c) * 115.0
