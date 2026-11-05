@@ -324,18 +324,15 @@ func _process(delta):
 		0.0,
 		car.car_params
 	) / reference_torque * 100.0
+	var torque_point_1 := engine.calculate_torque(engine.rpm, 0.25, car.car_params) / reference_torque * 100.0
+	var torque_point_2 := engine.calculate_torque(engine.rpm, 0.50, car.car_params) / reference_torque * 100.0
+	var torque_point_3 := engine.calculate_torque(engine.rpm, 0.75, car.car_params) / reference_torque * 100.0
+	var torque_point_4 := engine.calculate_torque(engine.rpm, 1.00, car.car_params) / reference_torque * 100.0
 	bridge.setSignal("SAEJ1979.engine_percent_torque_data_idle", torque_idle)
-	for point_index in range(4):
-		var point_throttle := float(point_index + 1) * 0.25
-		var point_torque := engine.calculate_torque(
-			engine.rpm,
-			point_throttle,
-			car.car_params
-		) / reference_torque * 100.0
-		bridge.setSignal(
-			"SAEJ1979.engine_percent_torque_data_point_%d" % (point_index + 1),
-			point_torque
-		)
+	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_1", torque_point_1)
+	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_2", torque_point_2)
+	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_3", torque_point_3)
+	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_4", torque_point_4)
 
 	bridge.setTpmsSensor(
 		"fl",
