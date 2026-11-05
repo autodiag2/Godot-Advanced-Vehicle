@@ -947,7 +947,7 @@ func _update_selection_info() -> void:
 		var thermal := simulator.thermal_system
 		info_label.text = (
 			"COOLING SYSTEM\nCOOLANT  %s\nTEMPERATURE  %.1f °C\n"
-			+ "PRESSURE  %.2f bar\nTHERMOSTAT  %.0f %%\nRADIATOR  %.1f kW"
+			+ "GAUGE PRESSURE  %.2f bar\nTHERMOSTAT  %.0f %%\nRADIATOR  %.1f kW"
 		) % [
 			thermal.get_coolant_mixture_name(),
 			thermal.coolant_temperature_c,
@@ -963,7 +963,7 @@ func _update_selection_info() -> void:
 		var thermal := simulator.thermal_system
 		info_label.text = (
 			"LUBRICATION SYSTEM\nENGINE OIL  %s\nTEMPERATURE  %.1f °C\n"
-			+ "PRESSURE  %.2f bar\nVISCOSITY  %.1f cSt\nOIL COOLER  %.1f kW"
+			+ "GAUGE PRESSURE  %.2f bar\nVISCOSITY  %.1f cSt\nOIL COOLER  %.1f kW"
 		) % [
 			thermal.get_oil_grade_name(),
 			thermal.oil_temperature_c,
