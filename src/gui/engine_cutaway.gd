@@ -26,8 +26,11 @@ var hovered_system: String = ""
 var selected_system: String = ""
 var coolant_component: MeshInstance3D
 var oil_component: MeshInstance3D
+var oil_parts: Array[MeshInstance3D] = []
 var coolant_pick_center := Vector3.ZERO
 var oil_pick_center := Vector3.ZERO
+var oil_pump_pick_center := Vector3.ZERO
+var oil_filter_pick_center := Vector3.ZERO
 var coolant_type_option: OptionButton
 var oil_type_option: OptionButton
 var hovered_crankshaft: bool = false
@@ -302,11 +305,12 @@ func _pick_interactable(screen_position: Vector2) -> Dictionary:
 		nearest_distance = coolant_distance
 		nearest_hit = {"kind": "coolant"}
 
-	var oil_distance := _ray_sphere_distance(
-		ray_origin,
-		ray_direction,
-		oil_pick_center,
-		0.24
+	var oil_distance := minf(
+		_ray_sphere_distance(ray_origin, ray_direction, oil_pick_center, 0.30),
+		minf(
+			_ray_sphere_distance(ray_origin, ray_direction, oil_pump_pick_center, 0.16),
+			_ray_sphere_distance(ray_origin, ray_direction, oil_filter_pick_center, 0.16)
+		)
 	)
 	if oil_distance < nearest_distance:
 		nearest_distance = oil_distance
@@ -554,13 +558,98 @@ func _build_engine() -> void:
 	coolant_cap.position = coolant_component.position + Vector3(0.0, 0.19, 0.0)
 
 	var oil_pan_material := _make_material(Color(0.34, 0.25, 0.12), 0.72, 0.0)
+	oil_parts.clear()
+	var oil_pipe_material := _make_material(Color(0.92, 0.49, 0.11), 0.38, 1.1)
+	var sump_y := crank_center_y - 0.31
 	oil_component = _add_box(
 		model_root,
-		Vector3(width * 0.72, 0.17, 0.58),
-		Vector3(0.0, crank_center_y - 0.11, 0.2),
+		Vector3(width * 0.78, 0.28, 0.76),
+		Vector3(0.0, sump_y, 0.16),
 		oil_pan_material
 	)
 	oil_pick_center = oil_component.position
+	oil_parts.append(oil_component)
+
+	var strainer_position := Vector3(-width * 0.16, sump_y - 0.105, 0.48)
+	var sump_strainer := _add_cylinder(model_root, 0.13, 0.045, oil_pipe_material)
+	sump_strainer.position = strainer_position
+	oil_parts.append(sump_strainer)
+	var strainer_guard := _add_torus(model_root, 0.105, 0.145, dark_steel_material)
+	strainer_guard.position = strainer_position
+	oil_parts.append(strainer_guard)
+
+	var pump_position := Vector3(width * 0.39, crank_center_y - 0.20, 0.48)
+	oil_pump_pick_center = pump_position
+	var oil_pump_housing := _add_box(
+		model_root,
+		Vector3(0.25, 0.25, 0.22),
+		pump_position,
+		dark_steel_material
+	)
+	oil_parts.append(oil_pump_housing)
+	var oil_pump_rotor := _add_cylinder(model_root, 0.085, 0.07, oil_pipe_material)
+	oil_pump_rotor.rotation.x = PI * 0.5
+	oil_pump_rotor.position = pump_position + Vector3(0.0, 0.0, 0.13)
+	oil_parts.append(oil_pump_rotor)
+
+	var filter_position := Vector3(width * 0.57 + 0.18, crank_center_y - 0.055, 0.55)
+	oil_filter_pick_center = filter_position
+	var oil_filter := _add_cylinder(model_root, 0.085, 0.27, steel_material)
+	oil_filter.position = filter_position
+	oil_parts.append(oil_filter)
+	var oil_filter_base := _add_cylinder(model_root, 0.092, 0.035, dark_steel_material)
+	oil_filter_base.position = filter_position + Vector3(0.0, 0.145, 0.0)
+	oil_parts.append(oil_filter_base)
+	var oil_filter_boss := _add_cylinder(model_root, 0.04, 0.045, oil_pipe_material)
+	oil_filter_boss.position = filter_position + Vector3(0.0, -0.145, 0.0)
+	oil_parts.append(oil_filter_boss)
+
+	var gallery_y := crank_center_y + 0.035
+	var gallery_z := 0.45
+	var gallery_left := Vector3(-width * 0.45, gallery_y, gallery_z)
+	var gallery_right := Vector3(width * 0.45, gallery_y, gallery_z)
+	_add_oil_pipe(strainer_position, pump_position + Vector3(0.0, -0.09, 0.0), 0.025, oil_pipe_material)
+	_add_oil_pipe(
+		pump_position + Vector3(0.0, 0.09, 0.0),
+		filter_position + Vector3(0.0, -0.13, 0.0),
+		0.022,
+		oil_pipe_material
+	)
+	_add_oil_pipe(
+		filter_position + Vector3(0.0, 0.13, 0.0),
+		gallery_right,
+		0.022,
+		oil_pipe_material
+	)
+	_add_oil_pipe(gallery_left, gallery_right, 0.024, oil_pipe_material)
+
+	var head_gallery_left := Vector3(-width * 0.40, piston_top_y + 0.48, 0.30)
+	var head_gallery_right := Vector3(width * 0.40, piston_top_y + 0.48, 0.30)
+	_add_oil_pipe(
+		gallery_left,
+		Vector3(gallery_left.x, piston_top_y + 0.48, 0.30),
+		0.021,
+		oil_pipe_material
+	)
+	_add_oil_pipe(head_gallery_left, head_gallery_right, 0.018, oil_pipe_material)
+	for cylinder_index in range(cylinder_count):
+		var feed_x := (
+			(float(cylinder_index) - float(cylinder_count - 1) * 0.5) *
+			maxf(bore_radius * 2.65, 0.29)
+		)
+		_add_oil_pipe(
+			Vector3(feed_x, head_gallery_right.y, head_gallery_right.z),
+			Vector3(feed_x, piston_top_y + 0.51, 0.02),
+			0.012,
+			oil_pipe_material
+		)
+
+	var oil_fill_neck := _add_cylinder(model_root, 0.045, 0.11, oil_pipe_material)
+	oil_fill_neck.position = Vector3(width * 0.34, piston_top_y + 0.48, 0.18)
+	oil_parts.append(oil_fill_neck)
+	var oil_fill_cap := _add_cylinder(model_root, 0.075, 0.045, steel_material)
+	oil_fill_cap.position = oil_fill_neck.position + Vector3(0.0, 0.075, 0.0)
+	oil_parts.append(oil_fill_cap)
 
 	var bearing_count := maxi(cylinder_count + 1, 2)
 	for bearing_index in range(bearing_count):
@@ -576,6 +665,12 @@ func _build_engine() -> void:
 		)
 		bearing.rotation.z = PI * 0.5
 		bearing.position = Vector3(bearing_x, crank_center_y, 0.0)
+		_add_oil_pipe(
+			Vector3(bearing_x, gallery_y, gallery_z),
+			Vector3(bearing_x, crank_center_y, 0.12),
+			0.016,
+			oil_pipe_material
+		)
 
 	for cylinder_index in range(cylinder_count):
 		var x_position := (
@@ -920,12 +1015,13 @@ func _refresh_highlights() -> void:
 			if hovered_system == "coolant" or selected_system == "coolant"
 			else null
 		)
-	if is_instance_valid(oil_component):
-		oil_component.material_overlay = (
-			hover_material
-			if hovered_system == "oil" or selected_system == "oil"
-			else null
-		)
+	for oil_part in oil_parts:
+		if is_instance_valid(oil_part):
+			oil_part.material_overlay = (
+				hover_material
+				if hovered_system == "oil" or selected_system == "oil"
+				else null
+			)
 	if is_instance_valid(crankshaft_mesh):
 		crankshaft_mesh.material_overlay = (
 			hover_material
@@ -1008,11 +1104,13 @@ func _update_selection_info() -> void:
 			simulator.angular_velocity,
 		]
 		misfire_fault_toggle.visible = false
-		fluid_type_option.visible = false
+		coolant_type_option.visible = false
+		oil_type_option.visible = false
 		info_panel.visible = true
 	else:
 		misfire_fault_toggle.visible = false
-		fluid_type_option.visible = false
+		coolant_type_option.visible = false
+		oil_type_option.visible = false
 		info_panel.visible = false
 
 
