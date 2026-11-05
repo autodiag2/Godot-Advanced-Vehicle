@@ -640,6 +640,12 @@ func _build_engine() -> void:
 			0.012,
 			oil_pipe_material
 		)
+		_add_oil_pipe(
+			Vector3(feed_x, piston_top_y + 0.51, 0.02),
+			Vector3(feed_x, piston_top_y + 0.52, -0.18),
+			0.010,
+			oil_pipe_material
+		)
 
 	var oil_fill_neck := _add_cylinder(model_root, 0.045, 0.11, oil_pipe_material)
 	oil_fill_neck.position = Vector3(width * 0.34, piston_top_y + 0.48, 0.18)
@@ -666,6 +672,12 @@ func _build_engine() -> void:
 			Vector3(bearing_x, gallery_y, gallery_z),
 			Vector3(bearing_x, crank_center_y, 0.12),
 			0.016,
+			oil_pipe_material
+		)
+		_add_oil_pipe(
+			Vector3(bearing_x, crank_center_y, 0.12),
+			Vector3(bearing_x + spacing * 0.18, crank_center_y - 0.085, 0.12),
+			0.010,
 			oil_pipe_material
 		)
 
