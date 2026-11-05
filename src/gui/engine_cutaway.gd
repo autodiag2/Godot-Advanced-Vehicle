@@ -22,6 +22,13 @@ var crankshaft_pick_half_length: float = 0.5
 var crankshaft_mesh: MeshInstance3D
 var hovered_cylinder_index: int = -1
 var selected_cylinder_index: int = -1
+var hovered_system: String = ""
+var selected_system: String = ""
+var coolant_component: MeshInstance3D
+var oil_component: MeshInstance3D
+var coolant_pick_center := Vector3.ZERO
+var oil_pick_center := Vector3.ZERO
+var fluid_type_option: OptionButton
 var hovered_crankshaft: bool = false
 var selected_crankshaft: bool = false
 var hover_material: StandardMaterial3D
@@ -130,8 +137,8 @@ func _create_selection_info_panel() -> void:
 
 	info_panel = PanelContainer.new()
 	info_panel.position = Vector2(12.0, 12.0)
-	info_panel.custom_minimum_size = Vector2(280.0, 142.0)
-	info_panel.size = Vector2(280.0, 142.0)
+	info_panel.custom_minimum_size = Vector2(280.0, 154.0)
+	info_panel.size = Vector2(280.0, 154.0)
 	info_panel.visible = false
 	info_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 
@@ -161,6 +168,13 @@ func _create_selection_info_panel() -> void:
 	misfire_fault_toggle.add_theme_font_size_override("font_size", 13)
 	misfire_fault_toggle.toggled.connect(_on_misfire_fault_toggled)
 	info_container.add_child(misfire_fault_toggle)
+	fluid_type_option = OptionButton.new()
+	fluid_type_option.custom_minimum_size = Vector2(0.0, 42.0)
+	fluid_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	fluid_type_option.add_theme_font_size_override("font_size", 13)
+	fluid_type_option.visible = false
+	fluid_type_option.item_selected.connect(_on_fluid_type_selected)
+	info_container.add_child(fluid_type_option)
 	info_panel.add_child(info_container)
 	canvas.add_child(info_panel)
 
@@ -259,6 +273,26 @@ func _pick_interactable(screen_position: Vector2) -> Dictionary:
 				"index": cylinder_index,
 			}
 
+	var coolant_distance := _ray_sphere_distance(
+		ray_origin,
+		ray_direction,
+		coolant_pick_center,
+		0.2
+	)
+	if coolant_distance < nearest_distance:
+		nearest_distance = coolant_distance
+		nearest_hit = {"kind": "coolant"}
+
+	var oil_distance := _ray_sphere_distance(
+		ray_origin,
+		ray_direction,
+		oil_pick_center,
+		0.24
+	)
+	if oil_distance < nearest_distance:
+		nearest_distance = oil_distance
+		nearest_hit = {"kind": "oil"}
+
 	var crankshaft_distance := _ray_cylinder_distance(
 		ray_origin,
 		ray_direction,
@@ -324,23 +358,52 @@ func _ray_cylinder_distance(
 	return 1.0e20
 
 
+func _ray_sphere_distance(
+	ray_origin: Vector3,
+	ray_direction: Vector3,
+	center: Vector3,
+	radius: float
+) -> float:
+	var relative_origin := ray_origin - center
+	var projected_distance := relative_origin.dot(ray_direction)
+	var discriminant := projected_distance * projected_distance - (
+		relative_origin.length_squared() - radius * radius
+	)
+	if discriminant < 0.0:
+		return 1.0e20
+	var near_distance := -projected_distance - sqrt(discriminant)
+	if near_distance >= 0.0:
+		return near_distance
+	var far_distance := -projected_distance + sqrt(discriminant)
+	return far_distance if far_distance >= 0.0 else 1.0e20
+
+
 func _update_hover(screen_position: Vector2) -> void:
 	var hit := _pick_interactable(screen_position)
 	var next_cylinder := -1
 	var next_crankshaft := false
+	var next_system := ""
 	if hit.get("kind", "") == "cylinder":
 		next_cylinder = int(hit.index)
 	elif hit.get("kind", "") == "crankshaft":
 		next_crankshaft = true
-	if next_cylinder != hovered_cylinder_index or next_crankshaft != hovered_crankshaft:
+	elif hit.get("kind", "") == "coolant" or hit.get("kind", "") == "oil":
+		next_system = String(hit.kind)
+	if (
+		next_cylinder != hovered_cylinder_index or
+		next_crankshaft != hovered_crankshaft or
+		next_system != hovered_system
+	):
 		hovered_cylinder_index = next_cylinder
 		hovered_crankshaft = next_crankshaft
+		hovered_system = next_system
 		_refresh_highlights()
 
 
 func _select_hovered_part() -> void:
 	selected_cylinder_index = hovered_cylinder_index
 	selected_crankshaft = hovered_crankshaft
+	selected_system = hovered_system
 	_update_selection_info()
 	_refresh_highlights()
 
@@ -375,6 +438,8 @@ func _build_engine() -> void:
 	selected_cylinder_index = -1
 	hovered_crankshaft = false
 	selected_crankshaft = false
+	hovered_system = ""
+	selected_system = ""
 	info_panel.visible = false
 
 	var cylinder_count := engine_parameters.get_cylinder_count()
@@ -447,6 +512,36 @@ func _build_engine() -> void:
 	crankshaft_mesh.rotation.z = PI * 0.5
 	crankshaft_mesh.position.y = crank_center_y
 	crankshaft_pick_half_length = (width + 0.8) * 0.5
+
+	var coolant_material := _make_material(Color(0.08, 0.42, 0.78), 0.28, 0.25)
+	coolant_component = _add_cylinder(
+		model_root,
+		0.105,
+		0.34,
+		coolant_material
+	)
+	coolant_component.position = Vector3(
+		-width * 0.45,
+		piston_top_y + 0.48,
+		0.24
+	)
+	coolant_pick_center = coolant_component.position
+	var coolant_cap := _add_cylinder(
+		model_root,
+		0.07,
+		0.055,
+		steel_material
+	)
+	coolant_cap.position = coolant_component.position + Vector3(0.0, 0.19, 0.0)
+
+	var oil_pan_material := _make_material(Color(0.34, 0.25, 0.12), 0.72, 0.0)
+	oil_component = _add_box(
+		model_root,
+		Vector3(width * 0.72, 0.17, 0.58),
+		Vector3(0.0, crank_center_y - 0.11, 0.2),
+		oil_pan_material
+	)
+	oil_pick_center = oil_component.position
 
 	var bearing_count := maxi(cylinder_count + 1, 2)
 	for bearing_index in range(bearing_count):
@@ -776,9 +871,10 @@ func _layout_selection_info_panel() -> void:
 	if not is_instance_valid(info_panel):
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
-	var panel_width := maxf(180.0, minf(280.0, viewport_size.x - 24.0))
-	info_panel.custom_minimum_size = Vector2(panel_width, 154.0)
-	info_panel.size = Vector2(panel_width, 154.0)
+	var panel_width := maxf(180.0, minf(300.0, viewport_size.x - 24.0))
+	var panel_height := 230.0 if fluid_type_option.visible else 154.0
+	info_panel.custom_minimum_size = Vector2(panel_width, panel_height)
+	info_panel.size = Vector2(panel_width, panel_height)
 	info_panel.position = Vector2(12.0, 12.0)
 
 
@@ -799,6 +895,18 @@ func _refresh_highlights() -> void:
 		for ring in part.piston_rings:
 			var piston_ring: MeshInstance3D = ring
 			piston_ring.material_overlay = overlay
+	if is_instance_valid(coolant_component):
+		coolant_component.material_overlay = (
+			hover_material
+			if hovered_system == "coolant" or selected_system == "coolant"
+			else null
+		)
+	if is_instance_valid(oil_component):
+		oil_component.material_overlay = (
+			hover_material
+			if hovered_system == "oil" or selected_system == "oil"
+			else null
+		)
 	if is_instance_valid(crankshaft_mesh):
 		crankshaft_mesh.material_overlay = (
 			hover_material
@@ -833,6 +941,39 @@ func _update_selection_info() -> void:
 		]
 		misfire_fault_toggle.visible = true
 		misfire_fault_toggle.set_pressed_no_signal(misfire_fault_active)
+		fluid_type_option.visible = false
+		info_panel.visible = true
+	elif selected_system == "coolant":
+		var thermal := simulator.thermal_system
+		info_label.text = (
+			"COOLING SYSTEM\nCOOLANT  %s\nTEMPERATURE  %.1f °C\n"
+			+ "PRESSURE  %.2f bar\nTHERMOSTAT  %.0f %%\nRADIATOR  %.1f kW"
+		) % [
+			thermal.get_coolant_mixture_name(),
+			thermal.coolant_temperature_c,
+			thermal.coolant_pressure_kpa / 100.0,
+			thermal.thermostat_opening * 100.0,
+			thermal.radiator_heat_rejection_kw,
+		]
+		misfire_fault_toggle.visible = false
+		fluid_type_option.visible = true
+		_configure_fluid_type_option("coolant")
+		info_panel.visible = true
+	elif selected_system == "oil":
+		var thermal := simulator.thermal_system
+		info_label.text = (
+			"LUBRICATION SYSTEM\nENGINE OIL  %s\nTEMPERATURE  %.1f °C\n"
+			+ "PRESSURE  %.2f bar\nVISCOSITY  %.1f cSt\nOIL COOLER  %.1f kW"
+		) % [
+			thermal.get_oil_grade_name(),
+			thermal.oil_temperature_c,
+			thermal.oil_pressure_kpa / 100.0,
+			thermal.get_oil_viscosity_cst(),
+			thermal.oil_heat_rejection_kw,
+		]
+		misfire_fault_toggle.visible = false
+		fluid_type_option.visible = true
+		_configure_fluid_type_option("oil")
 		info_panel.visible = true
 	elif selected_crankshaft:
 		info_label.text = (
@@ -843,10 +984,43 @@ func _update_selection_info() -> void:
 			simulator.angular_velocity,
 		]
 		misfire_fault_toggle.visible = false
+		fluid_type_option.visible = false
 		info_panel.visible = true
 	else:
 		misfire_fault_toggle.visible = false
+		fluid_type_option.visible = false
 		info_panel.visible = false
+
+
+func _configure_fluid_type_option(system: String) -> void:
+	var names: Array[String] = []
+	var selected_index := 0
+	if system == "coolant":
+		names = [
+			"Water (0% glycol)",
+			"30% ethylene glycol",
+			"50% ethylene glycol",
+			"60% ethylene glycol",
+		]
+		selected_index = simulator.thermal_system.coolant_mixture
+	else:
+		names = ["SAE 0W-20", "SAE 5W-30", "SAE 5W-40", "SAE 10W-60"]
+		selected_index = simulator.thermal_system.oil_grade
+	if fluid_type_option.get_item_count() != names.size() or fluid_type_option.get_item_text(0) != names[0]:
+		fluid_type_option.clear()
+		for item_name in names:
+			fluid_type_option.add_item(item_name)
+	fluid_type_option.select(selected_index)
+
+
+func _on_fluid_type_selected(index: int) -> void:
+	if simulator == null or engine_parameters == null:
+		return
+	if selected_system == "coolant":
+		simulator.thermal_system.set_coolant_mixture(index)
+	elif selected_system == "oil":
+		simulator.thermal_system.set_oil_grade(index)
+	_update_selection_info()
 
 
 func _on_misfire_fault_toggled(fault_active: bool) -> void:
