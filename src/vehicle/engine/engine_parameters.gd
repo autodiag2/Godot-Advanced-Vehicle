@@ -28,6 +28,8 @@ enum FuelType {
 @export_range(2.0, 10.0, 0.5) var oil_capacity_litres: float = 5.0
 @export_range(0, 3, 1) var coolant_mixture: int = 2
 @export_range(0, 3, 1) var oil_grade: int = 1
+
+@export_category("Fuel and combustion")
 @export_range(0.1, 1.0, 0.01) var volumetric_efficiency: float = 0.88
 @export_range(0.1, 1.0, 0.01) var combustion_efficiency: float = 0.8
 @export_range(10.0, 100.0, 0.5) var combustion_duration_deg: float = 42.0
