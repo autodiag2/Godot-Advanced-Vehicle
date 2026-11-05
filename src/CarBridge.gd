@@ -44,7 +44,6 @@ func _process(delta):
 	var engine = car.engine_controller
 	var engine_parameters = engine.engine_parameters
 	var thermal = engine.simulator.thermal_system
-	var vehicle_speed_kmh: float = car.getSpeedKmH()
 	var throttle : float = engine.effective_throttle
 	var engine_load : float = engine.calculate_engine_load(throttle)
 	var engine_load_percent := engine_load * 100.0
