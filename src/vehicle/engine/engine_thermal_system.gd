@@ -141,4 +141,4 @@ func _update_pressures(engine_rpm: float) -> void:
 		145.0
 	)
 	var viscosity_factor := clampf(get_oil_viscosity_cst() / 10.5, 0.35, 2.0)
-	oil_pressure_kpa = clampf((115.0 + engine_rpm * 0.095) * viscosity_factor, 0.0, 700.0)
+	oil_pressure_kpa = clampf(engine_rpm * 0.22 * viscosity_factor, 0.0, 700.0)
