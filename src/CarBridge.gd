@@ -261,7 +261,7 @@ func _process(delta):
 		cylinder_fuel_rate
 	)
 
-	bridge.setSignal("SAEJ1979.number_of_dtc", dtc_count)
+	bridge.setSignal("SAEJ1979.number_of_dtc", float(dtc_count))
 	bridge.setSignal("SAEJ1979.mil_status", 1.0 if mil_active else 0.0)
 	bridge.setSignal("SAEJ1979.coolant_temp", thermal.coolant_temperature_c)
 	bridge.setSignal("SAEJ1979.engine_oil_temperature", thermal.oil_temperature_c)
