@@ -2,12 +2,6 @@ extends Node
 
 var bridge = null
 var engine_running_seconds: float = 0.0
-var distance_since_ecu_reset_km: float = 0.0
-var odometer_km: float = 0.0
-var distance_since_mil_activated_km: float = 0.0
-var mil_active: bool = false
-var warm_ups_since_ecu_reset: int = 0
-var coolant_warmup_latched: bool = false
 
 
 func _ready():
@@ -141,28 +135,11 @@ func _process(delta):
 		100.0
 	)
 
-	var travelled_distance_km := absf(car.motion_controller.longitudinal_velocity) * delta / 1000.0
-	distance_since_ecu_reset_km += travelled_distance_km
-	odometer_km += travelled_distance_km
-
 	var dtc_count := 0
 	for cylinder_index in range(engine_parameters.get_cylinder_count()):
 		if engine.simulator.has_cylinder_misfire_fault(cylinder_index):
 			dtc_count += 1
-	var current_mil_active := dtc_count > 0
-	if current_mil_active and not mil_active:
-		distance_since_mil_activated_km = 0.0
-	if current_mil_active:
-		distance_since_mil_activated_km += travelled_distance_km
-	else:
-		distance_since_mil_activated_km = 0.0
-	mil_active = current_mil_active
-
-	if thermal.coolant_temperature_c < 50.0:
-		coolant_warmup_latched = false
-	elif engine.rpm > 0.0 and thermal.coolant_temperature_c >= 70.0 and not coolant_warmup_latched:
-		warm_ups_since_ecu_reset += 1
-		coolant_warmup_latched = true
+	var mil_active := dtc_count > 0
 
 	if engine.rpm > 0.0 and engine.fuel_litres > 0.0:
 		engine_running_seconds += delta
@@ -288,50 +265,7 @@ func _process(delta):
 	bridge.setSignal("SAEJ1979.mil_status", 1.0 if mil_active else 0.0)
 	bridge.setSignal("SAEJ1979.coolant_temp", thermal.coolant_temperature_c)
 	bridge.setSignal("SAEJ1979.engine_oil_temperature", thermal.oil_temperature_c)
-	bridge.setSignal("SAEJ1979.fuel_trim_short_term_bank_1", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_trim_long_term_bank_1", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_trim_short_term_bank_2", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_trim_long_term_bank_2", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_pressure", 0.0)
-	bridge.setSignal("SAEJ1979.powertakeoff_status", 0.0)
-	bridge.setSignal("SAEJ1979.distance_since_mil_activated", distance_since_mil_activated_km)
-	bridge.setSignal("SAEJ1979.frp_relative", 0.0)
-	bridge.setSignal("SAEJ1979.frp_widerange", 0.0)
-	bridge.setSignal("SAEJ1979.commanded_egr", 0.0)
-	bridge.setSignal("SAEJ1979.egr_error", 0.0)
-	bridge.setSignal("SAEJ1979.commanded_evap_purge", 0.0)
-	bridge.setSignal("SAEJ1979.warm_ups_since_ecu_reset", warm_ups_since_ecu_reset)
-	bridge.setSignal("SAEJ1979.distance_since_ecu_reset", distance_since_ecu_reset_km)
-	bridge.setSignal("SAEJ1979.evap_system_vapor_pressure", 0.0)
-	bridge.setSignal("SAEJ1979.baro_pressure_absolute", 101.325)
-	bridge.setSignal("SAEJ1979.ecu_voltage", 14.2 if engine.rpm > 0.0 else 12.6)
 	bridge.setSignal("SAEJ1979.ambient_air_temperature", thermal.ambient_temperature_c)
-	bridge.setSignal("SAEJ1979.max_fuel_air_equiv_ratio", 1.0)
-	bridge.setSignal("SAEJ1979.max_oxygen_sensor_voltage", 1.0)
-	bridge.setSignal("SAEJ1979.max_oxygen_sensor_current", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_ethanol_percent", 0.0)
-	bridge.setSignal("SAEJ1979.absolute_evap_system_vapor_pressure", 0.0)
-	bridge.setSignal("SAEJ1979.fuel_rail_absolute_pressure", 0.0)
-	bridge.setSignal("SAEJ1979.hybrid_battery_pack_remaining_life", 0.0)
-	bridge.setSignal("SAEJ1979.emission_requirements_vehicle_designed", 0.0)
-	bridge.setSignal("SAEJ1979.odometer", odometer_km)
-	bridge.setSignal("SAEJ1979.abs_switch_present", 0.0)
-	bridge.setSignal("SAEJ1979.abs_switch", 0.0)
-
-	var torque_idle := engine.calculate_torque(
-		engine_parameters.idle_rpm,
-		0.0,
-		car.car_params
-	) / reference_torque * 100.0
-	var torque_point_1 := engine.calculate_torque(engine.rpm, 0.25, car.car_params) / reference_torque * 100.0
-	var torque_point_2 := engine.calculate_torque(engine.rpm, 0.50, car.car_params) / reference_torque * 100.0
-	var torque_point_3 := engine.calculate_torque(engine.rpm, 0.75, car.car_params) / reference_torque * 100.0
-	var torque_point_4 := engine.calculate_torque(engine.rpm, 1.00, car.car_params) / reference_torque * 100.0
-	bridge.setSignal("SAEJ1979.engine_percent_torque_data_idle", torque_idle)
-	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_1", torque_point_1)
-	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_2", torque_point_2)
-	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_3", torque_point_3)
-	bridge.setSignal("SAEJ1979.engine_percent_torque_data_point_4", torque_point_4)
 
 	bridge.setTpmsSensor(
 		"fl",
