@@ -28,7 +28,8 @@ var coolant_component: MeshInstance3D
 var oil_component: MeshInstance3D
 var coolant_pick_center := Vector3.ZERO
 var oil_pick_center := Vector3.ZERO
-var fluid_type_option: OptionButton
+var coolant_type_option: OptionButton
+var oil_type_option: OptionButton
 var hovered_crankshaft: bool = false
 var selected_crankshaft: bool = false
 var hover_material: StandardMaterial3D
@@ -168,13 +169,31 @@ func _create_selection_info_panel() -> void:
 	misfire_fault_toggle.add_theme_font_size_override("font_size", 13)
 	misfire_fault_toggle.toggled.connect(_on_misfire_fault_toggled)
 	info_container.add_child(misfire_fault_toggle)
-	fluid_type_option = OptionButton.new()
-	fluid_type_option.custom_minimum_size = Vector2(0.0, 42.0)
-	fluid_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	fluid_type_option.add_theme_font_size_override("font_size", 13)
-	fluid_type_option.visible = false
-	fluid_type_option.item_selected.connect(_on_fluid_type_selected)
-	info_container.add_child(fluid_type_option)
+	coolant_type_option = OptionButton.new()
+	coolant_type_option.custom_minimum_size = Vector2(0.0, 42.0)
+	coolant_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	coolant_type_option.add_theme_font_size_override("font_size", 13)
+	coolant_type_option.tooltip_text = "Select the coolant water / glycol mixture"
+	coolant_type_option.add_item("Water (0% glycol)")
+	coolant_type_option.add_item("30% ethylene glycol")
+	coolant_type_option.add_item("50% ethylene glycol")
+	coolant_type_option.add_item("60% ethylene glycol")
+	coolant_type_option.item_selected.connect(_on_coolant_type_selected)
+	coolant_type_option.visible = false
+	info_container.add_child(coolant_type_option)
+
+	oil_type_option = OptionButton.new()
+	oil_type_option.custom_minimum_size = Vector2(0.0, 42.0)
+	oil_type_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	oil_type_option.add_theme_font_size_override("font_size", 13)
+	oil_type_option.tooltip_text = "Select the engine oil SAE viscosity grade"
+	oil_type_option.add_item("SAE 0W-20")
+	oil_type_option.add_item("SAE 5W-30")
+	oil_type_option.add_item("SAE 5W-40")
+	oil_type_option.add_item("SAE 10W-60")
+	oil_type_option.item_selected.connect(_on_oil_grade_selected)
+	oil_type_option.visible = false
+	info_container.add_child(oil_type_option)
 	info_panel.add_child(info_container)
 	canvas.add_child(info_panel)
 
@@ -872,7 +891,7 @@ func _layout_selection_info_panel() -> void:
 		return
 	var viewport_size := get_viewport().get_visible_rect().size
 	var panel_width := maxf(180.0, minf(300.0, viewport_size.x - 24.0))
-	var panel_height := 230.0 if fluid_type_option.visible else 154.0
+	var panel_height := 230.0 if coolant_type_option.visible or oil_type_option.visible else 154.0
 	info_panel.custom_minimum_size = Vector2(panel_width, panel_height)
 	info_panel.size = Vector2(panel_width, panel_height)
 	info_panel.position = Vector2(12.0, 12.0)
@@ -941,7 +960,8 @@ func _update_selection_info() -> void:
 		]
 		misfire_fault_toggle.visible = true
 		misfire_fault_toggle.set_pressed_no_signal(misfire_fault_active)
-		fluid_type_option.visible = false
+		coolant_type_option.visible = false
+		oil_type_option.visible = false
 		info_panel.visible = true
 	elif selected_system == "coolant":
 		var thermal := simulator.thermal_system
@@ -956,8 +976,10 @@ func _update_selection_info() -> void:
 			thermal.radiator_heat_rejection_kw,
 		]
 		misfire_fault_toggle.visible = false
-		fluid_type_option.visible = true
-		_configure_fluid_type_option("coolant")
+		coolant_type_option.visible = true
+		oil_type_option.visible = false
+		if coolant_type_option.selected != thermal.coolant_mixture:
+			coolant_type_option.select(thermal.coolant_mixture)
 		info_panel.visible = true
 	elif selected_system == "oil":
 		var thermal := simulator.thermal_system
@@ -972,8 +994,10 @@ func _update_selection_info() -> void:
 			thermal.oil_heat_rejection_kw,
 		]
 		misfire_fault_toggle.visible = false
-		fluid_type_option.visible = true
-		_configure_fluid_type_option("oil")
+		coolant_type_option.visible = false
+		oil_type_option.visible = true
+		if oil_type_option.selected != thermal.oil_grade:
+			oil_type_option.select(thermal.oil_grade)
 		info_panel.visible = true
 	elif selected_crankshaft:
 		info_label.text = (
@@ -992,34 +1016,17 @@ func _update_selection_info() -> void:
 		info_panel.visible = false
 
 
-func _configure_fluid_type_option(system: String) -> void:
-	var names: Array[String] = []
-	var selected_index := 0
-	if system == "coolant":
-		names = [
-			"Water (0% glycol)",
-			"30% ethylene glycol",
-			"50% ethylene glycol",
-			"60% ethylene glycol",
-		]
-		selected_index = simulator.thermal_system.coolant_mixture
-	else:
-		names = ["SAE 0W-20", "SAE 5W-30", "SAE 5W-40", "SAE 10W-60"]
-		selected_index = simulator.thermal_system.oil_grade
-	if fluid_type_option.get_item_count() != names.size() or fluid_type_option.get_item_text(0) != names[0]:
-		fluid_type_option.clear()
-		for item_name in names:
-			fluid_type_option.add_item(item_name)
-	fluid_type_option.select(selected_index)
-
-
-func _on_fluid_type_selected(index: int) -> void:
-	if simulator == null or engine_parameters == null:
+func _on_coolant_type_selected(index: int) -> void:
+	if simulator == null:
 		return
-	if selected_system == "coolant":
-		simulator.thermal_system.set_coolant_mixture(index)
-	elif selected_system == "oil":
-		simulator.thermal_system.set_oil_grade(index)
+	simulator.thermal_system.set_coolant_mixture(index)
+	_update_selection_info()
+
+
+func _on_oil_grade_selected(index: int) -> void:
+	if simulator == null:
+		return
+	simulator.thermal_system.set_oil_grade(index)
 	_update_selection_info()
 
 
