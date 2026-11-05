@@ -142,7 +142,7 @@ func _process(delta):
 		100.0
 	)
 
-	var travelled_distance_km := absf(vehicle_speed_kmh) * delta / 3600.0
+	var travelled_distance_km := absf(car.motion_controller.longitudinal_velocity) * delta / 1000.0
 	distance_since_ecu_reset_km += travelled_distance_km
 	odometer_km += travelled_distance_km
 
