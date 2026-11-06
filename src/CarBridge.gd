@@ -37,6 +37,7 @@ func _process(delta):
 
 	var engine = car.engine_controller
 	var engine_parameters = engine.engine_parameters
+	var thermal = engine.simulator.thermal_system
 	var throttle : float = engine.effective_throttle
 	var engine_load : float = engine.calculate_engine_load(throttle)
 	var engine_load_percent := engine_load * 100.0
@@ -133,6 +134,12 @@ func _process(delta):
 		reference_torque *
 		100.0
 	)
+
+	var dtc_count := 0
+	for cylinder_index in range(engine_parameters.get_cylinder_count()):
+		if engine.simulator.has_cylinder_misfire_fault(cylinder_index):
+			dtc_count += 1
+	var mil_active := dtc_count > 0
 
 	if engine.rpm > 0.0 and engine.fuel_litres > 0.0:
 		engine_running_seconds += delta
@@ -253,6 +260,12 @@ func _process(delta):
 		"SAEJ1979.cylinder_fuel_rate",
 		cylinder_fuel_rate
 	)
+
+	bridge.setSignal("SAEJ1979.number_of_dtc", float(dtc_count))
+	bridge.setSignal("SAEJ1979.mil_status", 1.0 if mil_active else 0.0)
+	bridge.setSignal("SAEJ1979.coolant_temp", thermal.coolant_temperature_c)
+	bridge.setSignal("SAEJ1979.engine_oil_temperature", thermal.oil_temperature_c)
+	bridge.setSignal("SAEJ1979.ambient_air_temperature", thermal.ambient_temperature_c)
 
 	bridge.setTpmsSensor(
 		"fl",

@@ -5,6 +5,7 @@ const RPM_PER_RADIAN_PER_SECOND: float = 60.0 / TAU
 
 var parameters: EngineParameters
 var thermodynamics := EngineThermodynamics.new()
+var thermal_system: EngineThermalSystem
 var crank_angle_deg: float = 0.0
 var rpm: float = 0.0
 var angular_velocity: float = 0.0
@@ -15,6 +16,7 @@ var mean_output_torque: float = 0.0
 func initialize(engine_parameters: EngineParameters, initial_rpm: float) -> void:
 	parameters = engine_parameters
 	thermodynamics.initialize(engine_parameters, initial_rpm)
+	thermal_system = thermodynamics.thermal_system
 	_sync_state()
 
 
