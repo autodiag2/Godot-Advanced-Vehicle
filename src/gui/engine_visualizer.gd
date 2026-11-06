@@ -33,6 +33,7 @@ func _ready() -> void:
 	visibility_changed.connect(_on_visibility_changed)
 	set_process(false)
 	engine_viewport.render_target_update_mode = SubViewport.UPDATE_DISABLED
+	engine_viewport.gui_embed_subwindows = true
 	for label in [identity_label, rpm_label, torque_label, pressure_label]:
 		label.autowrap_mode = TextServer.AUTOWRAP_OFF
 	_on_visibility_changed()
